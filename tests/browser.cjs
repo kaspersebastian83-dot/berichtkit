@@ -440,6 +440,12 @@ const daten = {
     await page.click('#lueckenZaehler'); assert.equal(await fokus(), 'fEingang');
     assert.match(await page.getAttribute('#lueckenZaehler', 'aria-label'), /^1 Stelle noch offen – zur nächsten Stelle springen$/);
     assert.equal(await page.textContent('#lueckenListe'), '[Eingangsdatum] – Bericht › Eingangsdatum');
+    // Foto-Datei nicht lesbar: in Word stünde [Foto fehlt: …] – Zähler und Hinweise zählen es mit, sobald die Vorschau es merkt
+    await projektDatei('Fotos/01_P1_Fliesenkleber.jpg', 'kein Bild');
+    await page.evaluate(() => { S.thumbs = {}; render(); });
+    await page.waitForFunction(() => S.luecken.some(x => x.luecke === '[Foto fehlt: 01_P1_Fliesenkleber.jpg]'));
+    assert.equal(await page.textContent('#lueckenZaehler'), '2 Stellen noch offen');
+    assert.match(await page.textContent('#hinweise'), /Lücke im Bericht: \[Foto fehlt: 01_P1_Fliesenkleber\.jpg\] – Proben › Foto/);
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('ok – BerichtKit im Browser: öffnen, Vorschau, Einstellungen, Word-Datei in „Mitteilungen“, Angaben im Projektordner, Spektron-Leiste');
   } catch (e) {

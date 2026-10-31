@@ -106,6 +106,11 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     const ohneNr = T.bericht({ ...eingabe(form()), pj: B.pj({ projektnummer: '' }) });
     assert.equal(ohneNr.deckblatt.projektnummer, ''); assert.ok(!ohneNr.luecken.includes('[Projektnummer]'));
     assert.equal(L.offene(ohneNr)[0], '[Projektnummer]'); assert.deepEqual(L.offene(T.bericht(eingabe(form()))), T.bericht(eingabe(form())).luecken);
+    // [Foto fehlt: …] nur für Fotos, die im Bericht stehen und sich nicht lesen ließen (Vorschau bzw. beim Speichern)
+    const mitFoto = T.bericht({ ...eingabe(form()), fotos: { P1: [{ datei: 'x.jpg' }] } });
+    assert.deepEqual(L.offene(mitFoto, ['x.jpg', 'anderes.jpg']), [...mitFoto.luecken, '[Foto fehlt: x.jpg]']);
+    assert.deepEqual(L.offene(mitFoto, []), mitFoto.luecken);
+    assert.equal(L.zuordnen(['[Foto fehlt: x.jpg]'])[0].ziel, '#probenListe');
     // Jede fertige Berichtsart hat eine Tabelle (sonst hieße jede Lücke still „in Word ausfüllen“)
     for (const a of T.BERICHTSARTEN.filter(x => x.bereit)) assert.ok(Array.isArray(L.FELDER[a.art]) && L.FELDER[a.art].length, `bericht-luecken.js: Tabelle für ${a.art}`);
     // Felder der Tabelle gibt es im Formular (ids aus index.html)

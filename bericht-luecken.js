@@ -28,7 +28,7 @@ const FELDER = {
     { luecke: '[Risiko]', wo: PZ },
     { luecke: '[Schadenort]', wo: PZ },
     { luecke: '[Objekt]', wo: PZ },
-    { luecke: /^\[Foto fehlt/, wo: 'Foto beim Speichern nicht lesbar – in FotoKit prüfen oder in Word einfügen' },
+    { luecke: /^\[Foto fehlt/, ziel: '#probenListe', wo: 'Proben › Foto – Datei nicht lesbar: in FotoKit prüfen, anderes Foto wählen oder in Word einfügen' },
     { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
   ],
 };
@@ -46,11 +46,15 @@ function zuordnen(luecken, art) {
   });
 }
 /** Offene Lücken eines Berichtsmodells, wie sie in der Word-Datei stehen: modell.luecken plus die Lücken, die erst
-    bericht-docx.js einsetzt (fehlende Projektnummer auf dem Deckblatt). Für Zähler, Hinweise und Rückfrage vor dem Speichern –
-    das Modell selbst bleibt unverändert. ([Foto fehlt: …] entsteht erst, wenn beim Speichern ein Foto nicht lesbar ist.) */
-function offene(m) {
+    bericht-docx.js einsetzt – fehlende Projektnummer auf dem Deckblatt und [Foto fehlt: …] für jedes Foto im Bericht, dessen
+    Datei nicht lesbar ist (fotosFehlen = Dateinamen, z. B. aus der Vorschau oder beim Speichern geladen). Für Zähler, Hinweise,
+    Rückfrage vor dem Speichern und Protokoll – das Modell selbst bleibt unverändert. */
+function offene(m, fotosFehlen) {
   const l = [...((m && m.luecken) || [])];
   if (m && m.deckblatt && !m.deckblatt.projektnummer && !l.includes('[Projektnummer]')) l.unshift('[Projektnummer]');
+  const fehlt = new Set(fotosFehlen || []);
+  if (fehlt.size) for (const a of (m && m.abschnitte) || []) for (const x of a.inhalt || [])
+    if (x.t === 'fig' && fehlt.has(x.datei) && !l.includes(`[Foto fehlt: ${x.datei}]`)) l.push(`[Foto fehlt: ${x.datei}]`);
   return l;
 }
 /** „1 Stelle noch offen“ / „3 Stellen noch offen“ / '' */

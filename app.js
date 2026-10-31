@@ -6,7 +6,7 @@
 const APP_VERSION = '1.11.0';
 const APP_DATE = '31.10.2026';
 const CHANGELOG = [
-  ['1.11.0', '31.10.2026', 'Offene Stellen sichtbar (Brandbericht Schritt 2, gilt schon für den Asbestbericht): Jede gelbe Lücke in der Word-Datei bekommt einen Kommentar am Rand – „Noch ausfüllen: …“, Autor „BerichtKit“ –, in Word mit Überprüfen › Nächster Kommentar von Lücke zu Lücke; ist die Stelle gefüllt, Kommentar löschen. Gelbe Markierung und [Text] bleiben, die Projektzentrale findet bei der Übergabe dieselben Lücken wie bisher. Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb (LibreOffice kann Kommentare dort nicht laden) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar. Im Formular oben „n Stellen noch offen“: Klick springt zum Feld, das die nächste Lücke füllt; leere Pflichtfelder sind gelb umrandet; in den Hinweisen steht zu jeder Lücke, wo sie zu füllen ist (z. B. „Personen › Labor“, „in der Projektzentrale eintragen“). Rückfrage vor dem Speichern wie bisher.'],
+  ['1.11.0', '31.10.2026', 'Offene Stellen sichtbar (Brandbericht Schritt 2, gilt schon für den Asbestbericht): Jede gelbe Lücke in der Word-Datei bekommt einen Kommentar am Rand – „Noch ausfüllen: …“, Autor „BerichtKit“ –, in Word mit Überprüfen › Nächster Kommentar von Lücke zu Lücke; ist die Stelle gefüllt, Kommentar löschen. Gelbe Markierung und [Text] bleiben, die Projektzentrale findet bei der Übergabe dieselben Lücken wie bisher. Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb (LibreOffice kann Kommentare dort nicht laden) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar. Im Formular oben „n Stellen noch offen“: Klick springt zum Feld, das die nächste Lücke füllt; leere Pflichtfelder sind gelb umrandet; in den Hinweisen steht zu jeder Lücke, wo sie zu füllen ist (z. B. „Personen › Labor“, „in der Projektzentrale eintragen“). Zähler und Rückfrage vor dem Speichern zählen auch, was erst die Word-Datei als Lücke einsetzt: fehlende Projektnummer und ein Foto, dessen Datei sich nicht lesen lässt ([Foto fehlt: …]).'],
   ['1.10.0', '31.10.2026', 'Vorbereitung Brandbericht (Schritt 1, am Asbestbericht ändert sich nichts): Die Berichtstexte sind aufgeteilt in gemeinsame Bausteine (bericht-gemeinsam.js: Deckblatt mit/ohne Versicherung, Kopfzeilen, Personen, Unterschriften, Anlagen, Proben und Asbest-Befund) und den Asbestbericht (bericht-asbest.js); bericht-text.js wählt die Berichtsart. Die Projektzentrale kann die Berichtsart mitgeben (#…&art=asbest|brand) – „Brandbericht“ zeigt vorerst „kommt bald“ mit Knopf zum Asbestbericht. Word-Ausgabe: Spaltenbreiten je Tabelle und Unterüberschriften (kursiv) für spätere Berichtsarten. Geprüft: alle Beispielberichte als Modell und Word-Datei vorher/nachher gleich.'],
   ['1.9.0', '31.10.2026', 'Stornierte Proben (Folge zu LabelKit 4.49.0 „Proben stornieren“): Eine in LabelKit stornierte Asbestprobe ist keine Probe mehr – sie fehlt in Tabelle 1, im Text (Probenzahl, Aufzählungen, Sätze je Probe), in der Probenliste und im Abgleich der Entnahmestelle und sperrt das Speichern nie („… noch kein Ergebnis in ResultKit“ kommt für sie nicht mehr). Die übrigen Proben behalten ihre LabelKit-Nummer, es wird nicht neu durchnummeriert (z. B. 1, 2, 4). Steht im Prüfbericht trotzdem ein Wert für die stornierte Probe, kommt er nicht in den Bericht; ein Hinweis sagt es („P3 ist in LabelKit storniert – der Laborwert (Prüfbericht …) kommt nicht in den Bericht.“). Sind alle Asbestproben storniert, gibt es keinen Bericht ohne Proben: Speichern in „Mitteilungen“ ist dann gesperrt (nur Entwurf).'],
   ['1.8.0', '30.10.2026', 'Anlagen fallen nicht mehr still aus dem Bericht: Fehlt die Bilddokumentation oder der Probenplan, ist eine davon veraltet oder unvollständig, steht immer ein Hinweis da („… veraltet – nicht im Bericht. In FotoKit neu erstellen oder trotzdem anhaken.“) – mit Sprung in FotoKit bzw. PlanKit. Annahmen bestätigen: „Versicherer angenommen“ steht nur noch einmal in den Hinweisen, mit „✓ stimmt“ wie beim Probenehmer; ändert sich der Auftraggeber, fragt BerichtKit wieder. Ist der Zuständige Messtechniker (oder fehlt), schlägt BerichtKit für die Unterschrift die erste Sachverständige der Liste vor – jetzt sichtbar als „angenommen – bitte prüfen“ mit „✓ stimmt“. Einstellungen: Die Rolle „Sachverständige(r)“ wird jetzt ausdrücklich gespeichert („nicht festgelegt“ ist eine eigene Wahl) – der Hinweis „… hat die Proben genommen … Rolle nicht festgelegt“ ist nach einmaligem Festlegen weg und hat einen Knopf „Einstellungen öffnen“.'],
@@ -615,7 +615,7 @@ function render() {
   anlagenZeigen(m);
   document.querySelectorAll('input[name=einbau]').forEach(r => { r.checked = r.value === (f.einbau || 'unbekannt'); });
   // Hinweise
-  const lz = BerichtLuecken.zuordnen(BerichtLuecken.offene(m), T.berichtsart(S.form));
+  const lz = BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form));
   $('hinweise').innerHTML = [
     ...m.sperren.map(x => `<li class="sperre">Gesperrt: ${esc(x)}</li>`),
     ...m.annahmen.map(a => `<li class="luecke">${esc(a.text)} <button type="button" class="klein-knopf" data-ok="${esc(a.id)}" title="Stimmt so – Hinweis ausblenden">✓ stimmt</button></li>`),
@@ -740,14 +740,18 @@ function vorschau(m) {
   vorschauBilder();
 }
 async function vorschauBilder() {
+  let neuFehlt = false;
   for (const el of document.querySelectorAll('[data-thumb]')) {
     const datei = el.dataset.thumb; if (S.thumbs[datei] === undefined) {
       S.thumbs[datei] = null;
-      try { const f = await fotoBytes(datei, 480); S.thumbs[datei] = URL.createObjectURL(new Blob([f.data], { type: 'image/jpeg' })); } catch (e) { S.thumbs[datei] = ''; }
+      try { const f = await fotoBytes(datei, 480); S.thumbs[datei] = URL.createObjectURL(new Blob([f.data], { type: 'image/jpeg' })); } catch (e) { S.thumbs[datei] = ''; neuFehlt = true; }
     }
     if (S.thumbs[datei]) { const img = document.createElement('img'); img.src = S.thumbs[datei]; img.alt = ''; el.replaceWith(img); }
   }
+  if (neuFehlt) render();   // nicht lesbares Foto wird in Word zu [Foto fehlt: …] → Zähler und Hinweise nachziehen (einmal je Datei)
 }
+/** Fotos, deren Datei sich in der Vorschau nicht lesen ließ (S.thumbs[datei] === '') – in Word stünde dort [Foto fehlt: …] */
+const fotosFehlen = () => Object.keys(S.thumbs).filter(d => S.thumbs[d] === '');
 
 /* ---------- Bilder ---------- */
 function drehungVon(datei) { const b = S.fk && S.fk.bilder && S.fk.bilder[datei]; return b ? +b.drehung || 0 : 0; }
@@ -772,12 +776,17 @@ async function logoLaden() {
 }
 
 /* ---------- Word-Datei ---------- */
-async function wordBlob(m) {
-  if (!m.proben.length) throw new Error('Keine Proben im Bericht.');
+/** Logo, Unterschriften und Fotos für die Word-Datei; fehlen = Fotos, die sich nicht lesen ließen (→ [Foto fehlt: …]) */
+async function bilderLaden(m) {
   const bilder = { ...(await logoLaden()), sig: {}, fotos: {} };
   for (const u of m.unterschriften) { const b = u.kuerzel && S.sig[sigKey(u.kuerzel)]; if (b) bilder.sig[u.kuerzel] = b; }
   const fehlen = [];
   for (const p of m.proben) if (p.foto) { try { bilder.fotos[p.label] = await fotoBytes(p.foto); } catch (e) { fehlen.push(p.foto); } }
+  return { bilder, fehlen };
+}
+async function wordBlob(m, geladen) {
+  if (!m.proben.length) throw new Error('Keine Proben im Bericht.');
+  const { bilder, fehlen } = geladen || await bilderLaden(m);
   const blob = await docx.Packer.toBlob(BerichtDocx.erstellen(docx, m, bilder));
   return { blob, m, fehlen };
 }
@@ -821,11 +830,12 @@ async function speichern() {
         name = m0.dateiname; if (await dateiDa(ziel, name)) name = await freierName(ziel, name);
       }
     }
-    const offen0 = BerichtLuecken.offene(m0);
+    const geladen = await bilderLaden(m0);   // vor der Rückfrage: ein nicht lesbares Foto ist auch eine Lücke
+    const offen0 = BerichtLuecken.offene(m0, geladen.fehlen);
     if (offen0.length && !confirm(`Im Bericht sind noch ${offen0.length} Lücke(n) gelb markiert:\n${offen0.join(', ')}\n\nTrotzdem speichern?`)) { render(); return; }
     if (neueNr) { S.form.mitteilung = neueNr; S.form.mitteilungAm = new Date().toISOString(); formMerken('mitteilung', 'mitteilungAm'); render(); }
     S.statusFest = null; $('status').textContent = 'Word-Datei wird erstellt …';
-    const { blob, m, fehlen } = await wordBlob(m0);
+    const { blob, m, fehlen } = await wordBlob(m0, geladen);
     const fh = await ziel.getFileHandle(name, { create: true });
     let w; try { w = await fh.createWritable(); } catch (e) { throw new Error(`„${name}“ lässt sich nicht schreiben – ist die Datei noch in Word geöffnet?`); }
     await w.write(blob); await w.close();
@@ -835,7 +845,7 @@ async function speichern() {
     // Protokoll: welche Dateien als Anlage dazugehören (für die Übergabe: Pfade im Projektordner), wie viele Lücken beim Speichern offen waren,
     // Nummer und Datum (beim nächsten Öffnen: eine Nummer, die es schon gibt, und das Datum dazu werden nicht mehr vorgeschlagen)
     await zustandSchreiben({ datei: name, am: new Date().toISOString(), von: ich(), mitteilung: +S.form.mitteilung || 1, datum: S.form.datum || '',
-      anlagen: m.anlagenDateien, anlagenListe: m.anlagenListe, luecken: BerichtLuecken.offene(m).length })
+      anlagen: m.anlagenDateien, anlagenListe: m.anlagenListe, luecken: BerichtLuecken.offene(m, fehlen).length })
       .catch(e => fehler('Bericht gespeichert, Angaben dazu nicht: ' + (e && e.message || e)));
     if (window.MosaikLeiste) MosaikLeiste.aktualisieren();
     statusFest(`<span class="ok">✓ Gespeichert: Mitteilungen/${esc(name)}</span>` + (fehlen.length ? ` · Foto(s) nicht lesbar: ${esc(fehlen.join(', '))}` : ''));
@@ -966,7 +976,7 @@ function verbinden() {
   $('fEingang').onchange = e => setze('eingangsdatum', e.target.value);
   $('fAuftrag').onchange = e => setze('auftragsdatum', e.target.value);
   $('fAg').oninput = e => { S.form.agSatz = e.target.value; formMerken('agSatz'); const m = modell(); vorschau(m);
-    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m), T.berichtsart(S.form))); };
+    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form))); };
   $('fAg').onchange = () => render();
   $('fPn').onchange = e => { const k = e.target.value, mtAlt = S.form.mt; S.form.probenehmer = k; if (k && rolle(k) === 'mt') S.form.mt = k; else if (S.form.mt && S.form.mt !== k && rolle(S.form.mt) === 'mt') S.form.mt = '';
     S.form.pnQuelle = 'hand'; formMerken('probenehmer', 'pnQuelle', ...(S.form.mt !== mtAlt ? ['mt'] : [])); render(); };

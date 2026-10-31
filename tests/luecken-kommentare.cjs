@@ -127,6 +127,9 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
     assert.deepEqual(ks.map(k => k.text), erwartet.map(g => 'Noch ausfüllen: ' + g.slice(1, -1)));
     for (const g of ['[Projektnummer]', '[VN]', '[Labor]', '[Foto fehlt: z.jpg]', '[KI-Wert]', '[Sachverständige(r)]']) assert.ok(erwartet.includes(g), g);
     for (const g of m.luecken) assert.ok(erwartet.includes(g), `Modell-Lücke ${g} im Dokument`);
+    // Zähler/Rückfrage (offene mit dem nicht lesbaren Foto) = genau die Lücken in der Word-Datei, Kopf eingeschlossen
+    const inWord = new Set([...gelbeTexte(tt, false), ...gelbeTexte(tt, true)]);
+    assert.deepEqual([...new Set(BL.offene(m, ['z.jpg']))].sort(), [...inWord].sort());
   });
 
   await fall('Ohne Lücken: keine Kommentare', async () => {
