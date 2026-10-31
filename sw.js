@@ -3,8 +3,8 @@
    Dateien laufen nie hierüber. Berührt nur Caches mit eigenem Präfix (andere Apps teilen sich den Cache-Speicher). */
 const SCOPE = self.registration.scope;
 const PREFIX = 'berichtkit:' + SCOPE + ':';
-const CACHE = PREFIX + 'v11';
-const ASSETS = ['./', './index.html', './app.js', './anlagen.js', './bericht-vorgaben.js', './bericht-text.js', './bericht-docx.js', './spektron-ordner.js', './mosaik-leiste.js',
+const CACHE = PREFIX + 'v12';
+const ASSETS = ['./', './index.html', './app.js', './anlagen.js', './bericht-vorgaben.js', './bericht-gemeinsam.js', './bericht-asbest.js', './bericht-text.js', './bericht-docx.js', './spektron-ordner.js', './mosaik-leiste.js',
   './vendor/docx.iife.js', './fonts.css', './assets/logo-schiffers.svg', './assets/logo-schiffers.png',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'].map(f => new URL(f, SCOPE).href);
 const INDEX = new URL('index.html', SCOPE).href;

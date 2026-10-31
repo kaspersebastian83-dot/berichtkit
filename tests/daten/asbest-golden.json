@@ -1,0 +1,1515 @@
+{
+ "A_positiv_eine_Probe": {
+  "dateiname": "1._Mitteilung_99.9001.docx",
+  "deckblatt": {
+   "titel": "Untersuchungsbericht vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9001",
+   "betreff": [
+    "Untersuchung auf Asbest"
+   ],
+   "felder": [
+    [
+     "VN:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Risiko:",
+     [
+      "Musterweg 12",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Versicherer:",
+     [
+      "Beispiel Versicherung AG"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      "BV-2026-0001"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Untersuchungsbericht vom 27.10.2026",
+   [
+    "Untersuchung auf Asbest"
+   ],
+   [
+    "VN: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Risiko: ",
+    "Musterweg 12, 12345 Musterstadt"
+   ]
+  ],
+  "kennzeilen": [],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "05.10.2026",
+       " wurde unser Büro durch ",
+       "die Beispiel Versicherung AG",
+       " beauftragt, im Objekt ",
+       "Musterweg 12, 12345 Musterstadt",
+       " eine Ortsbesichtigung durchzuführen, Materialproben zu entnehmen und diese auf Asbest ",
+       "",
+       "untersuchen zu lassen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Probenahme und Untersuchung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "16.10.2026",
+       " wurde durch ",
+       "Herrn Messer",
+       " (Sachverständigenbüro Dr. Heinz Schiffers & Partner) im Objekt ",
+       "eine Materialprobe",
+       " entnommen. ",
+       "Die Entnahmestelle ist in Tabelle 1 aufgeführt",
+       " und in Abbildung 1 dokumentiert."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Probe wurde der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Asbest übergeben. ",
+       "Die Ergebnisse sind im beigefügten Prüfbericht ",
+       "Nr. AR-999-2026-000001-01",
+       " dokumentiert (Anlage 1)."
+      ]
+     },
+     {
+      "t": "fig",
+      "label": "P1",
+      "datei": "x.jpg",
+      "caption": "Abb. 1: Fliesenkleber, Umkleide Schwimmbad."
+     }
+    ]
+   },
+   {
+    "titel": "3. Befund",
+    "inhalt": [
+     {
+      "t": "tab",
+      "caption": "Tabelle 1: Entnommene Probe und Ergebnis",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Material",
+       "Ergebnis"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "left",
+       "left"
+      ],
+      "spalten": [
+       950,
+       2080,
+       2240,
+       1850,
+       1950
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "1",
+        "999-2026-0000101",
+        "Umkleide Schwimmbad",
+        "Fliesenkleber",
+        "Chrysotil, 5 - 20 %"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In Probe 1 (Material: ",
+       "Fliesenkleber",
+       ") wurde Asbest nachgewiesen: Chrysotil, 5 - 20 %."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Schlussfolgerungen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Material ",
+       "„",
+       "Fliesenkleber",
+       "“ (Probe 1)",
+       " handelt es sich um ein asbesthaltiges Material. ",
+       "Bei allen Tätigkeiten, bei denen dieses Material bearbeitet, beschädigt oder entfernt wird, ",
+       "sind die Gefahrstoffverordnung (GefStoffV) und die TRGS 519 „Asbest: Abbruch-, Sanierungs- oder Instandhaltungsarbeiten“ einzuhalten. ",
+       "Die Arbeiten dürfen nur von Fachbetrieben mit der erforderlichen Sachkunde ausgeführt werden."
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   },
+   {
+    "kuerzel": "Mes",
+    "rolle": "Der Messtechniker",
+    "name": "Max Messer"
+   }
+  ],
+  "versicherungsfall": true,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000001-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000001-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000001-01.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000001-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in FotoKit erstellen",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in PlanKit erstellen",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   }
+  ],
+  "proben": [
+   {
+    "label": "P1",
+    "nr": 1,
+    "ref": "Probe 1",
+    "labNr": "999-2026-0000101",
+    "bericht": "AR-999-2026-000001-01",
+    "stelle": "Umkleide Schwimmbad",
+    "material": "Fliesenkleber",
+    "materialAusMatrix": false,
+    "matrix": "Bituminöse Proben / Kleber",
+    "datum": "2026-10-16",
+    "befund": {
+     "text": "Chrysotil, 5 - 20 %",
+     "gefunden": true,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "",
+     "who": "",
+     "whoPositiv": null
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": false,
+    "ki": "",
+    "kiQuelle": "",
+    "whoNachgewiesen": false,
+    "foto": "x.jpg",
+    "stelleBericht": "Umkleide Schwimmbad"
+   }
+  ],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [
+   "Entnahmestelle nicht mit dem Prüfbericht abgeglichen (P1): ResultKit hat den LabelKit-Auftrag nicht gespeichert – in ResultKit die Ergebnisse erneut übernehmen.",
+   "Bilddokumentation nicht gefunden – nicht im Bericht. In FotoKit erstellen.",
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen."
+  ],
+  "hinweisAktionen": {
+   "Bilddokumentation nicht gefunden – nicht im Bericht. In FotoKit erstellen.": {
+    "app": "FotoKit",
+    "link": "../Bildumbenenner/",
+    "ziel": "bildumbenenner",
+    "was": "erstellen"
+   },
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.": {
+    "app": "PlanKit",
+    "link": "../Probenplan/",
+    "ziel": "plankit",
+    "was": "erstellen"
+   }
+  },
+  "sperren": [],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": {
+   "angenommen": true,
+   "wert": "Beispiel Versicherung AG",
+   "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale)."
+  },
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   },
+   {
+    "id": "versicherer",
+    "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
+    "wert": "Beispiel Versicherung AG"
+   }
+  ],
+  "luecken": []
+ },
+ "B_gemischt_KMF": {
+  "dateiname": "1._Mitteilung_99.9001.docx",
+  "deckblatt": {
+   "titel": "Untersuchungsbericht vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9001",
+   "betreff": [
+    "Untersuchung auf Asbest und künstliche Mineralfasern (KMF)"
+   ],
+   "felder": [
+    [
+     "Auftraggeber:",
+     [
+      "Beispiel Versicherung AG",
+      "Versicherungsallee 1",
+      "54321 Beispielstadt"
+     ]
+    ],
+    [
+     "Schadenort:",
+     [
+      "Musterweg 12",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      "BV-2026-0001"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Untersuchungsbericht vom 27.10.2026",
+   [
+    "Untersuchung auf Asbest und künstliche Mineralfasern (KMF)"
+   ],
+   [
+    "AG: ",
+    "Beispiel Versicherung AG, Versicherungsallee 1, 54321 Beispielstadt"
+   ],
+   [
+    "Schadenort: ",
+    "Musterweg 12, 12345 Musterstadt"
+   ]
+  ],
+  "kennzeilen": [],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "05.10.2026",
+       " wurde unser Büro durch ",
+       "die Beispiel Versicherung AG",
+       " beauftragt, im Objekt ",
+       "Musterweg 12, 12345 Musterstadt",
+       " eine Ortsbesichtigung durchzuführen, Materialproben zu entnehmen und diese auf Asbest ",
+       "sowie künstliche Mineralfasern (KMF) ",
+       "untersuchen zu lassen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Probenahme und Untersuchung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "08.10.2026 und 09.10.2026",
+       " wurden durch ",
+       "Herrn Messer",
+       " (Sachverständigenbüro Dr. Heinz Schiffers & Partner) im Objekt ",
+       "drei Materialproben",
+       " entnommen. ",
+       "Die Entnahmestellen sind in Tabelle 1 aufgeführt",
+       " und in den Abbildungen 1 bis 2 dokumentiert."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Proben wurden der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Asbest übergeben. ",
+       "Die Ergebnisse sind im beigefügten Prüfbericht ",
+       "Nr. AR-999-2026-000001-01",
+       " dokumentiert (Anlage 1)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "An der Dämmstoffprobe wurde",
+       " zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt."
+      ]
+     },
+     {
+      "t": "fig",
+      "label": "P1",
+      "datei": "x.jpg",
+      "caption": "Abb. 1: Wellplatte, Dach."
+     },
+     {
+      "t": "fig",
+      "label": "P3",
+      "datei": "y.jpg",
+      "caption": "Abb. 2: Dämmstoff Mineralwolle, Dachboden."
+     }
+    ]
+   },
+   {
+    "titel": "3. Befund",
+    "inhalt": [
+     {
+      "t": "tab",
+      "caption": "Tabelle 1: Entnommene Proben und Ergebnisse",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Material",
+       "Ergebnis"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "left",
+       "left"
+      ],
+      "spalten": [
+       950,
+       2080,
+       2240,
+       1850,
+       1950
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "1",
+        "999-2026-0000101",
+        "Dach",
+        "Wellplatte",
+        "Chrysotil, 5 - 20 %"
+       ],
+       [
+        "2",
+        "999-2026-0000102",
+        "EG Flur",
+        "Putz",
+        "Kein Asbest nachgewiesen"
+       ],
+       [
+        "3",
+        "999-2026-0000103",
+        "Dachboden",
+        "Dämmstoff Mineralwolle",
+        "Kein Asbest nachgewiesen"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In Probe 1 (Material: ",
+       "Wellplatte",
+       ") wurde Asbest nachgewiesen: Chrysotil, 5 - 20 %."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In den übrigen Proben wurde kein Asbest nachgewiesen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In der Dämmstoffprobe (Probe 3) wurden WHO-Fasern nachgewiesen.",
+       " Der Prüfbericht weist einen Kanzerogenitätsindex von KI = ",
+       "26",
+       " aus."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Schlussfolgerungen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Material ",
+       "„",
+       "Wellplatte",
+       "“ (Probe 1)",
+       " handelt es sich um ein asbesthaltiges Material. ",
+       "Bei allen Tätigkeiten, bei denen dieses Material bearbeitet, beschädigt oder entfernt wird, ",
+       "sind die Gefahrstoffverordnung (GefStoffV) und die TRGS 519 „Asbest: Abbruch-, Sanierungs- oder Instandhaltungsarbeiten“ einzuhalten. ",
+       "Die Arbeiten dürfen nur von Fachbetrieben mit der erforderlichen Sachkunde ausgeführt werden."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei den übrigen untersuchten Materialien handelt es sich nicht um asbesthaltige Materialien."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Nach der seit 05.06.2026 geltenden Fassung der TRGS 905 werden WHO-Fasern nicht mehr über den Kanzerogenitätsindex, ",
+       "sondern nach den Kategorien für krebserzeugende Stoffe in Anhang I der CLP-Verordnung bewertet. Der KI-Wert wird daher nur ergänzend angegeben. ",
+       "Maßgeblich für den Umgang mit dem Dämmstoff ist die TRGS 521 „Tätigkeiten mit alter Mineralwolle“."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Der Dämmstoff wurde vor 1996 eingebaut und ist nach TRGS 521 als alte Mineralwolle anzusehen. ",
+       "Bei Ausbau, Demontage und Instandhaltung sind die Schutzmaßnahmen der TRGS 521 „Tätigkeiten mit alter Mineralwolle“ einzuhalten."
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   },
+   {
+    "kuerzel": "Mes",
+    "rolle": "Der Messtechniker",
+    "name": "Max Messer"
+   }
+  ],
+  "versicherungsfall": false,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000001-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000001-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000001-01.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000001-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in FotoKit erstellen",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in PlanKit erstellen",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   }
+  ],
+  "proben": [
+   {
+    "label": "P1",
+    "nr": 1,
+    "ref": "Probe 1",
+    "labNr": "999-2026-0000101",
+    "bericht": "AR-999-2026-000001-01",
+    "stelle": "Dach",
+    "material": "Wellplatte",
+    "materialAusMatrix": false,
+    "matrix": "Faserzementprodukte (z.B. Eternit)",
+    "datum": "2026-10-08",
+    "befund": {
+     "text": "Chrysotil, 5 - 20 %",
+     "gefunden": true,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "",
+     "who": "",
+     "whoPositiv": null
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": false,
+    "ki": "",
+    "kiQuelle": "",
+    "whoNachgewiesen": false,
+    "foto": "x.jpg",
+    "stelleBericht": "Dach"
+   },
+   {
+    "label": "P2",
+    "nr": 2,
+    "ref": "Probe 2",
+    "labNr": "999-2026-0000102",
+    "bericht": "AR-999-2026-000001-01",
+    "stelle": "EG Flur",
+    "material": "Putz",
+    "materialAusMatrix": false,
+    "matrix": "Putze / Spachtelmassen",
+    "datum": "2026-10-08",
+    "befund": {
+     "text": "Kein Asbest nachgewiesen",
+     "gefunden": false,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "",
+     "who": "",
+     "whoPositiv": null
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": false,
+    "ki": "",
+    "kiQuelle": "",
+    "whoNachgewiesen": false,
+    "foto": "",
+    "stelleBericht": "EG Flur"
+   },
+   {
+    "label": "P3",
+    "nr": 3,
+    "ref": "Probe 3",
+    "labNr": "999-2026-0000103",
+    "bericht": "AR-999-2026-000001-01",
+    "stelle": "Dachboden",
+    "material": "Dämmstoff Mineralwolle",
+    "materialAusMatrix": false,
+    "matrix": "Sonstige",
+    "datum": "2026-10-09",
+    "befund": {
+     "text": "Kein Asbest nachgewiesen",
+     "gefunden": false,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "26",
+     "who": "WHO-Fasern: nachgewiesen",
+     "whoPositiv": true
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": true,
+    "ki": "26",
+    "kiQuelle": "labor",
+    "whoNachgewiesen": true,
+    "foto": "y.jpg",
+    "stelleBericht": "Dachboden"
+   }
+  ],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [
+   "Entnahmestelle nicht mit dem Prüfbericht abgeglichen (P1, P2, P3): ResultKit hat den LabelKit-Auftrag nicht gespeichert – in ResultKit die Ergebnisse erneut übernehmen.",
+   "Bilddokumentation nicht gefunden – nicht im Bericht. In FotoKit erstellen.",
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen."
+  ],
+  "hinweisAktionen": {
+   "Bilddokumentation nicht gefunden – nicht im Bericht. In FotoKit erstellen.": {
+    "app": "FotoKit",
+    "link": "../Bildumbenenner/",
+    "ziel": "bildumbenenner",
+    "was": "erstellen"
+   },
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.": {
+    "app": "PlanKit",
+    "link": "../Probenplan/",
+    "ziel": "plankit",
+    "was": "erstellen"
+   }
+  },
+  "sperren": [],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": null,
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   }
+  ],
+  "luecken": []
+ },
+ "C_zugestellt_luecken": {
+  "dateiname": "1._Mitteilung_99.9001.docx",
+  "deckblatt": {
+   "titel": "Untersuchungsbericht vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9001",
+   "betreff": [
+    "Untersuchung auf Asbest",
+    " – zugestellte Probe vom ",
+    {
+     "gap": "[Eingangsdatum]"
+    }
+   ],
+   "felder": [
+    [
+     "VN:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Risiko:",
+     [
+      "Musterweg 12",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Versicherer:",
+     [
+      "Beispiel Versicherung AG"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      "BV-2026-0001"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Untersuchungsbericht vom 27.10.2026",
+   [
+    "Untersuchung auf Asbest",
+    " – zugestellte Probe vom ",
+    {
+     "gap": "[Eingangsdatum]"
+    }
+   ],
+   [
+    "VN: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Risiko: ",
+    "Musterweg 12, 12345 Musterstadt"
+   ]
+  ],
+  "kennzeilen": [],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       {
+        "gap": "[Eingangsdatum]"
+       },
+       " wurde unserem Büro durch ",
+       "die Beispiel Versicherung AG",
+       " ",
+       "eine Materialprobe",
+       " aus dem Objekt ",
+       "Musterweg 12, 12345 Musterstadt",
+       " zugestellt, verbunden mit dem Auftrag, diese auf Asbest ",
+       "",
+       "untersuchen zu lassen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Probenahme erfolgte nicht durch unser Büro. Angaben zu Material und Entnahmestelle wurden vom Auftraggeber übernommen. ",
+       "Die Ergebnisse gelten ausschließlich für die zugestellte Probe."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Probenahme und Untersuchung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Die Probe wurde der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Asbest übergeben. ",
+       "Die Ergebnisse sind im beigefügten Prüfbericht ",
+       "Nr. AR-999-2026-000001-01",
+       " dokumentiert (Anlage 1)."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "3. Befund",
+    "inhalt": [
+     {
+      "t": "tab",
+      "caption": "Tabelle 1: Zugestellte Probe und Ergebnis",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Material",
+       "Ergebnis"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "left",
+       "left"
+      ],
+      "spalten": [
+       950,
+       2080,
+       2240,
+       1850,
+       1950
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "1",
+        "999-2026-0000101",
+        "Keller",
+        "Dachplatte",
+        "Kein Asbest nachgewiesen"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In der Probe wurde kein Asbest nachgewiesen (Tabelle 1)."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Schlussfolgerungen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei ",
+       "dem untersuchten Material handelt es sich nicht um ein asbesthaltiges Material."
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "",
+    "rolle": "Sachverständige(r)",
+    "name": {
+     "gap": "[Sachverständige(r)]"
+    }
+   }
+  ],
+  "versicherungsfall": true,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000001-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000001-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000001-01.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000001-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   }
+  ],
+  "proben": [
+   {
+    "label": "P1",
+    "nr": 1,
+    "ref": "Probe 1",
+    "labNr": "999-2026-0000101",
+    "bericht": "AR-999-2026-000001-01",
+    "stelle": "Keller",
+    "material": "Dachplatte",
+    "materialAusMatrix": false,
+    "matrix": "Faserzementprodukte (z.B. Eternit)",
+    "datum": "",
+    "befund": {
+     "text": "Kein Asbest nachgewiesen",
+     "gefunden": false,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "",
+     "who": "",
+     "whoPositiv": null
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": false,
+    "ki": "",
+    "kiQuelle": "",
+    "whoNachgewiesen": false,
+    "foto": "",
+    "stelleBericht": "Keller"
+   }
+  ],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [
+   "Entnahmestelle nicht mit dem Prüfbericht abgeglichen (P1): ResultKit hat den LabelKit-Auftrag nicht gespeichert – in ResultKit die Ergebnisse erneut übernehmen."
+  ],
+  "hinweisAktionen": {},
+  "sperren": [],
+  "probenehmerQuelle": null,
+  "versichererQuelle": {
+   "angenommen": true,
+   "wert": "Beispiel Versicherung AG",
+   "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale)."
+  },
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "versicherer",
+    "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
+    "wert": "Beispiel Versicherung AG"
+   }
+  ],
+  "luecken": [
+   "[Eingangsdatum]",
+   "[Sachverständige(r)]"
+  ]
+ },
+ "D_ENTWURF_vorlaeufig": {
+  "dateiname": "1._Mitteilung_99.9001_ENTWURF.docx",
+  "deckblatt": {
+   "titel": "Untersuchungsbericht vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9001",
+   "betreff": [
+    "Untersuchung auf Asbest"
+   ],
+   "felder": [
+    [
+     "VN:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Risiko:",
+     [
+      "Musterweg 12",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Versicherer:",
+     [
+      "Beispiel Versicherung AG"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      "BV-2026-0001"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Untersuchungsbericht vom 27.10.2026",
+   [
+    "Untersuchung auf Asbest"
+   ],
+   [
+    "VN: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Risiko: ",
+    "Musterweg 12, 12345 Musterstadt"
+   ]
+  ],
+  "kennzeilen": [
+   {
+    "art": "entwurf",
+    "text": "ENTWURF – nicht versenden"
+   },
+   {
+    "art": "vorlaeufig",
+    "text": "Vorläufig – beruht auf einem vorläufigen Prüfbericht"
+   }
+  ],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "05.10.2026",
+       " wurde unser Büro durch ",
+       "die Beispiel Versicherung AG",
+       " beauftragt, im Objekt ",
+       "Musterweg 12, 12345 Musterstadt",
+       " eine Ortsbesichtigung durchzuführen, Materialproben zu entnehmen und diese auf Asbest ",
+       "",
+       "untersuchen zu lassen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Probenahme und Untersuchung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "16.10.2026",
+       " wurde durch ",
+       "Herrn Messer",
+       " (Sachverständigenbüro Dr. Heinz Schiffers & Partner) im Objekt ",
+       "eine Materialprobe",
+       " entnommen. ",
+       "Die Entnahmestelle ist in Tabelle 1 aufgeführt",
+       "."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Probe wurde der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Asbest übergeben. ",
+       "Die Ergebnisse sind im beigefügten Prüfbericht ",
+       "Nr. AR-999-2026-000001-01",
+       " dokumentiert (Anlage 1)."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "3. Befund",
+    "inhalt": [
+     {
+      "t": "tab",
+      "caption": "Tabelle 1: Entnommene Probe und Ergebnis",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Material",
+       "Ergebnis"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "left",
+       "left"
+      ],
+      "spalten": [
+       950,
+       2080,
+       2240,
+       1850,
+       1950
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "1",
+        "999-2026-0000101",
+        "Keller",
+        "Putz",
+        "Chrysotil, 5 - 20 %"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In Probe 1 (Material: ",
+       "Putz",
+       ") wurde Asbest nachgewiesen: Chrysotil, 5 - 20 %."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Schlussfolgerungen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Material ",
+       "„",
+       "Putz",
+       "“ (Probe 1)",
+       " handelt es sich um ein asbesthaltiges Material. ",
+       "Bei allen Tätigkeiten, bei denen dieses Material bearbeitet, beschädigt oder entfernt wird, ",
+       "sind die Gefahrstoffverordnung (GefStoffV) und die TRGS 519 „Asbest: Abbruch-, Sanierungs- oder Instandhaltungsarbeiten“ einzuhalten. ",
+       "Die Arbeiten dürfen nur von Fachbetrieben mit der erforderlichen Sachkunde ausgeführt werden."
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   },
+   {
+    "kuerzel": "Mes",
+    "rolle": "Der Messtechniker",
+    "name": "Max Messer"
+   }
+  ],
+  "versicherungsfall": true,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000001-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000001-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000001-01.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000001-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000001-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in FotoKit erstellen",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in PlanKit erstellen",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   }
+  ],
+  "proben": [
+   {
+    "label": "P1",
+    "nr": 1,
+    "ref": "Probe 1",
+    "labNr": "999-2026-0000101",
+    "bericht": "AR-999-2026-000001-01",
+    "stelle": "Keller",
+    "material": "Putz",
+    "materialAusMatrix": false,
+    "matrix": "Putze / Spachtelmassen",
+    "datum": "2026-10-16",
+    "befund": {
+     "text": "Chrysotil, 5 - 20 %",
+     "gefunden": true,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "",
+     "who": "",
+     "whoPositiv": null
+    },
+    "vorlaeufig": true,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": false,
+    "ki": "",
+    "kiQuelle": "",
+    "whoNachgewiesen": false,
+    "foto": "",
+    "stelleBericht": "Keller"
+   }
+  ],
+  "offen": [
+   {
+    "label": "P2",
+    "nr": 2,
+    "stelle": "Dach",
+    "material": "Wellplatte",
+    "aus": false
+   }
+  ],
+  "storniert": [],
+  "hinweise": [
+   "Prüfbericht AR-999-2026-000001-01 ist vorläufig – der Bericht bekommt die Kopfzeile „Vorläufig“.",
+   "Entnahmestelle nicht mit dem Prüfbericht abgeglichen (P1): ResultKit hat den LabelKit-Auftrag nicht gespeichert – in ResultKit die Ergebnisse erneut übernehmen.",
+   "Bilddokumentation nicht gefunden – nicht im Bericht. In FotoKit erstellen.",
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen."
+  ],
+  "hinweisAktionen": {
+   "Bilddokumentation nicht gefunden – nicht im Bericht. In FotoKit erstellen.": {
+    "app": "FotoKit",
+    "link": "../Bildumbenenner/",
+    "ziel": "bildumbenenner",
+    "was": "erstellen"
+   },
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.": {
+    "app": "PlanKit",
+    "link": "../Probenplan/",
+    "ziel": "plankit",
+    "was": "erstellen"
+   }
+  },
+  "sperren": [
+   "P2: in LabelKit als Asbestprobe erfasst, aber noch kein Ergebnis in ResultKit – Ergebnis übernehmen oder die Probe unter „Proben“ abwählen."
+  ],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": {
+   "angenommen": true,
+   "wert": "Beispiel Versicherung AG",
+   "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale)."
+  },
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   },
+   {
+    "id": "versicherer",
+    "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
+    "wert": "Beispiel Versicherung AG"
+   }
+  ],
+  "luecken": []
+ }
+}

@@ -56,7 +56,7 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
 - **Gesperrt** (nur „Entwurf herunterladen“ mit Kopfzeile „ENTWURF – nicht versenden“ und `_ENTWURF` im Dateinamen):
   LabelKit-Datei eines anderen Projekts; LabelKit-Asbestprobe ohne Ergebnis in ResultKit (unter „Proben“ abwählbar).
 - **Hinweis:** Entnahmestelle LabelKit ↔ Prüfbericht weicht ab (Vergleich wie ResultKit `beschreibungWeichtAb`; wird nach dem
-  Gegentest mit echten Projekten zur Sperre, Schalter `ABGLEICH_SPERRT` in `bericht-text.js`); vorläufiger Prüfbericht (dazu Kopfzeile
+  Gegentest mit echten Projekten zur Sperre, Schalter `ABGLEICH_SPERRT` in `bericht-gemeinsam.js`); vorläufiger Prüfbericht (dazu Kopfzeile
   „Vorläufig“); Versicherer, Probenehmer oder Unterschrift nur angenommen – je eine Meldung mit „✓ stimmt“ (`pnQuelle`, `versOk`, `svOk`).
   Unterschrift angenommen heißt: Der Zuständige ist Messtechniker(in) oder fehlt, vorgeschlagen ist die erste Sachverständige der Liste (`svVorschlag`).
 - **Stornierte Proben** (LabelKit ab 4.49.0, `storniert: {am, kuerzel, grund}` an der Asbestprobe): keine Probe mehr – nicht in Tabelle 1, nicht im Text
@@ -94,17 +94,33 @@ nur Arten von Anlagen; welche ein Bericht erwartet, sagt das Profil (`PROFILE.as
 
 ## Texte
 
-Die Textbausteine stehen in `bericht-text.js` und folgen dem Doc „Textbausteine Asbest-Untersuchungsbericht“ (Stand 30.10.2026):
+Aufbau (ab 1.10.0, Vorbereitung für weitere Berichtsarten):
+
+| Datei | Inhalt |
+|---|---|
+| `bericht-text.js` | Fassade für `app.js` und Tests (`BerichtText`): wählt die Berichtsart nach `form.art` (leer = `asbest`), `BERICHTSARTEN` mit `bereit` |
+| `bericht-gemeinsam.js` | Bausteine jeder Berichtsart: Helfer, Lücken, Personen/Rollen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund und Abgleich, Projektsicht, Deckblatt mit/ohne Versicherung, Kopfzeilen, Auftraggeber mit Artikel, Unterschriften, Anlagen |
+| `bericht-asbest.js` | Berichtsart `asbest` – die Texte unten |
+| `bericht-brand.js` | folgt (Brandbericht, Doc „Textbausteine Brand-Sanierungsvorschlag“) |
+
+Berichtsart aus der Projektzentrale: `#projekt=<Ordner>&art=asbest|brand`. Eine Berichtsart, die noch nicht bereit ist, zeigt
+„kommt bald“ mit Knopf „Asbestbericht öffnen“ – nie einen Bericht der falschen Art. `form.art` ist eine Vorgabe und steht nicht in `_BerichtKit.json`.
+
+Die Asbest-Texte folgen dem Doc „Textbausteine Asbest-Untersuchungsbericht“ (Stand 30.10.2026):
 Veranlassung (Probenahme durch uns / zugestellte Probe mit Gewährleistungssatz), Probenahme und Untersuchung, Befund mit Tabelle 1
 (immer, auch bei einer Probe), Schlussfolgerungen (TRGS 519; KMF nach TRGS 905 Fassung 2026 und TRGS 521), Unterschriften
 (Sachverständige(r) allein oder mit Messtechniker; zugestellt: nur Sachverständige(r)), Anlagenverzeichnis je Prüfbericht.
-Die Formatierung (A4, Arial 12, 1,5-zeilig, Deckblatt mit Logo, Kopfzeilen, „Seite X von Y“) baut `bericht-docx.js`.
+Die Formatierung (A4, Arial 12, 1,5-zeilig, Deckblatt mit Logo, Kopfzeilen, „Seite X von Y“) baut `bericht-docx.js` – für jede
+Berichtsart gleich; alle Texte (auch der Titel) kommen aus dem Modell. Blöcke: Absatz `p`, Unterüberschrift `h2` (kursiv, z. B. „5.1 …“),
+Foto `fig`, Tabelle `tab` mit `spalten` (Breiten in twips, zusammen 9070; ohne Angabe gleich breit) und `ohneUmbruch` (z. B. Labor-Nr.).
 
 ## Tests
 
 ```
 node tests/text.cjs              # alle Berichtsvarianten (Textbausteine)
 node tests/anlagen.cjs           # Anlagen: erkennen, Hausreihenfolge, veraltet, mehrteilig
+node tests/berichtsart.cjs       # Berichtsart wählen, Bausteine, Word: Spaltenbreiten je Tabelle, Unterüberschrift
+node tests/asbest-golden.cjs     # Asbestbericht festgeschrieben (Beispielberichte); gewollte Änderung: --neu, Diff ansehen
 node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich wie LabelKit (falls ../labelkit daneben)
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)
 node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei (Playwright)
