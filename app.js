@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.13.0';
-const APP_DATE = '31.10.2026';
+const APP_VERSION = '1.14.0';
+const APP_DATE = '01.11.2026';
 const CHANGELOG = [
+  ['1.14.0', '01.11.2026', 'Brandbericht Schritt 5 – Freitextfelder (am Asbestbericht ändert sich nichts): Neue Karte „Brandbericht – Texte“ mit 5.1 Brandlast und Schadenbild (vorbelegt „Der Brand ereignete sich “, darüber Schadenereignis und Brandgut aus der Projektzentrale als Hilfe), 6. Sanierungsmaßnahmen – ein Feld je angehaktem Umfang (Gebäude, technische Einrichtung, Warenvorräte; mehrere Haken → 6.1, 6.2 …, einer → ohne Nummer), mit dem Einleitungssatz „Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:“ –, beim Untersuchungsbericht stattdessen „6. Schlussfolgerungen“, 7. Zusatz (optional) und 8. Zusammenfassung Sanierungsmaßnahmen (eigener Abschnitt nach 7., vor der Unterschrift; je Zeile „Bereich: Maßnahme“ mit fettem Bereich; entfällt beim Untersuchungsbericht). Schreibweise in jedem Feld: neue Zeile = Absatz, „- “ Aufzählung, „## Titel“ kursiver Zwischentitel ohne Nummer (z. B. ein Raum), **fett**, [Etwas ergänzen] bleibt eine gelbe Lücke. Fotos: unter jedem Feld „+ Foto einfügen …“ mit allen Fotos aus FotoKit – setzt „[Abb: Datei]“ ein, im Bericht mit „Abb. n:“ und der Beschreibung aus FotoKit als Bildunterschrift (eigene mit „[Abb: Datei | Text]“). Die Fotos der Asbest-/KMF-Proben kommen jetzt wie im Asbestbericht in den Brandbericht (Auswahl in der Probenliste, Abbildungen am Ende von 4.); die Abbildungen sind durch den ganzen Bericht nummeriert. 7.: Feld „Bereich“ (z. B. „im Obergeschoss“) und ein zweiter Bereich mit eigenem Gefahrenbereich (z. B. OG GB 1, EG GB 0). Leere Felder stehen als gelbe Lücke mit Anweisung im Bericht, der Zähler „Stellen noch offen“ springt zum Feld.'],
   ['1.13.0', '31.10.2026', 'Brandbericht Schritt 4 – 5. Befund, weiter als Vorschau (am Asbestbericht ändert sich nichts): Unter „5. Befund“ steht 5.1 „Brandlast und Schadenbild“ noch als gelbe Lücke (Freitext folgt), danach – nur, wozu es Ergebnisse gibt, fortlaufend nummeriert – 5.2 Korrosionsschäden (Chlorid), 5.3 Organische Schadstoffe (PAK), 5.4 Künstliche Mineralfaserwolle, 5.5 Asbest, 5.6 Sensorische Prüfung auf Brandgeruch und 5.7 Weitere Untersuchungen. Chlorid und PAK: fester Text, Spanne der Werte, Zähl-Absatz (wie viele Wischproben oberhalb/im Bereich/unterhalb von 5–10 µg/cm² bzw. über/unter der Hintergrundreferenz), höchster Wert mit Probe und Entnahmestelle, Proben ohne Nachweis über der Bestimmungsgrenze, Referenzproben („REF“/„Referenz“) und Freimessungen („F-…“) in eigenen Sätzen. Laborwerte stehen wie im Prüfbericht; eingeordnet wird mit denselben Grenzen wie in ResultKit (Chlorid in mg/m² umgerechnet). Neu unter „Brandbericht“: Haken „Ergebnistabellen“ (Chlorid/PAK als Tabelle, sonst Verweis auf den Prüfbericht; Asbest-Tabelle immer), Hintergrundreferenz PAK 10/100 µg/m² (Vorbelegung aus der Nutzung) mit optionaler Begründung. Asbest mit Methode nach VDI 3866 Blatt 5 (Anhang B aus der Nachweisgrenze des Prüfberichts), KMF wie im Asbestbericht, Brandgeruch mit Ergebnis-Satz je Probe aus den fünf Bewertungen (verdeckt/unvollständig → Lücke). Chlorid-Materialproben, Chlorid-Bohrmehl und weitere Proben aus LabelKit „Sonstige“ stehen jetzt in 4. und 5. (Werte im Satz, Bewertung als Lücke); Prüfberichte der weiteren Proben werden Anlage. Vorsichtig, wo die Daten nicht reichen: Höchstwert und Spanne werden in einer Einheit verglichen (µg/cm² bzw. µg/m²); gibt es Werte unter der Bestimmungsgrenze, heißt es „Die oberhalb der Bestimmungsgrenze ermittelten …“; der Chlorid-Abschluss A/B kommt nur aus regulär eingeordneten Proben, sonst eine Lücke; eine Probe in mehreren Prüfberichten nimmt wie ResultKit den Wert je Fläche. Hinweis, wenn in PlanKit für Chlorid/PAK eine eigene Skala oder eine andere Nutzung der Ergebniskarte eingestellt ist.'],
   ['1.12.0', '31.10.2026', 'Brandbericht Schritt 3 – Gerüst, als Vorschau (am Asbestbericht ändert sich nichts): Aus der „kommt bald“-Karte oder mit #…&art=brand&vorschau=1 öffnet BerichtKit den Brandbericht mit eigener Formularkarte „Brandbericht“ – Titel (Sanierungsvorschlag / Untersuchungsbericht), Umfang (Gebäude, technische Einrichtung, Warenvorräte), Brandort im Satz (Vorbelegung nach der Nutzung), Anwesende (eintragen / nur unser Büro / Teilnehmerliste), zweite Person vor Ort, Gefahrenbereich GB 0–3, Satz zu den übrigen Wohnungen/Bereichen. Der Bericht: Deckblatt mit „Schaden vom:“ bzw. „Brandschaden“ (Datum unbekannt) statt Betreff, Schaden-Nr. mehrzeilig; Kopfzeile „Brandschaden vom …“; 1. Veranlassung (Korrosionsabsätze nur mit Chlorid-Proben), 2. Aufgabenstellung, 3. Ortsbesichtigung (Ortstermin aus der Projektzentrale, sonst Probenahmedatum aus LabelKit), 4. Probenahme (Chlorid, PAK, Asbest mit Materialien, KMF, Brandgeruch; Zahlwort bis zwölf; gemeinsamer Prüfbericht Chlorid/PAK), 7. Arbeitsschutzmaßnahmen (GB 0 eigener Satz, TRGS 521/519), Unterschriften und Anlagen (Prüfberichte Chlorid, PAK, Asbest/KMF, Bilddokumentation, Probenplan, Brandgeruch aus der Projektzentrale – mit Stand über das Anlagen-Protokoll und Abgleich der Anlagen-Nr.). 5. Befund, 6. Sanierungsmaßnahmen/Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit gelber Lücke da (folgt in Schritt 4/5). Solange der Brandbericht nicht fertig ist, ist Speichern in „Mitteilungen“ gesperrt – „Entwurf herunterladen“ geht. Eigene Angaben der Brand-Seite stehen in _BerichtKit.json unter „brand“; das Protokoll der gespeicherten Berichte merkt sich die Berichtsart.'],
   ['1.11.0', '31.10.2026', 'Offene Stellen sichtbar (Brandbericht Schritt 2, gilt schon für den Asbestbericht): Jede gelbe Lücke in der Word-Datei bekommt einen Kommentar am Rand – „Noch ausfüllen: …“, Autor „BerichtKit“ –, in Word mit Überprüfen › Nächster Kommentar von Lücke zu Lücke; ist die Stelle gefüllt, Kommentar löschen. Gelbe Markierung und [Text] bleiben, die Projektzentrale findet bei der Übergabe dieselben Lücken wie bisher. Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb (LibreOffice kann Kommentare dort nicht laden) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar. Im Formular oben „n Stellen noch offen“: Klick springt zum Feld, das die nächste Lücke füllt; leere Pflichtfelder sind gelb umrandet; in den Hinweisen steht zu jeder Lücke, wo sie zu füllen ist (z. B. „Personen › Labor“, „in der Projektzentrale eintragen“). Zähler und Rückfrage vor dem Speichern zählen auch, was erst die Word-Datei als Lücke einsetzt: fehlende Projektnummer und ein Foto, dessen Datei sich nicht lesen lässt ([Foto fehlt: …]).'],
@@ -578,7 +579,8 @@ function formLokal() { try { localStorage.setItem(S.formKey, JSON.stringify({ v:
 /* ---------- Modell ---------- */
 function modell(ueber) {
   const da = S.anlagenVorhanden, form = { ...S.form, ...(ueber || {}), anlagenExtra: (S.form.anlagenExtra || []).map(x => ({ ...x, fehlt: !!da && !da.has(x.pfad) })) };
-  return T.bericht({ pj: S.pj, ordner: S.ordner, lk: S.lk, erg: S.erg, cfg: S.cfg, mitarbeiter: S.mitarbeiter, fotos: S.fotoListe, feldbogen: S.feldbogen, anlagen: S.anlagen, planSkalen: S.planSkalen, form });
+  return T.bericht({ pj: S.pj, ordner: S.ordner, lk: S.lk, erg: S.erg, cfg: S.cfg, mitarbeiter: S.mitarbeiter, fotos: S.fotoListe, feldbogen: S.feldbogen, anlagen: S.anlagen, planSkalen: S.planSkalen,
+    fotoKit: S.fk && S.fk.bilder && typeof S.fk.bilder === 'object' ? S.fk.bilder : null, form });
 }
 
 /* ---------- Anzeige ---------- */
@@ -597,7 +599,7 @@ function render() {
   $('fDatum').value = f.datum || ''; $('fMitteilung').value = f.mitteilung || 1;
   document.querySelectorAll('input[name=variante]').forEach(r => { r.checked = r.value === (f.variante || 'eigen'); });
   const brand = !!m.brand, zug = !brand && f.variante === 'zugestellt';   // Brandbericht: immer eigene Probenahme
-  $('zeileVariante').hidden = brand; $('karteBrand').hidden = !brand; if (brand) brandZeigen(m, f);
+  $('zeileVariante').hidden = brand; $('karteBrand').hidden = $('karteBrandTexte').hidden = !brand; if (brand) brandZeigen(m, f);
   $('zeileEingang').hidden = !zug; $('fEingang').value = f.eingangsdatum || '';
   $('fAuftrag').value = f.auftragsdatum || ''; $('fAuftrag').closest('.feld').hidden = zug;
   $('qAuftrag').textContent = P.auftragsdatum ? (f.auftragsdatum === P.auftragsdatum ? 'aus der Projektzentrale' : `Projektzentrale: ${T.datumDE(P.auftragsdatum)}`) : 'in der Projektzentrale nicht eingetragen';
@@ -641,7 +643,7 @@ function render() {
         unter += p.kmf.ki ? `<span>KI = ${esc(p.kmf.ki)} <span class="klein">(Labor)</span></span>`
           : `<label>KI <input type="text" data-art="ki" data-l="${esc(p.label)}" value="${esc((f.ki || {})[p.label] || '')}" placeholder="aus PDF" title="Steht nicht in den Labordaten – genau wie im Prüfbericht eintragen"></label>`;
       }
-      if (!brand) unter += `<label>Foto <select data-art="foto" data-l="${esc(p.label)}"><option value="">kein Foto</option>${fotos.map(o => `<option value="${esc(o.datei)}" ${o.datei === b.foto ? 'selected' : ''}>${esc(o.datei)}</option>`).join('')}</select></label>`;
+      unter += `<label>Foto <select data-art="foto" data-l="${esc(p.label)}"><option value="">kein Foto</option>${fotos.map(o => `<option value="${esc(o.datei)}" ${o.datei === b.foto ? 'selected' : ''}>${esc(o.datei)}</option>`).join('')}</select></label>`;
     }
     return `<tr class="${an ? '' : 'aus'}"><td><input type="checkbox" data-art="aus" data-l="${esc(p.label)}" ${an ? 'checked' : ''} title="Im Bericht"></td>
       <td style="white-space:nowrap">${esc(p.ref || p.label)}<div class="klein" style="font-size:10.5px">${esc(p.labNr)}</div></td>
@@ -696,7 +698,10 @@ function brandZeigen(m, f) {
   $('qbReferenz').textContent = mb.referenzVorgabe ? `Vorbelegung aus der Nutzung „${mb.nutzung}“: ca. ${mb.referenzVorgabe} µg/m² – anders gewählt? Dann Begründung ergänzen`
     : `Nutzung ${mb.nutzung ? `„${mb.nutzung}“ ohne Zuordnung` : 'in der Projektzentrale nicht eingetragen'} – bitte wählen`;
   $('fbGb').value = b.gb || '';
-  $('zeileUebrige').hidden = !b.gb || b.gb === '0'; $('fbUebrige').checked = !!b.uebrige;
+  $('zeileUebrige').hidden = !((b.gb && b.gb !== '0') || (b.gb2 && b.gb2 !== '0')); $('fbUebrige').checked = !!b.uebrige;
+  wertOhneFokus($('fbBereich'), b.bereich); wertOhneFokus($('fbBereich2'), b.bereich2); $('fbGb2').value = b.gb2 || '';
+  $('qbBereich').innerHTML = `„${mb.titel === 'Untersuchungsbericht' ? 'Bei Sanierungsarbeiten' : 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen'} <b>…</b> sind …“ – leer = für alle untersuchten Bereiche`;
+  brandTexteZeigen(m, f);
   $('lbUebrige').textContent = `Satz „in den übrigen ${mb.nutzung === 'Wohnen' ? 'Wohnungen' : 'Bereichen'} keine besonderen Maßnahmen“ in 7.`;
   const proben = [z.chlorid && `${z.chlorid} Chlorid`, z.chloridAndere && `${z.chloridAndere} Chlorid (Material)`, z.bohrmehl && `${z.bohrmehl} Chlorid-Bohrmehl`,
     z.pak && `${z.pak} PAK (Wischproben)`, z.pakMaterial && `${z.pakMaterial} PAK (Material)`, z.asbest && `${z.asbest} Asbest`, z.kmf && `${z.kmf} KMF`,
@@ -705,8 +710,44 @@ function brandZeigen(m, f) {
     mb.schadendatum === 'unbekannt' ? 'Schadendatum: nicht bekannt' : mb.schadendatum === 'leer' ? 'Schadendatum: in der Projektzentrale nicht eingetragen' : '',
     mb.schadenereignis && `Schadenereignis: ${mb.schadenereignis}`, mb.brandgut && `Brandgut: ${mb.brandgut}`].filter(Boolean).join(' · ') + ' (Projektzentrale/LabelKit, nur zur Hilfe)';
   const art = T.BERICHTSARTEN.find(a => a.art === 'brand');
-  $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau: 5.1, 6. und 8. stehen als Lücke da. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht. ';
+  $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht. ';
   $('brandVorschau').hidden = !!(art && art.bereit);
+}
+/** Wert setzen, aber nicht in ein Feld, in dem gerade getippt wird (sonst springt der Cursor bei jedem Neuzeichnen) */
+function wertOhneFokus(el, v) { if (el && document.activeElement !== el) el.value = v == null ? '' : v; }
+/** Freitextfelder des Brandberichts: 5.1, 6.1–6.3 nach den Umfang-Haken bzw. Schlussfolgerungen, 7. Zusatz, 8. Zusammenfassung;
+    dazu je Feld die Fotoauswahl aus FotoKit („[Abb: Datei]“ an der Schreibmarke einfügen) */
+function brandTexteZeigen(m, f) {
+  const b = f.brand || {}, mb = m.brand || {}, untersuchung = mb.titel === 'Untersuchungsbericht';
+  for (const [id, feld] of BRAND_TEXTE) wertOhneFokus($(id), b[feld]);
+  $('qbSchadenbild').textContent = [mb.schadenereignis && `Schadenereignis: ${mb.schadenereignis}`, mb.brandgut && `Brandgut: ${mb.brandgut}`].filter(Boolean).join(' · ')
+    + (mb.schadenereignis || mb.brandgut ? ' (Projektzentrale, nur zur Hilfe)' : 'Schadenereignis und Brandgut sind in der Projektzentrale nicht eingetragen');
+  // 6.: je angehaktem Umfang ein Feld; mehrere → 6.1, 6.2 … (fortlaufend wie im Bericht), einer → ohne Nummer
+  const an = (T.brandSanierung || []).filter(([k]) => (b.umfang || {})[k]);
+  $('zeilenSan').hidden = untersuchung; $('zeileSchluss').hidden = !untersuchung; $('zeileZusammenfassung').hidden = untersuchung;
+  for (const [k, , titel] of T.brandSanierung || []) {
+    const i = an.findIndex(x => x[0] === k), zeile = $('zeileSan' + SAN_ID[k]);
+    zeile.hidden = i < 0;
+    $('lbSan' + SAN_ID[k]).textContent = `6.${an.length > 1 ? i + 1 : ''} Sanierungsmaßnahmen ${titel}`;
+  }
+  $('qbSan').textContent = an.length ? 'Einleitungssatz „Auf Grundlage der vorliegenden Befunde … empfohlen:“ setzt BerichtKit davor.' : 'Unter „Umfang“ anhaken, wofür Sanierungsmaßnahmen beschrieben werden (Gebäude, technische Einrichtung, Warenvorräte).';
+  // Fotoauswahl: alle Fotos aus FotoKit (nicht aussortiert) in FotoKit-Reihenfolge, mit Beschreibung
+  const bilder = (S.fk && S.fk.bilder) || {}, reihe = [...(Array.isArray(S.fk && S.fk.reihenfolge) ? S.fk.reihenfolge : []), ...Object.keys(bilder)]
+    .filter((x, i, a) => a.indexOf(x) === i && bilder[x] && !bilder[x].aussortiert);
+  const opt = `<option value="">${reihe.length ? '+ Foto einfügen …' : 'keine Fotos in FotoKit'}</option>` + reihe.map(d => {
+    const be = String(bilder[d].beschreibung || '').trim(); return `<option value="${esc(d)}">${esc(d)}${be ? ' – ' + esc(be.length > 60 ? be.slice(0, 57) + '…' : be) : ' (ohne Beschreibung)'}</option>`; }).join('');
+  document.querySelectorAll('select.foto-einfuegen').forEach(sel => { if (sel.dataset.opt !== opt) { sel.innerHTML = opt; sel.dataset.opt = opt; } sel.value = ''; sel.disabled = !reihe.length; });
+}
+const BRAND_TEXTE = [['fbSchadenbild', 'schadenbild'], ['fbSanGebaeude', 'sanGebaeude'], ['fbSanTechnik', 'sanTechnik'], ['fbSanWaren', 'sanWaren'],
+  ['fbSchluss', 'schlussfolgerungen'], ['fbZusatz', 'zusatz'], ['fbZusammenfassung', 'zusammenfassung']];
+const SAN_ID = { gebaeude: 'Gebaeude', technik: 'Technik', waren: 'Waren' };
+/** „[Abb: Datei]“ als eigene Zeile an der Schreibmarke des Feldes einfügen */
+function abbEinfuegen(ta, datei) {
+  const v = ta.value, pos = Math.min(ta.selectionStart == null ? v.length : ta.selectionStart, v.length);
+  const vor = v.slice(0, pos), nach = v.slice(pos), zeile = `[Abb: ${datei}]`;
+  const neu = vor + (vor && !vor.endsWith('\n') ? '\n' : '') + zeile + (nach && !nach.startsWith('\n') ? '\n' : '') + nach;
+  ta.value = neu; const ende = neu.length - nach.length; ta.focus(); ta.setSelectionRange(ende, ende);
+  return neu;
 }
 /* Offene Stellen (Lücken im Bericht): Zähler oben „n Stellen noch offen“, leere Pflichtfelder gelb umrandet, Klick auf den
    Zähler springt zum Feld der ersten Stelle – jeder weitere Klick zur nächsten. Welche Lücke welches Feld füllt, steht nur in
@@ -787,7 +828,7 @@ function anlagenZeigen(m) {
   $('anlagenInfo').textContent = `${(m.anlagenListe || []).length} im Bericht`;
   $('btnAnlageDazu').hidden = !window.showOpenFilePicker;
 }
-function runsHtml(r) { return (Array.isArray(r) ? r : [r]).map(x => x && typeof x === 'object' ? `<span class="gap">${esc(x.gap)}</span>` : esc(x)).join(''); }
+function runsHtml(r) { return (Array.isArray(r) ? r : [r]).map(x => x && typeof x === 'object' ? (x.gap != null ? `<span class="gap">${esc(x.gap)}</span>` : `<b>${esc(x.b)}</b>`) : esc(x)).join(''); }
 function vorschau(m) {
   const d = m.deckblatt;
   const kenn = (m.kennzeilen || []).length ? `<p class="kenn">${m.kennzeilen.map(k => `<span class="${esc(k.art)}">${esc(k.text)}</span>`).join(' · ')}</p>` : '';
@@ -800,12 +841,16 @@ function vorschau(m) {
   const teile = [`${kenn}<div class="kopfzeilen">${m.kopf.map(runsHtml).join('<br>')}</div>`];
   for (const a of m.abschnitte) {
     teile.push(`<h3>${esc(a.titel)}</h3>`);
-    for (const x of a.inhalt) {
-      if (x.t === 'p') teile.push(`<p>${runsHtml(x.runs)}</p>`);
+    a.inhalt.forEach((x, i) => {
+      if (x.t === 'li') {   // Aufzählung (Freitext „- “): aufeinanderfolgende Punkte in einer Liste
+        if ((a.inhalt[i - 1] || {}).t !== 'li') teile.push('<ul class="punkte">');
+        teile.push(`<li>${runsHtml(x.runs)}</li>`);
+        if ((a.inhalt[i + 1] || {}).t !== 'li') teile.push('</ul>');
+      } else if (x.t === 'p') teile.push(`<p>${runsHtml(x.runs)}</p>`);
       else if (x.t === 'h2') teile.push(`<p><i>${runsHtml(x.runs)}</i></p>`);
-      else if (x.t === 'fig') teile.push(`<figure>${S.thumbs[x.datei] ? `<img src="${S.thumbs[x.datei]}" alt="">` : `<span class="ersatz" data-thumb="${esc(x.datei)}">${esc(x.datei)}</span>`}<figcaption>${esc(x.caption)}</figcaption></figure>`);
+      else if (x.t === 'fig') teile.push(`<figure>${S.thumbs[x.datei] ? `<img src="${S.thumbs[x.datei]}" alt="">` : `<span class="ersatz" data-thumb="${esc(x.datei)}">${esc(x.datei)}</span>`}<figcaption>${runsHtml(x.caption)}</figcaption></figure>`);
       else if (x.t === 'tab') teile.push(`<div class="tabtitel">${esc(x.caption)}</div><table><tr>${x.kopf.map((k, i) => `<th${(x.ausrichtung || [])[i] === 'center' ? ' style="text-align:center"' : ''}>${esc(k)}</th>`).join('')}</tr>${x.zeilen.map(z => `<tr>${z.map((c, i) => `<td${(x.ausrichtung || [])[i] === 'center' ? ' style="text-align:center"' : ''}>${esc(c || '–')}</td>`).join('')}</tr>`).join('')}</table>`);
-    }
+    });
   }
   teile.push(`<p style="margin-top:20px">${esc(m.ortDatum)}</p><div class="sig">${m.unterschriften.map(u => {
     const b = u.kuerzel && S.sig[sigKey(u.kuerzel)];
@@ -857,7 +902,10 @@ async function bilderLaden(m) {
   const bilder = { ...(await logoLaden()), sig: {}, fotos: {} };
   for (const u of m.unterschriften) { const b = u.kuerzel && S.sig[sigKey(u.kuerzel)]; if (b) bilder.sig[u.kuerzel] = b; }
   const fehlen = [];
-  for (const p of m.proben) if (p.foto) { try { bilder.fotos[p.label] = await fotoBytes(p.foto); } catch (e) { fehlen.push(p.foto); } }
+  // Alle Fotos im Bericht: Asbest-/KMF-Proben (label = Probe) und „[Abb: Datei]“ aus den Freitextfeldern (label = foto:Datei)
+  for (const a of m.abschnitte) for (const x of a.inhalt) if (x.t === 'fig' && !(x.label in bilder.fotos)) {
+    try { bilder.fotos[x.label] = await fotoBytes(x.datei); } catch (e) { bilder.fotos[x.label] = null; if (!fehlen.includes(x.datei)) fehlen.push(x.datei); }
+  }
   return { bilder, fehlen };
 }
 async function wordBlob(m, geladen) {
@@ -1089,6 +1137,18 @@ function verbinden() {
   $('fbReferenzGrund').onchange = e => setzeBrand({ referenzGrund: e.target.value.trim() });
   $('fbGb').onchange = e => setzeBrand({ gb: e.target.value });
   $('fbUebrige').onchange = e => setzeBrand({ uebrige: e.target.checked });
+  $('fbBereich').onchange = e => setzeBrand({ bereich: e.target.value.trim() });
+  $('fbBereich2').onchange = e => setzeBrand({ bereich2: e.target.value.trim() });
+  $('fbGb2').onchange = e => setzeBrand({ gb2: e.target.value });
+  // Freitextfelder: beim Tippen merken und die Vorschau nachziehen (ohne das Formular neu zu zeichnen – der Cursor bleibt), beim Verlassen alles neu
+  const brandLive = (feld, v) => { S.form.brand = { ...(S.form.brand || {}), [feld]: v }; formMerken(['brand', feld]); const m = modell(); vorschau(m.sperren.length ? T.alsEntwurf(m) : m);
+    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form))); };
+  for (const [id, feld] of BRAND_TEXTE) { $(id).oninput = e => brandLive(feld, e.target.value); $(id).onchange = () => render(); }
+  document.querySelectorAll('select.foto-einfuegen').forEach(sel => { sel.onchange = () => {
+    const datei = sel.value, ta = $(sel.dataset.fuer), feld = (BRAND_TEXTE.find(([id]) => id === sel.dataset.fuer) || [])[1];
+    sel.value = ''; if (!datei || !ta || !feld) return;
+    setzeBrand({ [feld]: abbEinfuegen(ta, datei) }); ta.focus();
+  }; });
   $('probenListe').addEventListener('change', e => {
     const el = e.target, art = el.dataset.art, l = el.dataset.l; if (!art) return;
     const map = S.form[art] = { ...(S.form[art] || {}) };

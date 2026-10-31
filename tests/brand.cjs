@@ -1,4 +1,4 @@
-// Brandbericht, Schritt 3 (Gerüst) und 4 (Befund 5.2–5.7) – node tests/brand.cjs: Regeln aus dem Doc „Textbausteine Brand-Sanierungsvorschlag“ und den
+// Brandbericht, Schritt 3 (Gerüst), 4 (Befund 5.2–5.7) und 5 (Freitext, Fotos) – node tests/brand.cjs: Regeln aus dem Doc „Textbausteine Brand-Sanierungsvorschlag“ und den
 // Entscheidungen in „berichtkit-brand-befunde-mitteilungen.md“ an erfundenen Daten (tests/daten/brand.cjs). Der ganze Bericht ist
 // zusätzlich im Golden-Test festgeschrieben (tests/brand-golden.cjs); hier stehen die einzelnen Regeln, damit klar ist, was gewollt ist.
 const assert = require('node:assert/strict');
@@ -95,7 +95,7 @@ fall('4. Probenahme: Absätze je Gruppe, Zahlwort bis zwölf, Einzahl, gemeinsam
   assert.equal(t[1], 'Zur Messung der PAK-Belastung wurden vier Wischproben entnommen und auf die 16 Einzelkomponenten nach EPA (Environmental Protection Agency) untersucht; zusätzlich wird der Summenwert angegeben. Zusätzlich wurde eine Materialprobe entnommen und auf PAK untersucht. Die Analysenergebnisse sind dem Prüfbericht Nr. AR-999-2026-000101-01 zu entnehmen (Anlage 1).');
   // Asbest vor KMF (Abweichung von der Doc-Reihenfolge: die Dämmstoffprobe ist erst „entnommen“, dann „zusätzlich untersucht“)
   assert.equal(t[2], 'Zusätzlich wurden drei Materialproben (Fliesenkleber, Putz, Dämmstoff Mineralwolle) entnommen und der Eurofins Beispiel-Labor GmbH zur Untersuchung auf Asbest übergeben. Die Ergebnisse sind im Prüfbericht Nr. AR-999-2026-000102-01 dokumentiert (Anlage 2).');
-  assert.equal(t[3], 'An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.');
+  assert.equal(t[3], 'An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt. Probe 9 ist in Abbildung 1 dargestellt.');   // Foto ab 1.14.0
   assert.equal(t[4], 'Zusätzlich wurden zwei Materialproben entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage 5 dargestellt.');
   assert.equal(t[5], 'Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt.');
   const l = text(modell(F.BR3_Luecken), 4).split('\n');
@@ -153,24 +153,117 @@ fall('Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF, dann Bilddokumentation, P
   assert.match(text(an, 5), /Die Einzelbewertungen der Prüfpersonen sind in Anlage 5 dargestellt\./);
 });
 
-fall('5.1, 6., 8.: Lücke (Freitext folgt in Schritt 5); „Untersuchungsbericht“: 6. Schlussfolgerungen, ohne 8.', () => {
-  const m = modell(F.BR1_voll_Versicherung);
-  assert.deepEqual(abschnitt(m, 5).inhalt.slice(0, 2), [{ t: 'h2', runs: ['5.1 Brandlast und Schadenbild'] }, { t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] }]); assert.equal(text(m, 6), '[Sanierungsmaßnahmen ergänzen]'); assert.equal(text(m, 8), '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]');
+fall('Freitext-Schreibweise (bericht-gemeinsam.js freitext): Absätze, „- “ Aufzählung, „## Titel“, [Abb: Datei], **fett**, [Lücke]', () => {
+  const G = require('../bericht-gemeinsam.js'), hinweise = [], abb = { n: 4 };
+  const fk = { 'a.jpg': { beschreibung: 'EG, Küche' }, 'b.jpg': { beschreibung: '' }, 'c.jpg': { beschreibung: 'OG', aussortiert: true } };
+  const b = G.freitext('Erster Absatz mit **fett**.\r\n\n  ## Küche  \n- Punkt eins\n– Punkt zwei\n• drei\n* vier\n[Abb: a.jpg]\n[Abb: b.jpg]\n[abb.: c.jpg | Eigene Unterschrift]\n[Abb: x.jpg]\nText mit [Wert eintragen] und [klein] Klammern.\n##\n-',
+    { abb, fotoKit: fk, hinweise, feld: '5.1' });
+  assert.deepEqual(b.map(x => x.t), ['p', 'h2', 'li', 'li', 'li', 'li', 'fig', 'fig', 'fig', 'fig', 'p', 'p']);
+  assert.deepEqual(b[0].runs, ['Erster Absatz mit ', { b: 'fett' }, '.']);
+  assert.deepEqual(b[1], { t: 'h2', stufe: 2, runs: ['Küche'] }, '„## Titel“ = Zwischentitel ohne Nummer');
+  assert.deepEqual(b.slice(2, 6).map(x => T.text(x.runs)), ['Punkt eins', 'Punkt zwei', 'drei', 'vier']);
+  assert.deepEqual(b[6], { t: 'fig', label: 'foto:a.jpg', datei: 'a.jpg', caption: 'Abb. 5: EG, Küche' }, 'Abbildungen zählen weiter (abb.n)');
+  assert.deepEqual(b[7].caption, ['Abb. 6: ', { gap: '[Bildunterschrift ergänzen]' }], 'ohne Beschreibung → Lücke');
+  assert.equal(b[8].caption, 'Abb. 7: Eigene Unterschrift', '„[Abb.: Datei | Text]“ – eigene Bildunterschrift, auch kleingeschrieben');
+  assert.deepEqual(b[9].caption, ['Abb. 8: ', { gap: '[Bildunterschrift ergänzen]' }]);
+  assert.equal(abb.n, 8);
+  assert.deepEqual(b[10].runs, ['Text mit ', { gap: '[Wert eintragen]' }, ' und [klein] Klammern.'], 'nur [Großbuchstabe …] wird Lücke (Muster der Projektzentrale)');
+  assert.deepEqual(b[11].runs, ['-'], 'ein einzelnes „-“ ist kein leerer Punkt');
+  assert.deepEqual(hinweise, [
+    'Foto „b.jpg“ (5.1): keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: b.jpg | Bildunterschrift]“ schreiben.',
+    'Foto „c.jpg“ (5.1) ist in FotoKit aussortiert – trotzdem im Bericht.',
+    'Foto „x.jpg“ (5.1) ist in FotoKit nicht bekannt – Dateinamen prüfen.',
+    'Foto „x.jpg“ (5.1): keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: x.jpg | Bildunterschrift]“ schreiben.']);
+  assert.deepEqual(G.freitext('  \n\n'), [], 'leer → keine Blöcke (Aufrufer setzt die Lücke)');
+  // 8. Zusammenfassung: jede Zeile Aufzählung, „Bereich: Maßnahme“ → fetter Bereich; kein Label bei Satz vor dem Doppelpunkt
+  const z = G.freitext('## Gebäude\nKüche: Rückbau\n- Flur: Reinigung\n**Bad:** Fliesen\nNur Text\nDas ist ein Satz. Danach: nichts\nUhrzeit 10:30 Uhr', { label: true });
+  assert.deepEqual(z.map(x => [x.t, x.runs]), [['h2', ['Gebäude']], ['li', [{ b: 'Küche:' }, ' ', 'Rückbau']], ['li', [{ b: 'Flur:' }, ' ', 'Reinigung']],
+    ['li', [{ b: 'Bad:' }, ' Fliesen']], ['li', ['Nur Text']], ['li', ['Das ist ein Satz. Danach: nichts']], ['li', ['Uhrzeit 10:30 Uhr']]]);
+});
+
+fall('5.1 Brandlast und Schadenbild: Freitext mit Fotos; leer oder nur die Vorbelegung „Der Brand ereignete sich “ → Lücke', () => {
+  assert.equal(BR.vorgabe({}).schadenbild, 'Der Brand ereignete sich ');
+  const m = modell(F.BR1_voll_Versicherung), b = abschnitt(m, 5).inhalt;
+  assert.deepEqual(b.slice(0, 9).map(x => x.t), ['h2', 'p', 'h2', 'p', 'fig', 'h2', 'li', 'li', 'h2']);
+  assert.equal(T.text(b[8].runs), '5.2 Korrosionsschäden', 'danach weiter mit 5.2');
+  assert.equal(T.text(b[1].runs), 'Der Brand ereignete sich in der Küche im Erdgeschoss. Brandlast waren im Wesentlichen die Einbauküche und Kunststoffe der Elektrogeräte.');
+  assert.deepEqual(b[4], { t: 'fig', label: 'foto:IMG_0101.jpg', datei: 'IMG_0101.jpg', caption: 'Abb. 2: EG, Küche (Brandraum)' }, 'nach dem Asbestfoto (Abb. 1) in 4.');
+  assert.ok(m.luecken.includes('[Zustand des Bodenbelags prüfen]'));
+  for (const sb of ['Der Brand ereignete sich ', 'Der Brand ereignete sich', '  ', '']) {
+    const l = modell(mitForm(F.BR1_voll_Versicherung, { schadenbild: sb }));
+    assert.deepEqual(abschnitt(l, 5).inhalt[1], { t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] }, JSON.stringify(sb));
+  }
+  assert.ok(modell(F.BR2_nur_PAK_ohne_Versicherung_GB0).luecken.includes('[Brandlast und Schadenbild beschreiben]'), 'ohne Eingabe = Vorbelegung → Lücke');
+});
+
+fall('6. Sanierungsmaßnahmen: Einleitungssatz (Befunde-Doc), 6.1–6.3 nach den Umfang-Haken fortlaufend, ein Haken ohne Nummer; Untersuchungsbericht: Schlussfolgerungen', () => {
+  const EINL = 'Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:';
+  const m = modell(F.BR1_voll_Versicherung), b = abschnitt(m, 6).inhalt;
+  assert.equal(T.text(b[0].runs), EINL);
+  assert.deepEqual(b.filter(x => x.t === 'h2' && !x.stufe).map(x => T.text(x.runs)), ['6.1 Gebäude', '6.2 Technische Einrichtung']);
+  assert.deepEqual(b.filter(x => x.stufe === 2).map(x => T.text(x.runs)), ['Küche (Brandraum)', 'Flur'], 'Zwischentitel (Räume) ohne Nummer');
+  assert.deepEqual(b.find(x => x.t === 'fig').caption, 'Abb. 3: EG, Flur nach der Grobreinigung', 'eigene Bildunterschrift');
+  assert.deepEqual(b.at(-1), { t: 'p', runs: [{ gap: '[Sanierungsmaßnahmen technische Einrichtung beschreiben]' }] }, 'leeres Feld → Lücke mit Anweisung');
+  // Gebäude + Warenvorräte: 6.1 Gebäude, 6.2 Warenvorräte (Titel fest, Nummern fortlaufend)
+  const gw = abschnitt(modell(mitForm(F.BR1_voll_Versicherung, { umfang: { gebaeude: true, technik: false, waren: true }, sanWaren: 'Entsorgung.' })), 6).inhalt;
+  assert.deepEqual(gw.filter(x => x.t === 'h2' && !x.stufe).map(x => T.text(x.runs)), ['6.1 Gebäude', '6.2 Warenvorräte']);
+  // ein Haken: kein Unterabschnitt, Freitext direkt unter dem Satz
+  const eins = modell(mitForm(F.BR1_voll_Versicherung, { umfang: { gebaeude: true, technik: false, waren: false }, sanTechnik: 'steht nicht drin' }));
+  assert.ok(!abschnitt(eins, 6).inhalt.some(x => x.t === 'h2' && !x.stufe)); assert.equal(T.text(abschnitt(eins, 6).inhalt[0].runs), EINL);
+  assert.equal(abschnitt(eins, 6).inhalt[1].t, 'h2'); assert.equal(abschnitt(eins, 6).inhalt[1].stufe, 2, 'erste Zeile des Freitexts („## Küche“)');
+  assert.ok(eins.hinweise.includes('Sanierungsmaßnahmen Technische Einrichtung: Text eingetragen, aber „Technische Einrichtung“ ist unter Umfang nicht angehakt – steht nicht im Bericht.'));
+  // kein Haken: Lücke (Umfang fehlt auch in 2.)
+  assert.equal(text(modell(F.BR3_Luecken), 6), EINL + '\n[Sanierungsmaßnahmen ergänzen]');
+  assert.deepEqual(L.zuordnen(['[Sanierungsmaßnahmen ergänzen]'], 'brand')[0].ziel, '#fbUmfang');
+  // drei Haken, 6.1 leer
+  assert.equal(text(modell(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF), 6), [EINL, '6.1 Gebäude', '[Sanierungsmaßnahmen Gebäude beschreiben]', '6.2 Technische Einrichtung',
+    'Reinigung der Regalanlage.', '6.3 Warenvorräte', 'Regal 3', 'Entsorgung der verrußten Kartonagen', ''].join('\n'));
+  // Untersuchungsbericht: „6. Schlussfolgerungen“, ohne Einleitungssatz, ohne 6.x, ohne 8.
   const u = modell(F.BR2_nur_PAK_ohne_Versicherung_GB0);
-  assert.equal(abschnitt(u, 6).titel, '6. Schlussfolgerungen'); assert.equal(text(u, 6), '[Schlussfolgerungen ergänzen]'); assert.equal(abschnitt(u, 8), undefined);
+  assert.equal(abschnitt(u, 6).titel, '6. Schlussfolgerungen'); assert.equal(abschnitt(u, 8), undefined);
+  assert.deepEqual(abschnitt(u, 6).inhalt.map(x => [x.t, T.text(x.runs)]), [['p', 'Die PAK-Belastung liegt im Bereich der Hintergrundbelastung.'], ['li', 'Eine Sanierung ist aus chemischer Sicht nicht erforderlich.']]);
+  assert.equal(text(modell(F.BR5_Gewerbe_Bohrmehl_Tabellen), 6), '[Schlussfolgerungen ergänzen]');
+  assert.equal(text(modell(mitForm(F.BR2_nur_PAK_ohne_Versicherung_GB0, { sanGebaeude: 'x' })), 6).includes('x'), false, 'Sanierungsfelder gelten nur beim Sanierungsvorschlag');
+});
+
+fall('8. Zusammenfassung Sanierungsmaßnahmen: eigener Abschnitt nach 7., vor der Unterschrift; „Bereich: Maßnahme“ fett, „## Titel“; leer → Lücke', () => {
+  const m = modell(F.BR1_voll_Versicherung);
+  assert.deepEqual(m.abschnitte.map(a => a.titel).slice(-2), ['7. Arbeitsschutzmaßnahmen', '8. Zusammenfassung Sanierungsmaßnahmen']);
+  assert.deepEqual(abschnitt(m, 8).inhalt, [{ t: 'h2', stufe: 2, runs: ['Gebäude'] }, { t: 'li', runs: [{ b: 'Küche (Brandraum):' }, ' ', 'Rückbau der Deckenverkleidung, Feinreinigung, Freimessung'] },
+    { t: 'li', runs: [{ b: 'Flur:' }, ' ', 'Feinreinigung'] }, { t: 'h2', stufe: 2, runs: ['Technische Einrichtung'] },
+    { t: 'li', runs: [{ b: 'Elektroinstallation Küche:' }, ' ', 'Prüfung durch einen Elektrofachbetrieb'] }]);
+  assert.equal(text(modell(F.BR3_Luecken), 8), '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]');
+  assert.equal(abschnitt(modell(F.BR5_Gewerbe_Bohrmehl_Tabellen), 8), undefined, 'Untersuchungsbericht ohne 8.');
+});
+
+fall('Fotos: Asbest-/KMF-Proben wie im Asbestbericht (in 4., erstes FotoKit-Foto oder eigene Wahl), dann die Fotos der Freitextfelder – Abb. fortlaufend', () => {
+  const m = modell(F.BR1_voll_Versicherung), pr = abschnitt(m, 4).inhalt;
+  assert.deepEqual(pr.at(-1), { t: 'fig', label: 'P9', datei: 'P9_Fliesenkleber_Kueche.jpg', caption: 'Abb. 1: Fliesenkleber, EG Küche Boden.' });
+  assert.match(text(m, 4), /bestimmt\. Probe 9 ist in Abbildung 1 dargestellt\.\n/);
+  assert.deepEqual(m.abschnitte.flatMap(a => a.inhalt).filter(x => x.t === 'fig').map(x => x.caption.slice(0, 7)), ['Abb. 1:', 'Abb. 2:', 'Abb. 3:']);
+  // alle Asbest/KMF-Proben mit Foto: „Die Materialproben sind in den Abbildungen 1 bis 3 dargestellt.“
+  const alle = modell(mitForm({ ...F.BR1_voll_Versicherung, fotos: { P9: [{ datei: 'a.jpg' }], P10: [{ datei: 'b.jpg' }], P11: [{ datei: 'c.jpg' }] } }, { schadenbild: '', sanGebaeude: '' }));
+  assert.match(text(alle, 4), /Die Materialproben sind in den Abbildungen 1 bis 3 dargestellt\./);
+  // eigene Wahl in der Probenliste („kein Foto“) gilt wie im Asbestbericht
+  const kein = modell(mitForm(F.BR1_voll_Versicherung, {}, { foto: { P9: '' } }));
+  assert.ok(!abschnitt(kein, 4).inhalt.some(x => x.t === 'fig')); assert.equal(abschnitt(kein, 5).inhalt.find(x => x.t === 'fig').caption, 'Abb. 1: EG, Küche (Brandraum)');
+  const zwei = modell(mitForm({ ...F.BR1_voll_Versicherung, fotos: { P9: [{ datei: 'a.jpg' }], P11: [{ datei: 'c.jpg' }] } }));
+  assert.match(text(zwei, 4), /Die Proben 9 und 11 sind in den Abbildungen 1 und 2 dargestellt\./);
+  assert.ok(m.luecken.every(l => !/Foto/.test(l)), 'Fotos selbst sind keine Lücke im Modell ([Foto fehlt] setzt erst Word ein)');
 });
 
 fall('7. Arbeitsschutzmaßnahmen: GB 0 eigener Satz, GB 1–3 mit Nummer, übrige Bereiche, TRGS 521 (KMF) und TRGS 519 (Asbest)', () => {
-  const t = text(modell(F.BR1_voll_Versicherung), 7).split('\n');
+  const BR1 = mitForm(F.BR1_voll_Versicherung, { bereich: '', bereich2: '', gb2: '', zusatz: '' });   // ohne Bereich/Zusatz (eigener Fall unten)
+  const t = text(modell(BR1), 7).split('\n');
   assert.equal(t[0], 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 2 (GB 2) gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen.');
   assert.equal(t[1], 'Bei Arbeiten in den übrigen Wohnungen sind keine über den normalen Arbeitsschutz hinausgehenden Maßnahmen notwendig.');
   assert.match(t[2], /^Das Einbaujahr des Dämmstoffs ist nicht bekannt\. .*TRGS 521/);
   assert.match(t[3], /^Bei dem Material „Fliesenkleber“ \(Probe 9\) handelt es sich um ein asbesthaltiges Material\. .*TRGS 519/);
-  assert.match(text(modell(mitForm(F.BR1_voll_Versicherung, {}, { einbau: 'vor1996' })), 7), /Der Dämmstoff wurde vor 1996 eingebaut/);
-  const g0 = text(modell(mitForm(F.BR1_voll_Versicherung, { gb: '0' })), 7).split('\n')[0];
+  assert.match(text(modell(mitForm(BR1, {}, { einbau: 'vor1996' })), 7), /Der Dämmstoff wurde vor 1996 eingebaut/);
+  const g0 = text(modell(mitForm(BR1, { gb: '0' })), 7).split('\n')[0];
   assert.equal(g0, 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, dem Gefahrenbereich 0 (GB 0) zuzuordnen.');
-  assert.doesNotMatch(text(modell(mitForm(F.BR1_voll_Versicherung, { gb: '0' })), 7), /übrigen/, 'bei GB 0 kein Satz zu den übrigen Bereichen');
-  assert.match(text(modell(mitForm(F.BR1_voll_Versicherung, { gb: '3' })), 7), /für den Gefahrenbereich 3 \(GB 3\) gemäß/);
+  assert.doesNotMatch(text(modell(mitForm(BR1, { gb: '0' })), 7), /übrigen/, 'bei GB 0 kein Satz zu den übrigen Bereichen');
+  assert.match(text(modell(mitForm(BR1, { gb: '3' })), 7), /für den Gefahrenbereich 3 \(GB 3\) gemäß/);
   assert.match(text(modell(mitForm(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF, { uebrige: true })), 7), /in den übrigen Bereichen sind keine/);
   assert.match(text(modell(F.BR3_Luecken), 7), /für den Gefahrenbereich \[Gefahrenbereich wählen\] gemäß/);
   // Untersuchungsbericht (ohne Sanierungsmaßnahmen): vorläufige Formulierung, bei GB 0 ohne doppeltes „untersuchte Bereiche“
@@ -178,6 +271,30 @@ fall('7. Arbeitsschutzmaßnahmen: GB 0 eigener Satz, GB 1–3 mit Nummer, übrig
   assert.match(text(modell(mitForm(F.BR2_nur_PAK_ohne_Versicherung_GB0, { gb: '1' })), 7), /^Bei Sanierungsarbeiten in den untersuchten Bereichen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 1/);
   // Vorbelegung „übrige Wohnungen“ nur bei Nutzung Wohnen
   assert.equal(BR.vorgabe({ nutzung: 'Wohnen' }).uebrige, true); assert.equal(BR.vorgabe({ nutzung: 'Büro' }).uebrige, false);
+});
+
+fall('7.: Bereich, zweiter Bereich mit eigenem Gefahrenbereich (Befunde Nr. 10, 26.0517), Zusatz am Ende; fehlende Bereichsangabe → Lücke', () => {
+  const t = text(modell(F.BR1_voll_Versicherung), 7).split('\n');
+  assert.match(t[0], /^Bei Durchführung der oben angegebenen Sanierungsmaßnahmen im Erdgeschoss sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 2 \(GB 2\) gemäß /);
+  assert.match(t[1], /^Bei Durchführung der oben angegebenen Sanierungsmaßnahmen im Obergeschoss sind aus chemischer Sicht keine über die üblichen .* dem Gefahrenbereich 0 \(GB 0\) zuzuordnen\.$/);
+  assert.equal(t[2], 'Bei Arbeiten in den übrigen Wohnungen sind keine über den normalen Arbeitsschutz hinausgehenden Maßnahmen notwendig.');
+  assert.equal(t.at(-1), 'Bei Arbeiten an der Mineralwolldämmung sind zusätzlich die Hinweise der TRGS 521 zu beachten.', 'Zusatz zuletzt, nach TRGS 519');
+  assert.deepEqual(abschnitt(modell(F.BR1_voll_Versicherung), 7).inhalt.at(-1).runs, ['Bei Arbeiten an der Mineralwolldämmung sind zusätzlich die Hinweise der ', { b: 'TRGS 521' }, ' zu beachten.']);
+  // nur ein Bereich (ohne zweiten): steht im Satz, keine Lücke
+  assert.match(text(modell(mitForm(F.BR1_voll_Versicherung, { bereich2: '', gb2: '' })), 7), /^Bei Durchführung der oben angegebenen Sanierungsmaßnahmen im Erdgeschoss sind Arbeitsschutz/);
+  // zweiter Gefahrenbereich ohne Bereichsangaben → beide Bereiche als Lücke
+  const l = text(modell(F.BR3_Luecken), 7).split('\n');
+  assert.match(l[0], /^Bei Durchführung der oben angegebenen Sanierungsmaßnahmen \[Bereich eintragen\] sind Arbeitsschutzmaßnahmen für den Gefahrenbereich \[Gefahrenbereich wählen\] gemäß/);
+  assert.match(l[1], /^Bei Durchführung der oben angegebenen Sanierungsmaßnahmen \[Zweiten Bereich eintragen\] sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 1 \(GB 1\) gemäß/);
+  // zweiter Bereich ohne GB → Lücke; „übrige“ auch, wenn nur der zweite Bereich GB 1–3 hat
+  const ohneGb = text(modell(mitForm(F.BR1_voll_Versicherung, { gb: '0', gb2: '' })), 7).split('\n');
+  assert.match(ohneGb[1], /Gefahrenbereich \[Gefahrenbereich zweiter Bereich wählen\] gemäß/);
+  assert.match(text(modell(mitForm(F.BR1_voll_Versicherung, { gb: '0', gb2: '1' })), 7), /in den übrigen Wohnungen/);
+  // Untersuchungsbericht mit Bereich: „Bei Sanierungsarbeiten im Erdgeschoss …“
+  assert.match(text(modell(mitForm(F.BR2_nur_PAK_ohne_Versicherung_GB0, { bereich: 'im Erdgeschoss' })), 7), /^Bei Sanierungsarbeiten im Erdgeschoss sind aus chemischer Sicht/);
+  assert.match(text(modell(mitForm(F.BR5_Gewerbe_Bohrmehl_Tabellen, { bereich: 'im Verkaufsraum' })), 7), /^Bei Sanierungsarbeiten im Verkaufsraum sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 1/);
+  // ohne Bereich bleiben die Sätze wie bis 1.13.0 (Runs gleich – kleiner Golden-Diff)
+  assert.deepEqual(abschnitt(modell(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF), 7).inhalt[0].runs.length, 2);
 });
 
 fall('Asbestproben im Brandbericht: Sperren und Hinweise wie im Asbestbericht (ohne Ergebnis, storniert, fremde LabelKit-Datei)', () => {
@@ -201,11 +318,21 @@ fall('Lücke → Feld: jede Lücke des Brandberichts steht in FELDER.brand, Feld
   for (const k of ['VN', 'Risiko', 'Versicherer', 'Auftraggeber', 'Schadenort', 'Projektnummer', 'Sachverständige(r)', 'Prüfbericht-Nr.']) namen.add(`[${k}]`);
   assert.ok(namen.size >= 25, `Lücken gefunden (${namen.size})`);
   for (const g of namen) assert.ok(L.eintrag(g, 'brand'), `Lücke ${g} fehlt in FELDER.brand`);
-  for (const [name, f] of Object.entries(F)) for (const g of L.offene(modell(f))) assert.ok(L.eintrag(g, 'brand'), `${name}: ${g}`);
+  // Lücken, die jemand selbst in ein Freitextfeld geschrieben hat („[Zustand prüfen]“), haben keinen Eintrag – sie heißen „in Word ausfüllen“
+  const G = require('../bericht-gemeinsam.js');
+  const eigene = f => new Set(BR.FREITEXT.flatMap(k => G.freitext((f.form.brand || {})[k] || '').flatMap(x => (x.runs || []).filter(r => r && r.gap).map(r => r.gap))));
+  for (const [name, f] of Object.entries(F)) for (const g of L.offene(modell(f))) if (!eigene(f).has(g)) assert.ok(L.eintrag(g, 'brand'), `${name}: ${g}`);
+  assert.deepEqual(L.zuordnen(['[Zustand des Bodenbelags prüfen]'], 'brand')[0], { luecke: '[Zustand des Bodenbelags prüfen]', feld: '', ziel: '', wo: 'in Word ausfüllen', bekannt: false });
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   for (const e of L.FELDER.brand) for (const id of `${e.feld || ''} ${e.ziel || ''}`.match(/#[\w-]+/g) || []) assert.ok(html.includes(`id="${id.slice(1)}"`), `${id} in index.html`);
   assert.equal(L.zuordnen(['[Gefahrenbereich wählen]'], 'brand')[0].feld, '#fbGb');
-  assert.equal(L.zuordnen(['[Brandlast und Schadenbild beschreiben]'], 'brand')[0].wo, 'in Word ergänzen (Formular dafür folgt)');
+  // ab 1.14.0 hat jede Freitext-Lücke ihr Feld – kein „Formular dafür folgt“ mehr
+  assert.ok(!L.FELDER.brand.some(e => /folgt/.test(e.wo)), 'kein „Formular dafür folgt“');
+  for (const [g, id] of [['[Brandlast und Schadenbild beschreiben]', '#fbSchadenbild'], ['[Sanierungsmaßnahmen Gebäude beschreiben]', '#fbSanGebaeude'],
+    ['[Sanierungsmaßnahmen technische Einrichtung beschreiben]', '#fbSanTechnik'], ['[Sanierungsmaßnahmen Warenvorräte beschreiben]', '#fbSanWaren'],
+    ['[Schlussfolgerungen ergänzen]', '#fbSchluss'], ['[Zusammenfassung der Sanierungsmaßnahmen ergänzen]', '#fbZusammenfassung'],
+    ['[Bereich eintragen]', '#fbBereich'], ['[Zweiten Bereich eintragen]', '#fbBereich2'], ['[Gefahrenbereich zweiter Bereich wählen]', '#fbGb2']])
+    assert.equal(L.zuordnen([g], 'brand')[0].feld, id, g);
   assert.equal(L.zuordnen(['[Hintergrundreferenz 10 oder 100 µg/m²]'], 'brand')[0].feld, '#fbReferenz');
   for (const g of ['[Bewertung der Chlorid-Bohrmehlproben ergänzen]', '[Bewertung der PAK-Materialproben ergänzen]', '[Bewertung der weiteren Untersuchungen ergänzen]', '[Schlussfolgerung für nicht eindeutige Ergebnisse ergänzen]'])
     assert.equal(L.zuordnen([g], 'brand')[0].wo, 'in Word ergänzen', g);
@@ -278,11 +405,12 @@ fall('Ohne Laborproben (nur Brandgeruch / gar keine Proben): keine Platzhalter-A
 
 /* ---------- Schritt 4: Befund 5.2–5.7 ---------- */
 const BW = require('../bericht-bewertung.js');
-const h2s = m => abschnitt(m, 5).inhalt.filter(x => x.t === 'h2').map(x => x.runs[0]);
+// Unterabschnitte 5.x = h2 mit Nummer; Zwischentitel aus dem Freitext (stufe 2, ab 1.14.0) zählen nicht
+const h2s = m => abschnitt(m, 5).inhalt.filter(x => x.t === 'h2' && !x.stufe).map(x => x.runs[0]);
 const absaetze = m => abschnitt(m, 5).inhalt.filter(x => x.t === 'p').map(x => T.text(x.runs));
 const tabellen = m => abschnitt(m, 5).inhalt.filter(x => x.t === 'tab');
 const unterabschnitt = (m, titel) => { const i = abschnitt(m, 5).inhalt; const a = i.findIndex(x => x.t === 'h2' && x.runs[0].endsWith(titel)); if (a < 0) return null;
-  const b = i.findIndex((x, j) => j > a && x.t === 'h2'); return i.slice(a + 1, b < 0 ? undefined : b); };
+  const b = i.findIndex((x, j) => j > a && x.t === 'h2' && !x.stufe); return i.slice(a + 1, b < 0 ? undefined : b); };
 const utext = (m, titel) => (unterabschnitt(m, titel) || []).filter(x => x.t === 'p').map(x => T.text(x.runs)).join('\n');
 
 fall('5. Befund: 5.1 immer, dann nur, wozu es Ergebnisse gibt – Chlorid, PAK, KMF, Asbest, Brandgeruch, weitere; fortlaufend nummeriert', () => {

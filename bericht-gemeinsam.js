@@ -397,12 +397,64 @@ function luecken(m) {
   lauf([m.deckblatt, m.kopf, m.abschnitte, m.unterschriften, m.anlagen]);
   return [...out];
 }
-/** Runs → reiner Text (Lücken in eckigen Klammern) */
-const text = runs => (Array.isArray(runs) ? runs : [runs]).map(r => (r && typeof r === 'object' ? r.gap : String(r == null ? '' : r))).join('');
+/** Runs → reiner Text (Lücken in eckigen Klammern, Fettes ohne Auszeichnung) */
+const text = runs => (Array.isArray(runs) ? runs : [runs]).map(r => (r && typeof r === 'object' ? (r.gap != null ? r.gap : s(r.b)) : String(r == null ? '' : r))).join('');
+
+/* ---------- Freitext (Formularfelder, ab 1.14.0) ----------
+   Schreibweise im Feld, je Zeile:
+     Text            → Absatz (Zeilenumbruch = neuer Absatz, Leerzeilen zählen nicht)
+     - Text          → Aufzählungspunkt (auch „– “, „• “, „* “)
+     ## Titel        → kursiver Zwischentitel ohne Nummer (z. B. ein Raum)
+     [Abb: Datei]    → Foto mit „Abb. n: …“ (Bildunterschrift = Beschreibung aus FotoKit); [Abb: Datei | Text] = eigene Bildunterschrift
+   Im Text: **fett**; [Großbuchstabe …] wird eine Lücke (gelb + Kommentar) – genau das Muster, das die Projektzentrale findet.
+   o.label (8. Zusammenfassung): jede Zeile ein Aufzählungspunkt, „Bereich: Maßnahme“ → fettes „Bereich:“.
+   o.abb = { n } zählt die Abbildungen über den ganzen Bericht; o.fotoKit = FotoKit-Bilder ({ Datei: { beschreibung, aussortiert } })
+   nur für Bildunterschrift und Hinweise. Leeres Feld → [] (der Aufrufer setzt seine Lücke mit Anweisung).
+   Blöcke: p, li (Aufzählung), h2 mit stufe 2 (Zwischentitel), fig { label: 'foto:'+Datei, datei, caption (Text oder Runs) }. */
+const ABB_ZEILE = /^\[\s*Abb\.?\s*:\s*([^\]|]+?)\s*(?:\|\s*([^\]]*?)\s*)?\]$/i;
+const LUECKE_IM_TEXT = /(\[[A-ZÄÖÜ][^\]\n]*\])/;
+/** Text mit **fett** und [Lücke] → Runs */
+function textRuns(t) {
+  const out = [];
+  String(t).split(/\*\*(.+?)\*\*/).forEach((teil, i) => {
+    if (!teil) return;
+    if (i % 2) { out.push({ b: teil }); return; }
+    teil.split(LUECKE_IM_TEXT).forEach((x, j) => { if (x) out.push(j % 2 ? { gap: x } : x); });
+  });
+  return out;
+}
+/** „Bereich: Maßnahme“ → [{ b: 'Bereich:' }, ' Maßnahme'] – nur bei kurzem Bereich vor dem ersten Doppelpunkt, ohne Satzende darin */
+function labelRuns(t) {
+  if (/^\*\*/.test(t)) return textRuns(t);
+  const m = /^([^:]{1,60}?):\s+(\S.*)$/.exec(t);
+  if (!m || /[.!?]\s/.test(m[1]) || LUECKE_IM_TEXT.test(m[1])) return textRuns(t);
+  return [{ b: m[1].trim() + ':' }, ' ', ...textRuns(m[2])];
+}
+function freitext(roh, o = {}) {
+  const abb = o.abb || { n: 0 }, hinweise = o.hinweise || [], fk = o.fotoKit && typeof o.fotoKit === 'object' ? o.fotoKit : null;
+  const wo = o.feld ? ` (${o.feld})` : '', out = [];
+  for (const zeile of String(roh == null ? '' : roh).split(/\r?\n/)) {
+    const z = zeile.trim(); if (!z) continue;
+    let m = /^#{2,}\s*(.*)$/.exec(z);
+    if (m) { if (s(m[1])) out.push({ t: 'h2', stufe: 2, runs: textRuns(s(m[1])) }); continue; }
+    if ((m = ABB_ZEILE.exec(z))) {
+      const datei = m[1], eigen = s(m[2]), info = fk ? fk[datei] : null, beschr = eigen || s(info && info.beschreibung), n = ++abb.n;
+      if (fk && !info) hinweise.push(`Foto „${datei}“${wo} ist in FotoKit nicht bekannt – Dateinamen prüfen.`);
+      else if (info && info.aussortiert) hinweise.push(`Foto „${datei}“${wo} ist in FotoKit aussortiert – trotzdem im Bericht.`);
+      if (!beschr) hinweise.push(`Foto „${datei}“${wo}: keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: ${datei} | Bildunterschrift]“ schreiben.`);
+      out.push({ t: 'fig', label: 'foto:' + datei, datei, caption: beschr ? `Abb. ${n}: ${beschr}` : [`Abb. ${n}: `, { gap: '[Bildunterschrift ergänzen]' }] });
+      continue;
+    }
+    const li = /^[-–•*]\s+(.*)$/.exec(z);
+    if (li || o.label) { const t = li ? s(li[1]) : z; if (t) out.push({ t: 'li', runs: o.label ? labelRuns(t) : textRuns(t) }); continue; }
+    out.push({ t: 'p', runs: textRuns(z) });
+  }
+  return out;
+}
 
 const API = { VERSION: 1, ABGLEICH_SPERRT,
   // Helfer
-  s, L, datumDE, liste, zahlwort, zeilen, nameVon, PNR, gleicherName, text, luecken, alsEntwurf,
+  s, L, datumDE, liste, zahlwort, zeilen, nameVon, PNR, gleicherName, text, luecken, alsEntwurf, freitext, textRuns,
   // Proben und Befund
   tidy, beschreibungKey, beschreibungWeichtAb, asbestBefund, kmfWerte, IST_KMF, matrixMaterial, RAUM_KUERZEL, raumAusschreiben,
   istStorniert, labelkitAsbest, probenSammeln,

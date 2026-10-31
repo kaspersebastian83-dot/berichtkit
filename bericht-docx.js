@@ -8,10 +8,11 @@
    Projektzentrale (word-luecken.js: gelb oder [Großbuchstabe …]) jede Lücke weiterhin findet.
    Alle Texte kommen aus dem Modell – auch der Titel (deckblatt.titel, kopf[0]); hier steht nur das Layout.
    deckblatt.betreff: Runs unter der Projektnummer; ein Lauf '\t' setzt den Tab wie bei „Projektnummer:“ (Brand: „Schaden vom:⇥…“).
-   Blöcke in abschnitte[].inhalt: { t:'p', runs } Absatz · { t:'h2', runs } Unterüberschrift (kursiv, nicht unterstrichen, z. B. „5.1 …“)
-   · { t:'fig', label, datei, caption } Foto · { t:'tab', caption, kopf[], zeilen[][], ausrichtung[], spalten[] } Tabelle
+   Blöcke in abschnitte[].inhalt: { t:'p', runs } Absatz · { t:'h2', runs } Unterüberschrift (kursiv, nicht unterstrichen, z. B. „5.1 …“;
+   mit stufe: 2 Zwischentitel ohne Nummer aus dem Freitext, „## Titel“) · { t:'li', runs } Aufzählungspunkt (Freitext „- “)
+   · { t:'fig', label, datei, caption } Foto (caption Text oder Runs) · { t:'tab', caption, kopf[], zeilen[][], ausrichtung[], spalten[] } Tabelle
    (spalten = Breiten in twips, zusammen 9070; fehlen sie, gleich breit; ohneUmbruch = Spalten, deren Text nicht am Bindestrich
-   umbrechen darf, z. B. die Labor-Nr.).
+   umbrechen darf, z. B. die Labor-Nr.). Runs: Text · { gap } Lücke · { b } fett (z. B. „Badezimmer:“ in der Zusammenfassung).
    bilder = { logoSvg:Uint8Array, logoPng:Uint8Array, sig:{<Kürzel>:{data,w,h}}, fotos:{<Label>:{data,w,h}} }
    optionen = { kommentare: false } – Lücken ohne Kommentar (nur für Tests: Vergleich mit dem Stand vor den Kommentaren) */
 (function (root) {
@@ -43,9 +44,11 @@ function erstellen(D, m, bilder, optionen = {}) {
     return [new CommentRangeStart(id), new TextRun({ text, font: FONT, highlight: 'yellow', ...o }), new CommentRangeEnd(id),
       new TextRun({ font: FONT, children: [new CommentReference(id)] })];
   };
-  /* Runs: Text oder { gap } (gelb + Kommentar; mitKommentar = false nur für die Kopfzeilen); ein Lauf '\t' wird ein echter Tab (w:tab) */
+  /* Runs: Text, { gap } (gelb + Kommentar; mitKommentar = false nur für die Kopfzeilen) oder { b } (fett); ein Lauf '\t' wird ein
+     echter Tab (w:tab) */
   const runs = (xs, o = {}, mitKommentar = true) => (Array.isArray(xs) ? xs : [xs]).filter(x => x !== '' && x != null).flatMap(x =>
-    x && typeof x === 'object' ? luecke(x.gap, o, mitKommentar) : x === '\t' ? [new TextRun({ font: FONT, ...o, children: [new Tab()] })]
+    x && typeof x === 'object' ? (x.gap != null ? luecke(x.gap, o, mitKommentar) : [new TextRun({ text: String(x.b == null ? '' : x.b), font: FONT, ...o, bold: true })])
+      : x === '\t' ? [new TextRun({ font: FONT, ...o, children: [new Tab()] })]
       : [new TextRun({ text: String(x), font: FONT, ...o })]);
   const t = (text, o = {}) => new TextRun({ text, font: FONT, ...o });
   const einfach = (children, o = {}) => new Paragraph({ children, spacing: { ...LINE1, after: 0 }, ...o });
@@ -116,8 +119,12 @@ function erstellen(D, m, bilder, optionen = {}) {
     spacing: { ...LINE15, before: erste ? 0 : 2 * LEER, after: LEER }, keepNext: true, outlineLevel: 0 });
   const absatz = (r, nach = LEER) => new Paragraph({ children: runs(r), alignment: AlignmentType.JUSTIFIED, spacing: { ...LINE15, after: nach } });
   /* Unterüberschrift („5.1 Chlorid“): kursiv, nicht unterstrichen; der Block davor bringt die Leerzeile mit, darunter eine */
-  const unterueberschrift = (r, nach = LEER) => new Paragraph({ children: runs(r, { italics: true }), spacing: { ...LINE15, before: 0, after: nach },
-    keepNext: true, outlineLevel: 1 });
+  const unterueberschrift = (r, nach = LEER, stufe = 1) => new Paragraph({ children: runs(r, { italics: true }), spacing: { ...LINE15, before: 0, after: nach },
+    keepNext: true, outlineLevel: stufe });
+  /* Aufzählungspunkt (Freitext „- “): Word-Liste mit Punkt; zwischen zwei Punkten kein Abstand, nach dem letzten eine Leerzeile */
+  const punkt = (r, nach) => new Paragraph({ children: runs(r), bullet: { level: 0 }, alignment: AlignmentType.JUSTIFIED, spacing: { ...LINE15, after: nach } });
+  /* Bildunterschrift: Text (Asbest) oder Runs mit Lücke (Freitext ohne Beschreibung in FotoKit) */
+  const unterschrift = c => (Array.isArray(c) ? runs(c, { italics: true, size: 22 }) : [t(c, { italics: true, size: 22 })]);
   /* Spaltenbreiten je Tabelle (tab.spalten, zusammen B); ohne Angabe gleich breit, der Rest auf die letzte Spalte.
      Falsche Angaben im Modell sind ein Programmfehler – lieber laut als eine verschobene Tabelle im Bericht. */
   const spaltenVon = x => {
@@ -143,15 +150,17 @@ function erstellen(D, m, bilder, optionen = {}) {
     a.inhalt.forEach((x, xi) => {
       const nach = xi === a.inhalt.length - 1 && ai < m.abschnitte.length - 1 ? 0 : LEER;   // vor der nächsten Überschrift
       if (x.t === 'p') kinder.push(absatz(x.runs, nach));
-      else if (x.t === 'h2') kinder.push(unterueberschrift(x.runs, nach));
+      else if (x.t === 'h2') kinder.push(unterueberschrift(x.runs, nach, x.stufe === 2 ? 2 : 1));
+      else if (x.t === 'li') kinder.push(punkt(x.runs, (a.inhalt[xi + 1] || {}).t === 'li' ? 0 : nach));
       else if (x.t === 'fig') {
         const b = bilder.fotos && bilder.fotos[x.label];
+        const capText = Array.isArray(x.caption) ? x.caption.map(r => (r && typeof r === 'object' ? (r.gap != null ? r.gap : r.b) : r)).join('') : x.caption;
         if (b) {
           const w = b.w >= b.h ? 10 : 6.5, h = w * b.h / b.w;
           kinder.push(new Paragraph({ children: [new ImageRun({ type: 'jpg', data: b.data, transformation: { width: cmPx(w), height: cmPx(h) },
-            altText: { title: x.caption, description: x.caption, name: x.label } })], alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 120, after: 60 } }));
+            altText: { title: capText, description: capText, name: x.label } })], alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 120, after: 60 } }));
         } else kinder.push(new Paragraph({ children: luecke(`[Foto fehlt: ${x.datei}]`), alignment: AlignmentType.CENTER, keepNext: true }));
-        kinder.push(new Paragraph({ children: [t(x.caption, { italics: true, size: 22 })], alignment: AlignmentType.CENTER, spacing: { ...LINE15, after: nach } }));
+        kinder.push(new Paragraph({ children: unterschrift(x.caption), alignment: AlignmentType.CENTER, spacing: { ...LINE15, after: nach } }));
       } else if (x.t === 'tab') {
         kinder.push(new Paragraph({ children: [t(x.caption, { italics: true, size: 22 })], keepNext: true, spacing: { ...LINE1, after: 120 } }));
         const sp = spaltenVon(x);

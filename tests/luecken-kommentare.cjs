@@ -56,7 +56,11 @@ const gelbeLaeufe = tt => gelbeTexte(tt, false).length;
 const ohneKommentare = xml => xml.replace(/<w:commentRange(?:Start|End) w:id="\d+"\/>|<w:r>(?:<w:rPr>(?:(?!<\/w:rPr>)[\s\S])*<\/w:rPr>)?<w:commentReference w:id="\d+"\/><\/w:r>/g, '');
 
 const bilder = { logoSvg: fs.readFileSync(path.join(ROOT, 'assets/logo-schiffers.svg')), logoPng: fs.readFileSync(path.join(ROOT, 'assets/logo-schiffers.png')), sig: {}, fotos: {} };
-const wordVon = async (m, optionen) => { const buf = await D.Packer.toBuffer(W.erstellen(D, m, bilder, optionen)); return { buf, tt: teile(buf) }; };
+const wordVon = async (m, optionen, mitBildern = bilder) => { const buf = await D.Packer.toBuffer(W.erstellen(D, m, mitBildern, optionen)); return { buf, tt: teile(buf) }; };
+/** Brandbericht ab 1.14.0 mit Fotos: alle Fotos lesbar außer IMG_0201.jpg (BR4 – dort zusätzlich Bildunterschrift als Lücke) */
+const TESTFOTO = { data: fs.readFileSync(path.join(__dirname, 'daten', 'testfoto.jpg')), w: 480, h: 320 };
+const brandBilder = m => { const fotos = {}; for (const a of m.abschnitte) for (const x of a.inhalt) if (x.t === 'fig' && x.datei !== 'IMG_0201.jpg') fotos[x.label] = TESTFOTO; return { ...bilder, fotos }; };
+const ohneBild = (m, b) => m.abschnitte.flatMap(a => a.inhalt).filter(x => x.t === 'fig' && !b.fotos[x.label]).map(x => x.datei);
 /** Nummern, die sich durch die zusätzliche Datei comments.xml verschieben (Beziehungen, Zeichnungs-Ids), angleichen */
 const angleichen = xml => xml.replace(/rId\d+/g, 'rId').replace(/docPr id="\d+"/g, 'docPr id=""');
 const modellVon = (f, cfg = B.cfg) => { const m0 = T.bericht({ cfg, ...f, mitarbeiter: B.mitarbeiter }); return f.entwurf ? T.alsEntwurf(m0) : m0; };
@@ -83,12 +87,12 @@ function kommentareGenau(tt, name) {
 
 /** Vorkommen jeder Lücke im Modell mit Kommentar, in der Reihenfolge, wie bericht-docx.js sie schreibt: Deckblatt, Text,
     Unterschriften, Anlagen (der Kopf der Folgeseiten bekommt keine Kommentare) */
-function modellLuecken(m) {
+function modellLuecken(m, b = bilder) {
   const out = [], lauf = x => { if (!x) return; if (Array.isArray(x)) x.forEach(lauf); else if (typeof x === 'object') { if (x.gap) out.push(x.gap); else Object.values(x).forEach(lauf); } };
   if (!m.deckblatt.projektnummer) out.push('[Projektnummer]');
   lauf([m.deckblatt.betreff, m.deckblatt.felder.map(f => f[1])]);
   for (const a of m.abschnitte) for (const x of a.inhalt) {
-    if (x.t === 'fig') { if (!bilder.fotos[x.label]) out.push(`[Foto fehlt: ${x.datei}]`); }
+    if (x.t === 'fig') { if (!b.fotos[x.label]) out.push(`[Foto fehlt: ${x.datei}]`); lauf(x.caption); }   // Bildunterschrift (Freitext) kann eine Lücke sein
     else lauf(x.runs || x.zeilen);
   }
   lauf(m.unterschriften.map(u => [u.rolle, u.name])); lauf((m.anlagenTeile || []).map(a => a.zeilen));
@@ -133,14 +137,20 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
     assert.deepEqual([...new Set(BL.offene(m, ['z.jpg']))].sort(), [...inWord].sort());
   });
 
-  await fall('Brandbericht: ein Kommentar je Lücke (Deckblatt „Schaden vom:“, Text, Lücken-Abschnitte 5/6/8), Kopf-Lücken kommentiert', async () => {
+  await fall('Brandbericht: ein Kommentar je Lücke (Deckblatt „Schaden vom:“, Text, Freitext mit Lücke, Bildunterschrift, Foto fehlt), Kopf-Lücken kommentiert', async () => {
     for (const [name, f] of BRAND) {
-      const m = modellVon(f), { tt } = await wordVon(m);
+      const m = modellVon(f), b = brandBilder(m), { tt } = await wordVon(m, undefined, b);
       const ks = kommentareGenau(tt, name);
-      assert.deepEqual(ks.map(k => k.text), modellLuecken(m).map(g => 'Noch ausfüllen: ' + g.slice(1, -1)), `${name}: Reihenfolge wie im Modell`);
+      assert.deepEqual(ks.map(k => k.text), modellLuecken(m, b).map(g => 'Noch ausfüllen: ' + g.slice(1, -1)), `${name}: Reihenfolge wie im Modell`);
       const inWord = new Set([...gelbeTexte(tt, false), ...gelbeTexte(tt, true)]);
-      assert.deepEqual([...new Set(BL.offene(m))].sort(), [...inWord].sort(), `${name}: Zähler = Lücken in Word`);
+      assert.deepEqual([...new Set(BL.offene(m, ohneBild(m, b)))].sort(), [...inWord].sort(), `${name}: Zähler = Lücken in Word`);
     }
+    // Freitext ab 1.14.0: Lücke im Text, Bildunterschrift ohne Beschreibung und nicht lesbares Foto haben je einen Kommentar
+    const br4 = modellVon(BRAND.find(([n]) => n === 'BR4_Gewerbe_Teilnehmerliste_ENTWURF')[1]), k4 = kommentareGenau((await wordVon(br4, undefined, brandBilder(br4))).tt, 'BR4');
+    for (const t of ['Foto fehlt: IMG_0201.jpg', 'Bildunterschrift ergänzen', 'Sanierungsmaßnahmen Gebäude beschreiben']) assert.ok(k4.some(k => k.text === 'Noch ausfüllen: ' + t), t);
+    const br1 = modellVon(BRAND.find(([n]) => n === 'BR1_voll_Versicherung')[1]), w1 = await wordVon(br1, undefined, brandBilder(br1));
+    assert.ok(kommentareGenau(w1.tt, 'BR1').some(k => k.text === 'Noch ausfüllen: Zustand des Bodenbelags prüfen'), 'Lücke im Freitext');
+    assert.equal((w1.tt['word/document.xml'].match(/<pic:pic /g) || []).length, 3, 'BR1: drei Fotos (Asbestprobe + zwei aus dem Freitext)');
     // „Schaden vom:⇥[Schadendatum]“ auf dem Deckblatt mit Tab wie die Projektnummer; im Kopf „Brandschaden vom [Schadendatum]“ ohne Kommentar
     const { tt } = await wordVon(modellVon(BRAND.find(([n]) => n === 'BR3_Luecken')[1]));
     const zeile = tt['word/document.xml'].match(/<w:p>(?:(?!<\/w:p>)[\s\S])*Schaden vom:(?:(?!<\/w:p>)[\s\S])*<\/w:p>/)[0];
@@ -217,7 +227,8 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
       lauf(m.kopf, kopf);
       const rest = new Set(modellLuecken(m));
       for (const g of kopf) assert.ok(rest.has(g), `${JSON.stringify(c)}: Kopf-Lücke ${g} hat keinen Kommentar woanders`);
-      assert.deepEqual([...new Set(BL.offene(m))].sort(), [...new Set([...rest, ...kopf])].sort(), `${JSON.stringify(c)}: Zähler = Lücken in Word`);
+      // ab 1.14.0 hat BR1 Fotos – ohne Bilddaten stehen sie als [Foto fehlt: …] in Word, wie beim Speichern mit nicht lesbarer Datei
+      assert.deepEqual([...new Set(BL.offene(m, ohneBild(m, bilder)))].sort(), [...new Set([...rest, ...kopf])].sort(), `${JSON.stringify(c)}: Zähler = Lücken in Word`);
       k++;
     }
     assert.equal(k, 2 * 3 * 2 * 2 * 3 * 2 * 3 * 2 * 2);
@@ -253,7 +264,7 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
   }
   if (process.argv.includes('--brand')) {   // Brand-Beispiele zum Ansehen (z. B. in LibreOffice): <Ordner>/<Fall>.docx
     const ordner = process.argv[process.argv.indexOf('--brand') + 1] || 'brand-beispiele'; fs.mkdirSync(ordner, { recursive: true });
-    for (const [name, f] of BRAND) fs.writeFileSync(path.join(ordner, name + '.docx'), (await wordVon(modellVon(f))).buf);
+    for (const [name, f] of BRAND) { const m = modellVon(f); fs.writeFileSync(path.join(ordner, name + '.docx'), (await wordVon(m, undefined, brandBilder(m))).buf); }   // mit Testfoto (außer IMG_0201.jpg)
     console.log('Brand-Beispiele geschrieben:', ordner);
   }
 })().catch(e => { console.error(e); process.exit(1); });

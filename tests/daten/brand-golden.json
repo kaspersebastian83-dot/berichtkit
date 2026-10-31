@@ -187,7 +187,8 @@
      {
       "t": "p",
       "runs": [
-       "An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt."
+       "An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.",
+       " Probe 9 ist in Abbildung 1 dargestellt."
       ]
      },
      {
@@ -205,6 +206,12 @@
       "runs": [
        "Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt."
       ]
+     },
+     {
+      "t": "fig",
+      "label": "P9",
+      "datei": "P9_Fliesenkleber_Kueche.jpg",
+      "caption": "Abb. 1: Fliesenkleber, EG Küche Boden."
      }
     ]
    },
@@ -220,8 +227,51 @@
      {
       "t": "p",
       "runs": [
+       "Der Brand ereignete sich in der Küche im Erdgeschoss. Brandlast waren im Wesentlichen die Einbauküche und ",
        {
-        "gap": "[Brandlast und Schadenbild beschreiben]"
+        "b": "Kunststoffe"
+       },
+       " der Elektrogeräte."
+      ]
+     },
+     {
+      "t": "h2",
+      "stufe": 2,
+      "runs": [
+       "Küche (Brandraum)"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Decke und Wände sind stark verrußt."
+      ]
+     },
+     {
+      "t": "fig",
+      "label": "foto:IMG_0101.jpg",
+      "datei": "IMG_0101.jpg",
+      "caption": "Abb. 2: EG, Küche (Brandraum)"
+     },
+     {
+      "t": "h2",
+      "stufe": 2,
+      "runs": [
+       "Flur"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       "Wände leicht verrußt"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       "Bodenbelag: ",
+       {
+        "gap": "[Zustand des Bodenbelags prüfen]"
        }
       ]
      },
@@ -541,8 +591,64 @@
      {
       "t": "p",
       "runs": [
+       "Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:"
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "6.1 Gebäude"
+      ]
+     },
+     {
+      "t": "h2",
+      "stufe": 2,
+      "runs": [
+       "Küche (Brandraum)"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       "Rückbau der Deckenverkleidung und der Einbauküche"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       "Feinreinigung aller Oberflächen, anschließend Freimessung"
+      ]
+     },
+     {
+      "t": "fig",
+      "label": "foto:IMG_0102.jpg",
+      "datei": "IMG_0102.jpg",
+      "caption": "Abb. 3: EG, Flur nach der Grobreinigung"
+     },
+     {
+      "t": "h2",
+      "stufe": 2,
+      "runs": [
+       "Flur"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Feinreinigung der Wand- und Bodenflächen."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "6.2 Technische Einrichtung"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
        {
-        "gap": "[Sanierungsmaßnahmen ergänzen]"
+        "gap": "[Sanierungsmaßnahmen technische Einrichtung beschreiben]"
        }
       ]
      }
@@ -554,9 +660,14 @@
      {
       "t": "p",
       "runs": [
-       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
-       "2 (GB 2)",
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen im Erdgeschoss sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 2 (GB 2)",
        " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen im Obergeschoss sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, dem Gefahrenbereich 0 (GB 0) zuzuordnen."
       ]
      },
      {
@@ -584,6 +695,16 @@
        "sind die Gefahrstoffverordnung (GefStoffV) und die TRGS 519 „Asbest: Abbruch-, Sanierungs- oder Instandhaltungsarbeiten“ einzuhalten. ",
        "Die Arbeiten dürfen nur von Fachbetrieben mit der erforderlichen Sachkunde ausgeführt werden."
       ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei Arbeiten an der Mineralwolldämmung sind zusätzlich die Hinweise der ",
+       {
+        "b": "TRGS 521"
+       },
+       " zu beachten."
+      ]
      }
     ]
    },
@@ -591,11 +712,47 @@
     "titel": "8. Zusammenfassung Sanierungsmaßnahmen",
     "inhalt": [
      {
-      "t": "p",
+      "t": "h2",
+      "stufe": 2,
+      "runs": [
+       "Gebäude"
+      ]
+     },
+     {
+      "t": "li",
       "runs": [
        {
-        "gap": "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
-       }
+        "b": "Küche (Brandraum):"
+       },
+       " ",
+       "Rückbau der Deckenverkleidung, Feinreinigung, Freimessung"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       {
+        "b": "Flur:"
+       },
+       " ",
+       "Feinreinigung"
+      ]
+     },
+     {
+      "t": "h2",
+      "stufe": 2,
+      "runs": [
+       "Technische Einrichtung"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       {
+        "b": "Elektroinstallation Küche:"
+       },
+       " ",
+       "Prüfung durch einen Elektrofachbetrieb"
       ]
      }
     ]
@@ -872,7 +1029,8 @@
     "ki": "",
     "kiQuelle": "",
     "whoNachgewiesen": false,
-    "foto": "",
+    "foto": "P9_Fliesenkleber_Kueche.jpg",
+    "abb": 1,
     "stelleBericht": "EG Küche Boden"
    },
    {
@@ -951,7 +1109,7 @@
   "hinweise": [],
   "hinweisAktionen": {},
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -1001,10 +1159,9 @@
    "referenzVorgabe": "10"
   },
   "luecken": [
-   "[Brandlast und Schadenbild beschreiben]",
+   "[Zustand des Bodenbelags prüfen]",
    "[Bewertung der PAK-Materialproben ergänzen]",
-   "[Sanierungsmaßnahmen ergänzen]",
-   "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+   "[Sanierungsmaßnahmen technische Einrichtung beschreiben]"
   ]
  },
  "BR2_nur_PAK_ohne_Versicherung_GB0": {
@@ -1203,9 +1360,13 @@
      {
       "t": "p",
       "runs": [
-       {
-        "gap": "[Schlussfolgerungen ergänzen]"
-       }
+       "Die PAK-Belastung liegt im Bereich der Hintergrundbelastung."
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       "Eine Sanierung ist aus chemischer Sicht nicht erforderlich."
       ]
      }
     ]
@@ -1375,7 +1536,7 @@
   "hinweise": [],
   "hinweisAktionen": {},
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -1416,8 +1577,7 @@
    "referenzVorgabe": "10"
   },
   "luecken": [
-   "[Brandlast und Schadenbild beschreiben]",
-   "[Schlussfolgerungen ergänzen]"
+   "[Brandlast und Schadenbild beschreiben]"
   ]
  },
  "BR3_Luecken": {
@@ -1756,6 +1916,12 @@
      {
       "t": "p",
       "runs": [
+       "Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
        {
         "gap": "[Sanierungsmaßnahmen ergänzen]"
        }
@@ -1769,10 +1935,25 @@
      {
       "t": "p",
       "runs": [
-       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen ",
+       {
+        "gap": "[Bereich eintragen]"
+       },
+       " sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
        {
         "gap": "[Gefahrenbereich wählen]"
        },
+       " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen ",
+       {
+        "gap": "[Zweiten Bereich eintragen]"
+       },
+       " sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 1 (GB 1)",
        " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
       ]
      }
@@ -2051,7 +2232,7 @@
    }
   },
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -2114,7 +2295,9 @@
    "[Hintergrundreferenz 10 oder 100 µg/m²]",
    "[Ergebnis der Brandgeruchprüfung ergänzen]",
    "[Sanierungsmaßnahmen ergänzen]",
+   "[Bereich eintragen]",
    "[Gefahrenbereich wählen]",
+   "[Zweiten Bereich eintragen]",
    "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
   ]
  },
@@ -2327,9 +2510,7 @@
      {
       "t": "p",
       "runs": [
-       {
-        "gap": "[Brandlast und Schadenbild beschreiben]"
-       }
+       "Der Brand ereignete sich im Regal 3 der Lagerhalle."
       ]
      },
      {
@@ -2447,8 +2628,62 @@
      {
       "t": "p",
       "runs": [
+       "Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:"
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "6.1 Gebäude"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
        {
-        "gap": "[Sanierungsmaßnahmen ergänzen]"
+        "gap": "[Sanierungsmaßnahmen Gebäude beschreiben]"
+       }
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "6.2 Technische Einrichtung"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Reinigung der Regalanlage."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "6.3 Warenvorräte"
+      ]
+     },
+     {
+      "t": "h2",
+      "stufe": 2,
+      "runs": [
+       "Regal 3"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       "Entsorgung der verrußten Kartonagen"
+      ]
+     },
+     {
+      "t": "fig",
+      "label": "foto:IMG_0201.jpg",
+      "datei": "IMG_0201.jpg",
+      "caption": [
+       "Abb. 1: ",
+       {
+        "gap": "[Bildunterschrift ergänzen]"
        }
       ]
      }
@@ -2460,8 +2695,7 @@
      {
       "t": "p",
       "runs": [
-       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
-       "1 (GB 1)",
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 1 (GB 1)",
        " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
       ]
      }
@@ -2471,11 +2705,23 @@
     "titel": "8. Zusammenfassung Sanierungsmaßnahmen",
     "inhalt": [
      {
-      "t": "p",
+      "t": "li",
       "runs": [
        {
-        "gap": "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
-       }
+        "b": "Halle:"
+       },
+       " ",
+       "Feinreinigung"
+      ]
+     },
+     {
+      "t": "li",
+      "runs": [
+       {
+        "b": "Warenvorräte Regal 3:"
+       },
+       " ",
+       "Entsorgung"
       ]
      }
     ]
@@ -2699,6 +2945,7 @@
   "hinweise": [
    "Probenahmedatum in LabelKit (15.10.2026) weicht vom Ortstermin der Projektzentrale (14.10.2026) ab – bitte prüfen.",
    "Sensorische Prüfung auf Brandgeruch veraltet – nicht im Bericht. In Projektzentrale neu erstellen oder trotzdem anhaken.",
+   "Foto „IMG_0201.jpg“ (6. Warenvorräte): keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: IMG_0201.jpg | Bildunterschrift]“ schreiben.",
    "Prüfbericht AR-999-2026-000401-01 ist vorläufig – der Bericht bekommt die Kopfzeile „Vorläufig“."
   ],
   "hinweisAktionen": {
@@ -2710,7 +2957,7 @@
    }
   },
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -2752,10 +2999,9 @@
   },
   "luecken": [
    "[Anlage-Nr. Brandgeruch]",
-   "[Brandlast und Schadenbild beschreiben]",
    "[Bewertung der weiteren Untersuchungen ergänzen]",
-   "[Sanierungsmaßnahmen ergänzen]",
-   "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+   "[Sanierungsmaßnahmen Gebäude beschreiben]",
+   "[Bildunterschrift ergänzen]"
   ]
  },
  "BR5_Gewerbe_Bohrmehl_Tabellen": {
@@ -3183,8 +3429,7 @@
      {
       "t": "p",
       "runs": [
-       "Bei Sanierungsarbeiten in den untersuchten Bereichen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
-       "1 (GB 1)",
+       "Bei Sanierungsarbeiten in den untersuchten Bereichen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 1 (GB 1)",
        " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
       ]
      }
@@ -3388,7 +3633,7 @@
   "hinweise": [],
   "hinweisAktionen": {},
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
