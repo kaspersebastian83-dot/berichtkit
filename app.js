@@ -3,9 +3,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '1.11.0';
 const APP_DATE = '31.10.2026';
 const CHANGELOG = [
+  ['1.11.0', '31.10.2026', 'Offene Stellen sichtbar (Brandbericht Schritt 2, gilt schon für den Asbestbericht): Jede gelbe Lücke in der Word-Datei bekommt einen Kommentar am Rand – „Noch ausfüllen: …“, Autor „BerichtKit“ –, in Word mit Überprüfen › Nächster Kommentar von Lücke zu Lücke; ist die Stelle gefüllt, Kommentar löschen. Gelbe Markierung und [Text] bleiben, die Projektzentrale findet bei der Übergabe dieselben Lücken wie bisher. Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb (LibreOffice kann Kommentare dort nicht laden) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar. Im Formular oben „n Stellen noch offen“: Klick springt zum Feld, das die nächste Lücke füllt; leere Pflichtfelder sind gelb umrandet; in den Hinweisen steht zu jeder Lücke, wo sie zu füllen ist (z. B. „Personen › Labor“, „in der Projektzentrale eintragen“). Zähler und Rückfrage vor dem Speichern zählen auch, was erst die Word-Datei als Lücke einsetzt: fehlende Projektnummer und ein Foto, dessen Datei sich nicht lesen lässt ([Foto fehlt: …]).'],
   ['1.10.0', '31.10.2026', 'Vorbereitung Brandbericht (Schritt 1, am Asbestbericht ändert sich nichts): Die Berichtstexte sind aufgeteilt in gemeinsame Bausteine (bericht-gemeinsam.js: Deckblatt mit/ohne Versicherung, Kopfzeilen, Personen, Unterschriften, Anlagen, Proben und Asbest-Befund) und den Asbestbericht (bericht-asbest.js); bericht-text.js wählt die Berichtsart. Die Projektzentrale kann die Berichtsart mitgeben (#…&art=asbest|brand) – „Brandbericht“ zeigt vorerst „kommt bald“ mit Knopf zum Asbestbericht. Word-Ausgabe: Spaltenbreiten je Tabelle und Unterüberschriften (kursiv) für spätere Berichtsarten. Geprüft: alle Beispielberichte als Modell und Word-Datei vorher/nachher gleich.'],
   ['1.9.0', '31.10.2026', 'Stornierte Proben (Folge zu LabelKit 4.49.0 „Proben stornieren“): Eine in LabelKit stornierte Asbestprobe ist keine Probe mehr – sie fehlt in Tabelle 1, im Text (Probenzahl, Aufzählungen, Sätze je Probe), in der Probenliste und im Abgleich der Entnahmestelle und sperrt das Speichern nie („… noch kein Ergebnis in ResultKit“ kommt für sie nicht mehr). Die übrigen Proben behalten ihre LabelKit-Nummer, es wird nicht neu durchnummeriert (z. B. 1, 2, 4). Steht im Prüfbericht trotzdem ein Wert für die stornierte Probe, kommt er nicht in den Bericht; ein Hinweis sagt es („P3 ist in LabelKit storniert – der Laborwert (Prüfbericht …) kommt nicht in den Bericht.“). Sind alle Asbestproben storniert, gibt es keinen Bericht ohne Proben: Speichern in „Mitteilungen“ ist dann gesperrt (nur Entwurf).'],
   ['1.8.0', '30.10.2026', 'Anlagen fallen nicht mehr still aus dem Bericht: Fehlt die Bilddokumentation oder der Probenplan, ist eine davon veraltet oder unvollständig, steht immer ein Hinweis da („… veraltet – nicht im Bericht. In FotoKit neu erstellen oder trotzdem anhaken.“) – mit Sprung in FotoKit bzw. PlanKit. Annahmen bestätigen: „Versicherer angenommen“ steht nur noch einmal in den Hinweisen, mit „✓ stimmt“ wie beim Probenehmer; ändert sich der Auftraggeber, fragt BerichtKit wieder. Ist der Zuständige Messtechniker (oder fehlt), schlägt BerichtKit für die Unterschrift die erste Sachverständige der Liste vor – jetzt sichtbar als „angenommen – bitte prüfen“ mit „✓ stimmt“. Einstellungen: Die Rolle „Sachverständige(r)“ wird jetzt ausdrücklich gespeichert („nicht festgelegt“ ist eine eigene Wahl) – der Hinweis „… hat die Proben genommen … Rolle nicht festgelegt“ ist nach einmaligem Festlegen weg und hat einen Knopf „Einstellungen öffnen“.'],
@@ -614,14 +615,16 @@ function render() {
   anlagenZeigen(m);
   document.querySelectorAll('input[name=einbau]').forEach(r => { r.checked = r.value === (f.einbau || 'unbekannt'); });
   // Hinweise
+  const lz = BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form));
   $('hinweise').innerHTML = [
     ...m.sperren.map(x => `<li class="sperre">Gesperrt: ${esc(x)}</li>`),
     ...m.annahmen.map(a => `<li class="luecke">${esc(a.text)} <button type="button" class="klein-knopf" data-ok="${esc(a.id)}" title="Stimmt so – Hinweis ausblenden">✓ stimmt</button></li>`),
-    ...m.luecken.map(l => `<li class="luecke">Lücke im Bericht: ${esc(l)}</li>`),
+    ...lz.map(x => `<li class="luecke">Lücke im Bericht: ${esc(x.luecke)} <span class="klein">– ${esc(x.wo)}</span></li>`),
     ...m.hinweise.map(h => `<li>${esc(h)}${aktionHtml(m.hinweisAktionen[h])}</li>`),
     ...[...S.quellenDaten, ...S.quellen].map(q => `<li class="${q.ok ? 'ok' : ''}">${q.ok ? '✓ ' : ''}${esc(q.text)}</li>`),
     ...(S.cfgOrt === 'lokal' ? ['<li>Archivordner nicht verbunden: Einstellungen gelten nur in diesem Browser.</li>'] : []),
   ].join('');
+  lueckenZeigen(lz);
   const gesperrt = m.sperren.length > 0;
   vorschau(gesperrt ? T.alsEntwurf(m) : m);
   $('btnErstellen').disabled = gesperrt;
@@ -629,7 +632,49 @@ function render() {
   $('btnLaden').textContent = gesperrt ? 'Entwurf herunterladen' : 'Herunterladen';
   if (S.statusFest && Date.now() < S.statusFest.bis) $('status').innerHTML = S.statusFest.html;   // eben gemeldet – nicht gleich überschreiben
   else (S.statusFest = null, $('status')).textContent = gesperrt ? `Speichern gesperrt (${m.sperren.length}) – siehe Hinweise. „Entwurf herunterladen“ geht.`
-    : `Speichert als Mitteilungen/${m.dateiname}` + (m.luecken.length ? ` · ${m.luecken.length} Lücke(n) gelb markiert` : '');
+    : `Speichert als Mitteilungen/${m.dateiname}` + (lz.length ? ` · ${lz.length} Lücke(n) gelb markiert` : '');
+}
+/* Offene Stellen (Lücken im Bericht): Zähler oben „n Stellen noch offen“, leere Pflichtfelder gelb umrandet, Klick auf den
+   Zähler springt zum Feld der ersten Stelle – jeder weitere Klick zur nächsten. Welche Lücke welches Feld füllt, steht nur in
+   bericht-luecken.js. Gefüllte Felder (Lücke kommt dann aus der Projektzentrale, z. B. Auftraggeber auf dem Deckblatt) und
+   versteckte Felder sind kein Sprungziel; Lücken ohne Feld in BerichtKit stehen mit „wo“ in den Hinweisen (letztes Sprungziel). */
+const sichtbar = el => !!el && !el.disabled && el.getClientRects().length > 0;
+const istLeer = el => !String(el.value == null ? '' : el.value).trim();
+/** Wiedererkennbar über ein Neuzeichnen hinweg (die Probenliste wird bei jeder Eingabe neu gebaut) */
+const zielKey = el => el.id || (el.dataset && el.dataset.art ? `${el.dataset.art}:${el.dataset.l}` : '');
+function lueckenZeigen(z) {
+  S.luecken = z;
+  document.querySelectorAll('.offen-feld').forEach(el => el.classList.remove('offen-feld'));
+  for (const x of z) if (x.feld) document.querySelectorAll(x.feld).forEach(el => { if (sichtbar(el) && istLeer(el)) el.classList.add('offen-feld'); });
+  const b = $('lueckenZaehler'), n = z.length;
+  b.hidden = false; b.disabled = !n; b.classList.toggle('ok', !n);
+  b.textContent = n ? BerichtLuecken.zaehlerText(n) : '✓ Keine offenen Stellen im Bericht';
+  b.setAttribute('aria-label', n ? `${BerichtLuecken.zaehlerText(n)} – zur nächsten Stelle springen` : 'Keine offenen Stellen im Bericht');
+  b.title = n ? z.map(x => `${x.luecke} – ${x.wo}`).join('\n') + '\n\nKlick: zur nächsten Stelle im Formular' : '';
+  $('lueckenListe').textContent = z.map(x => `${x.luecke} – ${x.wo}`).join('; ');
+}
+/** Sprungziele in Berichtsreihenfolge, jedes einmal: das erste leere, sichtbare Feld der Lücke, sonst ihr Ziel (z. B. die
+    Probenliste); Lücken ohne beides (Projektzentrale, in Word) → zuletzt die Hinweisliste, wo sie mit „wo“ stehen */
+function lueckenZiele() {
+  const ziele = []; let ohne = false;
+  for (const x of S.luecken || []) {
+    const feld = x.feld ? [...document.querySelectorAll(x.feld)].find(el => sichtbar(el) && istLeer(el)) : null;
+    const el = feld || (x.ziel ? document.querySelector(x.ziel) : null);
+    if (el && el.getClientRects().length) { if (!ziele.includes(el)) ziele.push(el); } else ohne = true;
+  }
+  if (ohne) ziele.push($('hinweise'));
+  return ziele;
+}
+/** Nächstes Ziel nach dem zuletzt angesprungenen (gemerkt über zielKey, nicht als Nummer – die Liste ändert sich beim
+    Ausfüllen); ist das letzte nicht mehr dabei, wieder das erste */
+function zurLuecke() {
+  const ziele = lueckenZiele(); if (!ziele.length) return;
+  const i = S.lueckeLetzt ? ziele.findIndex(el => zielKey(el) === S.lueckeLetzt) : -1;
+  const el = ziele[i < 0 ? 0 : (i + 1) % ziele.length]; S.lueckeLetzt = zielKey(el);
+  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  el.focus({ preventScroll: true });   // Probenliste und Hinweise haben tabindex="-1" – auch dort landet der Tastaturfokus
+  el.classList.remove('luecke-hier'); void el.offsetWidth; el.classList.add('luecke-hier');
+  setTimeout(() => el.classList.remove('luecke-hier'), 1600);
 }
 /** Sprung zu einem Hinweis: in die App, die die Anlage erzeugt, oder in die Einstellungen */
 function aktionHtml(a) {
@@ -695,14 +740,18 @@ function vorschau(m) {
   vorschauBilder();
 }
 async function vorschauBilder() {
+  let neuFehlt = false;
   for (const el of document.querySelectorAll('[data-thumb]')) {
     const datei = el.dataset.thumb; if (S.thumbs[datei] === undefined) {
       S.thumbs[datei] = null;
-      try { const f = await fotoBytes(datei, 480); S.thumbs[datei] = URL.createObjectURL(new Blob([f.data], { type: 'image/jpeg' })); } catch (e) { S.thumbs[datei] = ''; }
+      try { const f = await fotoBytes(datei, 480); S.thumbs[datei] = URL.createObjectURL(new Blob([f.data], { type: 'image/jpeg' })); } catch (e) { S.thumbs[datei] = ''; neuFehlt = true; }
     }
     if (S.thumbs[datei]) { const img = document.createElement('img'); img.src = S.thumbs[datei]; img.alt = ''; el.replaceWith(img); }
   }
+  if (neuFehlt) render();   // nicht lesbares Foto wird in Word zu [Foto fehlt: …] → Zähler und Hinweise nachziehen (einmal je Datei)
 }
+/** Fotos, deren Datei sich in der Vorschau nicht lesen ließ (S.thumbs[datei] === '') – in Word stünde dort [Foto fehlt: …] */
+const fotosFehlen = () => Object.keys(S.thumbs).filter(d => S.thumbs[d] === '');
 
 /* ---------- Bilder ---------- */
 function drehungVon(datei) { const b = S.fk && S.fk.bilder && S.fk.bilder[datei]; return b ? +b.drehung || 0 : 0; }
@@ -727,12 +776,17 @@ async function logoLaden() {
 }
 
 /* ---------- Word-Datei ---------- */
-async function wordBlob(m) {
-  if (!m.proben.length) throw new Error('Keine Proben im Bericht.');
+/** Logo, Unterschriften und Fotos für die Word-Datei; fehlen = Fotos, die sich nicht lesen ließen (→ [Foto fehlt: …]) */
+async function bilderLaden(m) {
   const bilder = { ...(await logoLaden()), sig: {}, fotos: {} };
   for (const u of m.unterschriften) { const b = u.kuerzel && S.sig[sigKey(u.kuerzel)]; if (b) bilder.sig[u.kuerzel] = b; }
   const fehlen = [];
   for (const p of m.proben) if (p.foto) { try { bilder.fotos[p.label] = await fotoBytes(p.foto); } catch (e) { fehlen.push(p.foto); } }
+  return { bilder, fehlen };
+}
+async function wordBlob(m, geladen) {
+  if (!m.proben.length) throw new Error('Keine Proben im Bericht.');
+  const { bilder, fehlen } = geladen || await bilderLaden(m);
   const blob = await docx.Packer.toBlob(BerichtDocx.erstellen(docx, m, bilder));
   return { blob, m, fehlen };
 }
@@ -776,10 +830,12 @@ async function speichern() {
         name = m0.dateiname; if (await dateiDa(ziel, name)) name = await freierName(ziel, name);
       }
     }
-    if (m0.luecken.length && !confirm(`Im Bericht sind noch ${m0.luecken.length} Lücke(n) gelb markiert:\n${m0.luecken.join(', ')}\n\nTrotzdem speichern?`)) { render(); return; }
+    const geladen = await bilderLaden(m0);   // vor der Rückfrage: ein nicht lesbares Foto ist auch eine Lücke
+    const offen0 = BerichtLuecken.offene(m0, geladen.fehlen);
+    if (offen0.length && !confirm(`Im Bericht sind noch ${offen0.length} Lücke(n) gelb markiert:\n${offen0.join(', ')}\n\nTrotzdem speichern?`)) { render(); return; }
     if (neueNr) { S.form.mitteilung = neueNr; S.form.mitteilungAm = new Date().toISOString(); formMerken('mitteilung', 'mitteilungAm'); render(); }
     S.statusFest = null; $('status').textContent = 'Word-Datei wird erstellt …';
-    const { blob, m, fehlen } = await wordBlob(m0);
+    const { blob, m, fehlen } = await wordBlob(m0, geladen);
     const fh = await ziel.getFileHandle(name, { create: true });
     let w; try { w = await fh.createWritable(); } catch (e) { throw new Error(`„${name}“ lässt sich nicht schreiben – ist die Datei noch in Word geöffnet?`); }
     await w.write(blob); await w.close();
@@ -789,7 +845,7 @@ async function speichern() {
     // Protokoll: welche Dateien als Anlage dazugehören (für die Übergabe: Pfade im Projektordner), wie viele Lücken beim Speichern offen waren,
     // Nummer und Datum (beim nächsten Öffnen: eine Nummer, die es schon gibt, und das Datum dazu werden nicht mehr vorgeschlagen)
     await zustandSchreiben({ datei: name, am: new Date().toISOString(), von: ich(), mitteilung: +S.form.mitteilung || 1, datum: S.form.datum || '',
-      anlagen: m.anlagenDateien, anlagenListe: m.anlagenListe, luecken: m.luecken.length })
+      anlagen: m.anlagenDateien, anlagenListe: m.anlagenListe, luecken: BerichtLuecken.offene(m, fehlen).length })
       .catch(e => fehler('Bericht gespeichert, Angaben dazu nicht: ' + (e && e.message || e)));
     if (window.MosaikLeiste) MosaikLeiste.aktualisieren();
     statusFest(`<span class="ok">✓ Gespeichert: Mitteilungen/${esc(name)}</span>` + (fehlen.length ? ` · Foto(s) nicht lesbar: ${esc(fehlen.join(', '))}` : ''));
@@ -914,11 +970,13 @@ function verbinden() {
   $('btnEinstellungen').onclick = einstellungenOeffnen;
   $('eAbbrechen').onclick = () => $('dlgEinstellungen').close(); $('eSpeichern').onclick = einstellungenSpeichern;
   $('btnErstellen').onclick = speichern; $('btnLaden').onclick = herunterladen;
+  $('lueckenZaehler').onclick = zurLuecke;
   $('fDatum').onchange = e => setze('datum', e.target.value);
   $('fMitteilung').onchange = e => { S.form.mitteilung = Math.max(1, +e.target.value || 1); S.form.mitteilungAm = new Date().toISOString(); formMerken('mitteilung', 'mitteilungAm'); render(); };
   $('fEingang').onchange = e => setze('eingangsdatum', e.target.value);
   $('fAuftrag').onchange = e => setze('auftragsdatum', e.target.value);
-  $('fAg').oninput = e => { S.form.agSatz = e.target.value; formMerken('agSatz'); vorschau(modell()); };
+  $('fAg').oninput = e => { S.form.agSatz = e.target.value; formMerken('agSatz'); const m = modell(); vorschau(m);
+    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form))); };
   $('fAg').onchange = () => render();
   $('fPn').onchange = e => { const k = e.target.value, mtAlt = S.form.mt; S.form.probenehmer = k; if (k && rolle(k) === 'mt') S.form.mt = k; else if (S.form.mt && S.form.mt !== k && rolle(S.form.mt) === 'mt') S.form.mt = '';
     S.form.pnQuelle = 'hand'; formMerken('probenehmer', 'pnQuelle', ...(S.form.mt !== mtAlt ? ['mt'] : [])); render(); };

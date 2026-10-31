@@ -47,7 +47,13 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   Die Büroaufgaben (`_Spektron/Buero`, bzw. `_Buero`) werden dafür nur gelesen.
 - **Laborwerte und Probenbezeichnungen werden nie bearbeitet.** Ergebnistexte kommen wörtlich aus dem Prüfbericht (über ResultKit).
   Einzige Ausnahme: ein KI-Wert, der nicht in den Labordaten steht, kann aus dem PDF eingetragen werden (im Formular markiert).
-- **Nichts wird erfunden.** Fehlt eine Angabe, steht sie im Bericht als gelb markierte Lücke, z. B. `[Auftragsdatum]`.
+- **Nichts wird erfunden.** Fehlt eine Angabe, steht sie im Bericht als gelb markierte Lücke, z. B. `[Auftragsdatum]`, mit einem
+  Word-Kommentar am Rand („Noch ausfüllen: Auftragsdatum“, Autor „BerichtKit“) – in Word mit Überprüfen › Nächster Kommentar von
+  Lücke zu Lücke; ist die Stelle gefüllt, den Kommentar löschen. Ausnahme: Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb
+  (einen Kommentar dort lädt LibreOffice nicht) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar.
+- **Offene Stellen im Formular:** oben „n Stellen noch offen“; Klick springt zum Feld, das die nächste Lücke füllt (Zuordnung in
+  `bericht-luecken.js`), leere Pflichtfelder sind gelb umrandet. Lücken ohne Feld in BerichtKit (Projektzentrale, LabelKit, in Word)
+  nennen in den Hinweisen, wo sie zu füllen sind.
 - **Keine Namen, Unterschriften oder Kundendaten im Repository** – Namen kommen aus der Mitarbeiterliste, Unterschriften aus dem Archivordner.
   Die Testdaten sind erfunden.
 
@@ -102,6 +108,7 @@ Aufbau (ab 1.10.0, Vorbereitung für weitere Berichtsarten):
 | `bericht-gemeinsam.js` | Bausteine jeder Berichtsart: Helfer, Lücken, Personen/Rollen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund und Abgleich, Projektsicht, Deckblatt mit/ohne Versicherung, Kopfzeilen, Auftraggeber mit Artikel, Unterschriften, Anlagen |
 | `bericht-asbest.js` | Berichtsart `asbest` – die Texte unten |
 | `bericht-brand.js` | folgt (Brandbericht, Doc „Textbausteine Brand-Sanierungsvorschlag“) |
+| `bericht-luecken.js` | je Berichtsart: welche Lücke welches Formularfeld füllt (Zähler, Sprung, gelbe Umrandung) bzw. wo sie sonst zu füllen ist |
 
 Berichtsart aus der Projektzentrale: `#projekt=<Ordner>&art=asbest|brand`. Eine Berichtsart, die noch nicht bereit ist, zeigt
 „kommt bald“ mit Knopf „Asbestbericht öffnen“ – nie einen Bericht der falschen Art. `form.art` ist eine Vorgabe und steht nicht in `_BerichtKit.json`.
@@ -113,6 +120,8 @@ Veranlassung (Probenahme durch uns / zugestellte Probe mit Gewährleistungssatz)
 Die Formatierung (A4, Arial 12, 1,5-zeilig, Deckblatt mit Logo, Kopfzeilen, „Seite X von Y“) baut `bericht-docx.js` – für jede
 Berichtsart gleich; alle Texte (auch der Titel) kommen aus dem Modell. Blöcke: Absatz `p`, Unterüberschrift `h2` (kursiv, z. B. „5.1 …“),
 Foto `fig`, Tabelle `tab` mit `spalten` (Breiten in twips, zusammen 9070; ohne Angabe gleich breit) und `ohneUmbruch` (z. B. Labor-Nr.).
+Jede Lücke (`{ gap }`) wird gelb und bekommt ihren Kommentar in `bericht-docx.js` (außer in der Kopfzeile der Folgeseiten) – das
+Modell kennt keine Kommentare.
 
 ## Tests
 
@@ -121,6 +130,8 @@ node tests/text.cjs              # alle Berichtsvarianten (Textbausteine)
 node tests/anlagen.cjs           # Anlagen: erkennen, Hausreihenfolge, veraltet, mehrteilig
 node tests/berichtsart.cjs       # Berichtsart wählen, Bausteine, Word: Spaltenbreiten je Tabelle, Unterüberschrift
 node tests/asbest-golden.cjs     # Asbestbericht festgeschrieben (Beispielberichte); gewollte Änderung: --neu, Diff ansehen
+node tests/luecken-kommentare.cjs  # Word-Kommentar je Lücke; mit ../projektzentrale: word-luecken.js findet dieselben Lücken
+                                   # (--beispiel <datei.docx> schreibt eine Datei mit vielen Lücken zum Ansehen)
 node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich wie LabelKit (falls ../labelkit daneben)
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)
 node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei (Playwright)

@@ -81,6 +81,17 @@ ul.hinweise li.sperre{color:var(--err);font-weight:600}
 .klein-knopf{font-size:11px;padding:0 6px;margin-left:4px}
 .blatt .kenn{font-weight:700;font-size:12.5px;margin:0 0 10px}.blatt .kenn .entwurf{color:#c00000}
 ul.hinweise li.luecke{background:var(--gap);border-radius:4px;padding:0 4px;list-style-position:inside;margin-left:-18px}
+/* Offene Stellen: Zähler oben (bleibt beim Scrollen sichtbar), leere Pflichtfelder gelb umrandet, Sprungziel kurz hervorgehoben */
+.luecken-zaehler{position:sticky;top:60px;z-index:5;display:block;width:100%;text-align:left;margin-bottom:14px;background:var(--gap);border-color:#e2c440;color:#5c4700;font-weight:600;box-shadow:0 -10px 0 2px var(--bg),var(--shadow)}
+.luecken-zaehler:not(:disabled)::after{content:'zur nächsten Stelle ›';float:right;font-weight:400;font-size:12px;padding-top:1px}
+.luecken-zaehler:hover{border-color:#c9a800;color:#3f3100}
+.luecken-zaehler.ok,.luecken-zaehler:disabled{position:static;background:var(--neg);border-color:#bfdfca;color:var(--ok);font-weight:500;opacity:1;cursor:default}
+.luecken-zaehler[hidden]{display:none}
+.nur-vorleser{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.offen-feld{border-color:#d4ad00 !important;box-shadow:0 0 0 2px #f4dc5c}
+.luecke-hier{animation:luecke-hier 1.5s ease-out}
+@keyframes luecke-hier{0%,35%{box-shadow:0 0 0 4px #f0c800}100%{box-shadow:0 0 0 2px #f4dc5c}}
+#probenListe.luecke-hier,#hinweise.luecke-hier,#probenListe:focus,#hinweise:focus{animation:none;outline:3px solid #f0c800;outline-offset:2px}
 .ok{color:var(--ok)}
 .fehler{background:#fdf1ef;border:1px solid #f1c4bd;color:var(--err);border-radius:8px;padding:10px 14px;margin-bottom:14px}
 /* Vorschau wie Papier */
@@ -153,6 +164,8 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 
 <main id="app" hidden>
   <section>
+    <button type="button" id="lueckenZaehler" class="luecken-zaehler" aria-describedby="lueckenListe" hidden></button>
+    <span id="lueckenListe" class="nur-vorleser"></span>
     <div id="fehler" class="fehler" hidden></div>
     <div id="meldungen" class="meldungen" role="status" hidden><ul id="meldungenListe"></ul><button type="button" class="klein-knopf" id="btnMeldungenWeg" title="Hinweise ausblenden">Ausblenden</button></div>
     <div class="karte">
@@ -177,7 +190,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     </div>
     <div class="karte">
       <h2>Proben <span class="klein" style="text-transform:none" id="probenInfo"></span></h2>
-      <table class="proben"><thead><tr><th></th><th>Probe</th><th>Material · Entnahmestelle</th><th>Ergebnis</th></tr></thead><tbody id="probenListe"></tbody></table>
+      <table class="proben"><thead><tr><th></th><th>Probe</th><th>Material · Entnahmestelle</th><th>Ergebnis</th></tr></thead><tbody id="probenListe" tabindex="-1"></tbody></table>
       <div id="einbauWahl" hidden style="margin-top:10px">
         <div class="klein">Dämmstoff (KMF) – Einbaujahr:</div>
         <div class="radio"><label><input type="radio" name="einbau" value="unbekannt"> nicht bekannt</label><label><input type="radio" name="einbau" value="vor1996"> vor 1996</label></div>
@@ -197,7 +210,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     </div>
     <div class="karte">
       <h2>Hinweise</h2>
-      <ul class="hinweise" id="hinweise"></ul>
+      <ul class="hinweise" id="hinweise" tabindex="-1"></ul>
     </div>
   </section>
   <section class="vorschau" aria-label="Vorschau"><div id="vorschau"></div></section>
@@ -246,6 +259,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 <script src="bericht-asbest.js"></script>
 <script src="bericht-text.js"></script>
 <script src="bericht-docx.js"></script>
+<script src="bericht-luecken.js"></script>
 <script src="mosaik-leiste.js"></script>
 <script src="app.js"></script>
 </body>
