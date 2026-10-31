@@ -75,21 +75,27 @@ fall('3. Ortsbesichtigung: Anwesende / nur unser Büro / Teilnehmerliste, zweite
   assert.match(text(modell(mitForm(F.BR2_nur_PAK_ohne_Versicherung_GB0, { person2: 'Mes' })), 3), /war Herr Messer \(/, 'zweite Person = Probenehmer zählt einmal');
   assert.match(text(modell(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF), 3), /Die bei dem Ortstermin anwesenden Personen sind der vor Ort erstellten Teilnehmerliste zu entnehmen\.$/);
   assert.match(text(modell(F.BR3_Luecken), 3), /^Am \[Ortstermin\] fand .*\nBei dem Ortstermin waren \[Anwesende eintragen\] sowie Herr Messer/);
-  assert.match(text(modell(F.BR1_voll_Versicherung, { form: { ...F.BR1_voll_Versicherung.form, probenehmer: '' } }), 3), /sowie \[Probenehmer\] \(Sach|sowie Herr vom Beispiel \(Sach/);
+  assert.match(text(modell(mitForm(F.BR1_voll_Versicherung, { person2: '' }, { probenehmer: '' })), 3), /sowie \[Probenehmer\] \(Sachverständigenbüro/);
+  assert.match(text(modell(mitForm(F.BR1_voll_Versicherung, {}, { probenehmer: '' })), 3), /sowie Herr vom Beispiel \(Sach/, 'ohne Probenehmer: die zweite Person allein');
+  // mehrere Probenahmetage ohne Ortstermin
+  const zwei = modell({ ...F.BR4_Gewerbe_Teilnehmerliste_ENTWURF, pj: D.pj({ ortstermin: '' }), lk: D.lk({ pak: [[1, '2026-10-15', 'A', 'Wischprobe'], [2, '2026-10-14', 'B', 'Wischprobe']] }) });
+  assert.match(text(zwei, 3), /^Am 14\.10\.2026 und am 15\.10\.2026 fanden Besichtigungen der Schadenstelle mit Probenahme statt\./);
   // Ortstermin fehlt → Probenahmedatum aus LabelKit + Hinweis; weicht ab → Hinweis
   const ohne = modell({ ...F.BR1_voll_Versicherung, pj: D.pj({ ortstermin: '' }) });
   assert.match(text(ohne, 3), /^Am 14\.10\.2026 fand/); assert.ok(ohne.hinweise.some(h => /Ortstermin fehlt in der Projektzentrale – in 3\. steht das Probenahmedatum aus LabelKit \(14\.10\.2026\)/.test(h)));
   assert.ok(modell(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF).hinweise.some(h => /Probenahmedatum in LabelKit \(15\.10\.2026\) weicht vom Ortstermin der Projektzentrale \(14\.10\.2026\) ab/.test(h)));
   assert.equal(T.nominativ({ name: 'Ohne Anrede', geschlecht: '', satz: 'Ohne Anrede' }), 'Ohne Anrede');
   assert.equal(T.nominativ({ name: 'Dr. S. Kasper', geschlecht: 'm', satz: 'Herrn Dr. S. Kasper' }), 'Herr Dr. S. Kasper');
+  assert.equal(T.nominativ({ name: 'Stefan Cremer', geschlecht: 'm', satz: 'unseren Messtechniker Herrn Cremer' }), 'Herr Cremer', 'eigener Satz im Akkusativ gilt hier nicht');
 });
 
 fall('4. Probenahme: Absätze je Gruppe, Zahlwort bis zwölf, Einzahl, gemeinsamer Prüfbericht Chlorid/PAK, mehrere Prüfberichte', () => {
   const m = modell(F.BR1_voll_Versicherung), t = text(m, 4).split('\n');
   assert.equal(t[0], 'Zur Messung der Chloridbelastung wurden drei Wischproben entnommen. Die Proben wurden der Eurofins Beispiel-Labor GmbH zur Untersuchung auf Chlorid übergeben.');
   assert.equal(t[1], 'Zur Messung der PAK-Belastung wurden vier Wischproben entnommen und auf die 16 Einzelkomponenten nach EPA (Environmental Protection Agency) untersucht; zusätzlich wird der Summenwert angegeben. Zusätzlich wurde eine Materialprobe entnommen und auf PAK untersucht. Die Analysenergebnisse sind dem Prüfbericht Nr. AR-999-2026-000101-01 zu entnehmen (Anlage 1).');
-  assert.equal(t[2], 'An einer Materialprobe künstlicher Mineralfaserdämmung wurde untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.');
-  assert.equal(t[3], 'Zusätzlich wurden drei Materialproben (Fliesenkleber, Putz, Dämmstoff Mineralwolle) entnommen und der Eurofins Beispiel-Labor GmbH zur Untersuchung auf Asbest übergeben. Die Ergebnisse sind im Prüfbericht Nr. AR-999-2026-000102-01 dokumentiert (Anlage 2).');
+  // Asbest vor KMF (Abweichung von der Doc-Reihenfolge: die Dämmstoffprobe ist erst „entnommen“, dann „zusätzlich untersucht“)
+  assert.equal(t[2], 'Zusätzlich wurden drei Materialproben (Fliesenkleber, Putz, Dämmstoff Mineralwolle) entnommen und der Eurofins Beispiel-Labor GmbH zur Untersuchung auf Asbest übergeben. Die Ergebnisse sind im Prüfbericht Nr. AR-999-2026-000102-01 dokumentiert (Anlage 2).');
+  assert.equal(t[3], 'An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.');
   assert.equal(t[4], 'Zusätzlich wurden zwei Materialproben entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage 5 dargestellt.');
   assert.equal(t[5], 'Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt.');
   const l = text(modell(F.BR3_Luecken), 4).split('\n');
@@ -156,7 +162,9 @@ fall('7. Arbeitsschutzmaßnahmen: GB 0 eigener Satz, GB 1–3 mit Nummer, übrig
   assert.match(text(modell(mitForm(F.BR1_voll_Versicherung, { gb: '3' })), 7), /für den Gefahrenbereich 3 \(GB 3\) gemäß/);
   assert.match(text(modell(mitForm(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF, { uebrige: true })), 7), /in den übrigen Bereichen sind keine/);
   assert.match(text(modell(F.BR3_Luecken), 7), /für den Gefahrenbereich \[Gefahrenbereich wählen\] gemäß/);
-  assert.match(text(modell(F.BR2_nur_PAK_ohne_Versicherung_GB0), 7), /^Bei Sanierungsarbeiten in den untersuchten Bereichen sind aus chemischer Sicht/);
+  // Untersuchungsbericht (ohne Sanierungsmaßnahmen): vorläufige Formulierung, bei GB 0 ohne doppeltes „untersuchte Bereiche“
+  assert.match(text(modell(F.BR2_nur_PAK_ohne_Versicherung_GB0), 7), /^Bei Sanierungsarbeiten sind aus chemischer Sicht/);
+  assert.match(text(modell(mitForm(F.BR2_nur_PAK_ohne_Versicherung_GB0, { gb: '1' })), 7), /^Bei Sanierungsarbeiten in den untersuchten Bereichen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 1/);
   // Vorbelegung „übrige Wohnungen“ nur bei Nutzung Wohnen
   assert.equal(BR.vorgabe({ nutzung: 'Wohnen' }).uebrige, true); assert.equal(BR.vorgabe({ nutzung: 'Büro' }).uebrige, false);
 });
@@ -204,6 +212,38 @@ fall('Anlage Brandgeruch erkennen: Name der Projektzentrale, neueste zuerst, Num
   assert.equal(k.veraltet, null); assert.match(k.grund, /Stand nicht prüfbar/);
   // Asbestbericht kennt die Art nicht (Profil asbest) – eine Brandgeruch-Datei ändert dort nichts
   assert.ok(!A.PROFILE.asbest.fest.includes('brandgeruch') && !A.PROFILE.asbest.optional.includes('brandgeruch'));
+});
+
+fall('Prüfberichte erkennen: „Chlorid“ nur als eigener Parameter, stornierte Proben zählen nicht, KMF-Bericht ohne Asbestwerte wird Anlage', () => {
+  const f = F.BR2_nur_PAK_ohne_Versicherung_GB0;
+  const lhkw = modell({ ...f, erg: D.erg([{ nr: 'LHKW-1', proben: [[3, [{ p: 'Vinylchlorid', r: '< 0,1', u: 'mg/kg' }], 'Sonstige']] }, ...f.erg.berichte.map(b => ({ nr: b.bericht, proben: b.proben.map(p => [+p.label.slice(1), p.werte, p.typ]) }))]) });
+  assert.equal(abschnitt(lhkw, 1).inhalt.length, 3, 'Vinylchlorid ist kein Chlorid – keine Korrosionsabsätze');
+  assert.deepEqual(lhkw.anlagenListe.filter(a => a.art === 'pruefbericht').map(a => a.titel), ['Prüfbericht']);
+  assert.equal(T.text(lhkw.anlagenTeile[0].zeilen[0]), 'Prüfbericht Nr. AR-999-2026-000201-01');
+  // Chlorid-Wert nur zu einer stornierten Probe: Bericht ist kein Chlorid-Bericht
+  const st = modell({ ...f, lk: D.lk({ pak: [[1, '2026-10-14', 'A', 'Wischprobe']], chlorid: [[2, '2026-10-14', 'B', 'Wischprobe', B.STORNO]] }),
+    erg: D.erg([{ nr: 'CL-1', proben: [[2, D.W.cl('9'), 'Chlorid']] }, { nr: 'PAK-1', proben: [[1, D.W.pak('20'), 'PAK']] }]) });
+  assert.deepEqual(st.anlagenListe.filter(a => a.art === 'pruefbericht').length, 1); assert.doesNotMatch(text(st, 1), /Korrosionsrisiko besteht/);
+  // KMF-Prüfbericht ohne Asbestwerte: eigene Anlage, Verweis im KMF-Absatz
+  const kmf = modell({ ...f, lk: D.lk({ pak: [[1, '2026-10-14', 'A', 'Wischprobe']], asbest: [[2, '2026-10-14', 'Dach', 'Dämmstoff Mineralwolle', 'Sonstige']] }),
+    erg: D.erg([{ nr: 'PAK-1', proben: [[1, D.W.pak('20'), 'PAK']] }, { nr: 'KMF-1', proben: [[2, [{ p: 'WHO-Fasern', r: 'nachgewiesen', u: '' }, { p: 'Kanzerogenitätsindex KI', r: '30', u: '' }], 'Asbest']] }]) });
+  assert.deepEqual(kmf.anlagenTeile.filter(a => /Prüfbericht/.test(T.text(a.zeilen[0]))).map(a => T.text(a.zeilen[0])), ['Prüfbericht Nr. PAK-1', 'Prüfbericht Nr. KMF-1']);
+  assert.match(text(kmf, 4), /\nAn einer Materialprobe künstlicher Mineralfaserdämmung wurde untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex \(KI\) bestimmt\. Das Ergebnis ist im Prüfbericht Nr\. KMF-1 dokumentiert \(Anlage 2\)\.\n/);
+  assert.match(text(kmf, 7), /TRGS 521/);
+});
+
+fall('Brandgeruch-Anlage: Nummer auch mitten im Titel, gekürzter Name (64 Zeichen), andere LabelKit-Datei → Stand nicht prüfbar', () => {
+  const t = Date.parse('2026-10-21T10:00:00Z'), lk = { name: 'alt_Daten.json', t, sha: 'e'.repeat(64) };
+  let k = A.brandgeruchFinden([{ name: '26-0512_Anlage-4-Brandgeruch_Brandgeruch_2026-10-21.docx', t }], '', null);
+  assert.equal(k.nrImDokument, 4, '„Anlage 4 Brandgeruch“ → Anlage-4-Brandgeruch');
+  // Projektzentrale: Titel „Anlage 3 Sensorische Prüfung im Erdgeschoss links Wohnung“ → Name nach 64 Zeichen abgeschnitten
+  const lang = ('26-0512_Anlage-3-Sensorische-Pruefung-im-Erdgeschoss-links_PN98-Brandgeruch').slice(0, 64) + '_2026-10-21.docx';
+  k = A.brandgeruchFinden([{ name: lang, t }], '', null);
+  assert.ok(k, 'gekürzter Name erkannt'); assert.equal(k.nrImDokument, 3); assert.match(k.details, /gekürzt/);
+  assert.equal(A.brandgeruchFinden([{ name: ('26-0512_Anlage-3-Sensorische-Pruefung-im-Erdgeschoss-links-Wohnungxx_PN98').slice(0, 64) + '_2026-10-21.docx', t }], '', null), null, 'abgeschnitten vor „B“: kein Brandgeruch erkennbar');
+  const prot = `2026-10-21T10:00:00.000Z | 26-0512_Anlage_Brandgeruch_2026-10-21.docx | ${'c'.repeat(64)} | LabelKit/neu_Daten.json | ${'f'.repeat(64)} | Projektzentrale 1.39.0`;
+  k = A.brandgeruchFinden([{ name: '26-0512_Anlage_Brandgeruch_2026-10-21.docx', t }], prot, lk);
+  assert.equal(k.veraltet, null); assert.match(k.grund, /aus einer anderen LabelKit-Datei erstellt \(neu_Daten\.json\)/);
 });
 
 console.log(`Brandbericht: ${n} Fälle bestanden.`);

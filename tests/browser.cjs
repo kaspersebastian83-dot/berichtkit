@@ -422,6 +422,12 @@ const daten = {
     let mitBrand = null;   // eigene Angaben der Brand-Seite feldweise unter „brand“, die Berichtsart nie
     for (let i = 0; i < 40 && !(mitBrand && mitBrand.form.brand && mitBrand.form.brand.titel); i++) { await page.waitForTimeout(150); mitBrand = JSON.parse(await projektDatei(bkPfad)); }
     assert.deepEqual(mitBrand.form.brand, { gb: '2', titel: 'Untersuchungsbericht' }); assert.ok(!('art' in mitBrand.form));
+    // „Zum Asbestbericht“ in der Brand-Karte: dasselbe Projekt als Asbestbericht, Brand-Angaben bleiben draußen
+    await page.click('#btnZumAsbest');
+    await page.waitForSelector('#karteBrand', { state: 'hidden' }); await page.waitForSelector('#app:not([hidden]) .blatt');
+    assert.match(await page.textContent('#vorschau'), /Betreff|Untersuchung auf Asbest/);
+    assert.doesNotMatch(page.url(), /art=|vorschau=/); assert.ok(await page.isHidden('#karteBrand')); assert.ok(await page.isEnabled('#btnErstellen'));
+    assert.doesNotMatch(await page.textContent('#vorschau'), /Gefahrenbereich|Sanierungsvorschlag|Untersuchungsbericht vom[\s\S]*Schlussfolgerungen[\s\S]*Arbeitsschutz/);
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest');
     await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.ok(await page.isHidden('#start')); assert.match(await page.textContent('#vorschau'), /Untersuchung auf Asbest/);

@@ -145,11 +145,14 @@ function svVorschlag(cfg, mitarbeiter, zustaendig) {
     grund: zp ? `zuständig laut Ordner ist ${zp.name}, ${zp.geschlecht === 'w' ? 'Messtechnikerin' : 'Messtechniker'}` : 'kein Zuständiger im Projekt' };
 }
 /** Person im Nominativ für „Bei dem Ortstermin war … anwesend“: „Herr Dr. Kasper“, „Frau Dr. Pütt“ – ohne Frau/Herr der Name.
-    Ein eigener Satz aus den Einstellungen („Herrn Dr. S. Kasper“) gilt auch hier, „Herrn“ wird zu „Herr“. */
+    Ein eigener Satz aus den Einstellungen gilt nur, wenn er mit „Herrn“/„Frau“ beginnt („Herrn Dr. S. Kasper“ → „Herr Dr. S. Kasper“);
+    andere eigene Sätze sind für „… durch ___ entnommen“ (Akkusativ) gedacht – dann wird der Name aus den Namensteilen gebaut. */
 function nominativ(p) {
   if (!p) return '';
-  if (/^Herrn\s/.test(s(p.satz)) || /^Frau\s/.test(s(p.satz))) return s(p.satz).replace(/^Herrn\s/, 'Herr ');
-  return p.geschlecht === 'w' || p.geschlecht === 'm' ? s(p.satz).replace(/^Herrn\s/, 'Herr ') : p.name;
+  if (/^(?:Herrn|Frau)\s/.test(s(p.satz))) return s(p.satz).replace(/^Herrn\s/, 'Herr ');
+  if (p.geschlecht !== 'w' && p.geschlecht !== 'm') return p.name;
+  const t = namensteile(p.name);
+  return `${p.geschlecht === 'w' ? 'Frau' : 'Herr'} ${t.titel ? t.titel + ' ' : ''}${t.nachname}`;
 }
 function rollentext(p) {
   if (p.rolle === 'mt') return p.geschlecht === 'w' ? 'Die Messtechnikerin' : 'Der Messtechniker';

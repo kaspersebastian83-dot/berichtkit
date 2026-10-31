@@ -191,7 +191,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     </div>
     <div class="karte" id="karteBrand" hidden>
       <h2>Brandbericht</h2>
-      <p class="klein" id="brandVorschau" style="margin:0 0 8px"></p>
+      <p class="klein" id="brandVorschau" style="margin:0 0 8px"><span id="brandVorschauText"></span><button type="button" class="klein-knopf" id="btnZumAsbest" title="Dieses Projekt als Asbestbericht öffnen">Zum Asbestbericht</button></p>
       <div class="feld"><span class="lbl">Titel</span><div class="radio zwei" role="radiogroup" aria-label="Titel des Berichts">
         <label><input type="radio" name="brTitel" value="Sanierungsvorschlag"> Sanierungsvorschlag</label>
         <label title="Ohne Sanierungskonzept: 6. heißt „Schlussfolgerungen“, kein Abschnitt 8"><input type="radio" name="brTitel" value="Untersuchungsbericht"> Untersuchungsbericht</label></div></div>
@@ -206,7 +206,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
         <label><input type="radio" name="brAnw" value="buero"> nur unser Büro vor Ort</label>
         <label><input type="radio" name="brAnw" value="teilnehmer"> Teilnehmerliste vor Ort</label></div></div>
       <div class="feld" id="zeileAnwesende"><label for="fbAnwesende">Weitere Anwesende</label><input type="text" id="fbAnwesende" placeholder="z. B. Herr Müller (VN), Herr Schmidt (Sanierungsfirma XY)"><span class="quelle">„Bei dem Ortstermin waren <b>…</b> sowie Herr … (Sachverständigenbüro …) anwesend.“</span></div>
-      <div class="feld"><label for="fbPerson2">Zweite Person vor Ort</label><select id="fbPerson2"></select><span class="quelle">aus unserem Büro, zusätzlich zu „Probenahme durch“</span></div>
+      <div class="feld" id="zeilePerson2"><label for="fbPerson2">Zweite Person vor Ort</label><select id="fbPerson2"></select><span class="quelle">aus unserem Büro, zusätzlich zu „Probenahme durch“</span></div>
       <div class="feld"><label for="fbGb">Gefahrenbereich</label><select id="fbGb"><option value="">– bitte wählen –</option><option value="0">GB 0</option><option value="1">GB 1</option><option value="2">GB 2</option><option value="3">GB 3</option></select><span class="quelle">7. Arbeitsschutzmaßnahmen nach VdS 2357</span></div>
       <div class="feld" id="zeileUebrige"><span class="lbl"></span><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="fbUebrige"> <span id="lbUebrige">Satz „übrige Wohnungen“ in 7.</span></label></div>
       <p class="klein" id="qbProjekt" style="margin:6px 0 0"></p>

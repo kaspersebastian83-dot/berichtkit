@@ -170,12 +170,6 @@
      {
       "t": "p",
       "runs": [
-       "An einer Materialprobe künstlicher Mineralfaserdämmung wurde untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt."
-      ]
-     },
-     {
-      "t": "p",
-      "runs": [
        "Zusätzlich wurden drei Materialproben (",
        "Fliesenkleber",
        ", ",
@@ -188,6 +182,12 @@
        "Die Ergebnisse sind im Prüfbericht ",
        "Nr. AR-999-2026-000102-01",
        " dokumentiert (Anlage 2)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt."
       ]
      },
      {
@@ -851,7 +851,7 @@
      {
       "t": "p",
       "runs": [
-       "Bei Sanierungsarbeiten in den untersuchten Bereichen sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, dem Gefahrenbereich 0 (GB 0) zuzuordnen."
+       "Bei Sanierungsarbeiten sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, dem Gefahrenbereich 0 (GB 0) zuzuordnen."
       ]
      }
     ]

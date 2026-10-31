@@ -39,7 +39,7 @@ const FELDER = {
     { luecke: '[Umfang wählen]', ziel: '#fbUmfang', wo: 'Brandbericht › Umfang (Gebäude, technische Einrichtung, Warenvorräte)' },
     { luecke: '[Anwesende eintragen]', feld: '#fbAnwesende', wo: 'Brandbericht › Weitere Anwesende (oder „nur unser Büro“ / „Teilnehmerliste“)' },
     { luecke: '[Gefahrenbereich wählen]', feld: '#fbGb', wo: 'Brandbericht › Gefahrenbereich' },
-    { luecke: '[Probenehmer]', feld: '#fPn', wo: 'Personen › Vor Ort / Probenahme durch' },
+    { luecke: '[Probenehmer]', feld: '#fPn', wo: 'Personen › Vor Ort / Probenahme' },
     { luecke: '[Sachverständige(r)]', feld: '#fSv', wo: 'Personen › Unterschrift' },
     { luecke: '[Labor]', feld: '#fLabor', wo: 'Personen › Labor' },
     { luecke: '[KI-Wert]', feld: '#probenListe input[data-art="ki"]', wo: 'Proben › KI (aus dem Prüfbericht)' },

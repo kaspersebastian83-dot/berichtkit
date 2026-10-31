@@ -31,7 +31,7 @@ const UMFANG = [['gebaeude', 'an den Gebäudeoberflächen'], ['technik', 'an der
 const VDS = 'gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06';
 const BUERO = ' (Sachverständigenbüro Dr. Heinz Schiffers & Partner)';
 /** Prüfbericht mit Chlorid- bzw. PAK-Werten (Gruppen wie ResultKit src/uebersicht.ts gruppeVon) */
-const CHLORID = /chlorid/i, SUMME_PAK = /^(?:Summe|Σ)\s*16\s*EPA[-– ]?PAK/i;
+const CHLORID = /^Chlorid\b/i, SUMME_PAK = /^(?:Summe|Σ)\s*16\s*EPA[-– ]?PAK/i;
 const GB = ['0', '1', '2', '3'];
 
 /** Vorgaben der Brand-Seite (nie in _BerichtKit.json; eigene Angaben stehen in form.brand) */
@@ -50,6 +50,13 @@ function schaden(v) {
 const gross = t => t ? t[0].toUpperCase() + t.slice(1) : t;
 const einOderMehr = (n, eins, mehr) => (n === 1 ? eins : `${zahlwort(n)} ${mehr}`);
 
+/** LabelKit-Labels „P<n>“ stornierter Proben aller nummerierten Listen */
+function stornierteLabels(lk) {
+  const out = new Set();
+  for (const k of ['proben', 'chloridProben', 'asbestProben', 'sonstigeProben'])
+    for (const p of (lk && Array.isArray(lk[k]) ? lk[k] : [])) if (p && istStorniert(p) && p._nr != null) out.add('P' + p._nr);
+  return out;
+}
 /** LabelKit-Proben je Gruppe, ohne stornierte (LabelKit 4.49.0) */
 function lkProben(lk) {
   const liste_ = k => (lk && Array.isArray(lk[k]) ? lk[k] : []).filter(p => p && !istStorniert(p));
@@ -59,12 +66,13 @@ function lkProben(lk) {
     sonstige: liste_('sonstigeProben'), asbest: liste_('asbestProben'), brandgeruch: liste_('brandgeruchProben'),
     bgDatum: s(lk && lk.brandgeruchDatum), bgBlind: !!lk && Array.isArray(lk.brandgeruchProben) && lk.brandgeruchProben.length > 0 && (lk.bgBlind === undefined ? true : !!lk.bgBlind) };
 }
-/** Prüfberichte (ResultKit) mit Chlorid- bzw. PAK-Ergebnissen, in Reihenfolge der Berichte; dazu, ob einer davon vorläufig ist */
-function berichteNach(erg) {
-  const cl = [], pak = [], vorlaeufig = new Set();
+/** Prüfberichte (ResultKit) mit Chlorid- bzw. PAK-Ergebnissen, in Reihenfolge der Berichte; dazu, ob einer davon vorläufig ist.
+    Chlorid nur als eigener Parameter („Chlorid“, nicht „Vinylchlorid“); Proben, die in LabelKit storniert sind, zählen nicht. */
+function berichteNach(erg, storniertLabels) {
+  const cl = [], pak = [], vorlaeufig = new Set(), weg = storniertLabels || new Set();
   for (const b of (erg && Array.isArray(erg.berichte) ? erg.berichte : [])) {
     const nr = s(b && b.bericht); if (!nr) continue;
-    const hat = (typ, re) => (b.proben || []).some(p => p && (p.typ === typ || (p.werte || []).some(w => w && re.test(s(w.p)) && s(w.r))));
+    const hat = (typ, re) => (b.proben || []).some(p => p && !weg.has(s(p.label)) && (p.typ === typ || (p.werte || []).some(w => w && re.test(s(w.p)) && s(w.r))));
     if (hat('Chlorid', CHLORID) && !cl.includes(nr)) cl.push(nr);
     if (hat('PAK', SUMME_PAK) && !pak.includes(nr)) pak.push(nr);
     if (b.vorlaeufig) vorlaeufig.add(nr);
@@ -95,7 +103,7 @@ function bericht(eingabe) {
   const titelArt = TITEL.includes(fb.titel) ? fb.titel : TITEL[0];
   const datum = datumDE(f.datum), mitteilung = `${+f.mitteilung || 1}. Mitteilung`, titel = `${titelArt} vom ${datum}`;
   const labor = s(f.labor) || s(e.cfg && e.cfg.labor);
-  const lk = lkProben(e.lk), rk = berichteNach(e.erg);
+  const lk = lkProben(e.lk), rk = berichteNach(e.erg, stornierteLabels(e.lk));
 
   /* Asbest-/KMF-Proben (ResultKit + LabelKit wie im Asbestbericht): im Brandbericht Abschnitt 5.5 bzw. 5.4 – hier zählen sie in 4.
      und bringen die Sätze in 7. (TRGS 519/521). Stornierte zählen nicht; ohne Ergebnis sperren sie wie im Asbestbericht. */
@@ -119,6 +127,8 @@ function bericht(eingabe) {
     if (p.istKmf && !p.ki) hinweise.push(`${p.ref || p.label}: KI-Wert fehlt in den Labordaten – bitte aus dem Prüfbericht eintragen.`);
   });
   const asb = proben.filter(p => p.befund), kmf = proben.filter(p => p.istKmf), asbNr = [...new Set(asb.map(p => p.bericht).filter(Boolean))];
+  // Prüfberichte nur mit KMF-Werten (keine Asbestwerte): eigene Anlage und eigener Verweis im KMF-Absatz
+  const kmfNr = [...new Set(kmf.map(p => p.bericht).filter(Boolean))].filter(nr => !asbNr.includes(nr));
   const pos = asb.filter(p => p.befund.gefunden);
 
   // Personen
@@ -170,7 +180,9 @@ function bericht(eingabe) {
   if (!ortstermin && lkDaten.length) hinweise.push(`Ortstermin fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`);
   const wir = [pn, p2].filter(Boolean);
   const wirSatz = wir.length ? liste(wir.map(nominativ)) : { gap: '[Probenehmer]' };
-  const ob = [{ t: 'p', runs: ['Am ', ortstermin ? ortstermin : lkDaten.length ? liste(lkDaten) : { gap: '[Ortstermin]' }, ' fand eine Besichtigung der Schadenstelle mit Probenahme statt.'] }];
+  const ob = [{ t: 'p', runs: !ortstermin && lkDaten.length > 1
+    ? [`Am ${liste(lkDaten.map((d, i) => (i ? 'am ' : '') + d))} fanden Besichtigungen der Schadenstelle mit Probenahme statt.`]
+    : ['Am ', ortstermin ? ortstermin : lkDaten.length ? lkDaten[0] : { gap: '[Ortstermin]' }, ' fand eine Besichtigung der Schadenstelle mit Probenahme statt.'] }];
   if (fb.teilnehmerliste) ob.push({ t: 'p', runs: ['Die bei dem Ortstermin anwesenden Personen sind der vor Ort erstellten Teilnehmerliste zu entnehmen.'] });
   else if (fb.nurBuero) ob.push({ t: 'p', runs: [`Bei dem Ortstermin ${wir.length > 1 ? 'waren' : 'war'} `, wirSatz, BUERO + ' anwesend.'] });
   else ob.push({ t: 'p', runs: ['Bei dem Ortstermin waren ', L(fb.anwesende, 'Anwesende eintragen'), ' sowie ', wirSatz, BUERO + ' anwesend.'] });
@@ -178,7 +190,7 @@ function bericht(eingabe) {
   /* Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter = eine Anlage), dann Bilddokumentation,
      Probenplan, Brandgeruch (nur mit Brandgeruch-Proben) */
   const prb = [];
-  for (const nr of [...rk.cl, ...rk.pak, ...asbNr]) if (!prb.includes(nr)) prb.push(nr);
+  for (const nr of [...rk.cl, ...rk.pak, ...asbNr, ...kmfNr]) if (!prb.includes(nr)) prb.push(nr);
   const pdfVon = nr => pruefberichtPdf(e.erg, nr);
   const A = ANL.zusammenstellen({ profil: 'brand', pruefberichte: prb.map(nr => ({ nr, pdf: pdfVon(nr) })), labor, gefunden: e.anlagen || {},
     wahl: f.anlagen, extra: f.anlagenExtra, ohne: lk.brandgeruch.length ? [] : ['brandgeruch'] });
@@ -208,7 +220,6 @@ function bericht(eingabe) {
   }
   let vorher = nCl + nPak + nPakM > 0;
   const zusatz = () => { const z = vorher ? 'Zusätzlich' : 'Es'; vorher = true; return z; };
-  if (kmf.length) pr.push({ t: 'p', runs: [`An ${kmf.length === 1 ? 'einer Materialprobe' : `${zahlwort(kmf.length)} Materialproben`} künstlicher Mineralfaserdämmung wurde untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.`] });
   if (asb.length) {
     const mats = [...new Set(asb.map(p => p.material))];
     const matRuns = mats.flatMap((m, i) => [...(i ? [', '] : []), L(m, 'Material')]);
@@ -216,6 +227,12 @@ function bericht(eingabe) {
       L(labor, 'Labor'), ' zur Untersuchung auf Asbest übergeben. ',
       asbNr.length > 1 ? 'Die Ergebnisse sind in den Prüfberichten ' : asb.length === 1 ? 'Das Ergebnis ist im Prüfbericht ' : 'Die Ergebnisse sind im Prüfbericht ',
       asbNr.length ? nrListe(asbNr) : { gap: '[Prüfbericht-Nr.]' }, asbNr.length ? ` dokumentiert ${anlNr(asbNr)}.` : ' dokumentiert.'] });
+  }
+  // KMF nach Asbest: die Dämmstoffprobe ist dann schon „entnommen“ (Doc-Reihenfolge KMF vor Asbest – geändert, siehe PR #14)
+  if (kmf.length) {
+    const r = [`An ${kmf.length === 1 ? 'einer Materialprobe' : `${zahlwort(kmf.length)} Materialproben`} künstlicher Mineralfaserdämmung wurde ${asb.length ? 'zusätzlich ' : ''}untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.`];
+    if (kmfNr.length) r.push(kmfNr.length > 1 ? ' Die Ergebnisse sind in den Prüfberichten ' : kmf.length === 1 ? ' Das Ergebnis ist im Prüfbericht ' : ' Die Ergebnisse sind im Prüfbericht ', nrListe(kmfNr), ` dokumentiert ${anlNr(kmfNr)}.`);
+    pr.push({ t: 'p', runs: r }); vorher = true;
   }
   if (nBg) {
     pr.push({ t: 'p', runs: [`${zusatz()} ${nBg === 1 ? 'wurde eine Materialprobe' : `wurden ${zahlwort(nBg)} Materialproben`} entnommen und am `,
@@ -236,7 +253,8 @@ function bericht(eingabe) {
 
   /* 7. Arbeitsschutzmaßnahmen: GB 0 eigener Satz (Befunde Nr. 10), GB 1–3 ein Satz mit der Nummer; KMF (TRGS 521) und Asbest (TRGS 519) */
   const gb = GB.includes(s(fb.gb)) ? s(fb.gb) : '';
-  const bei = sanierung ? 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen' : 'Bei Sanierungsarbeiten in den untersuchten Bereichen';
+  // „Untersuchungsbericht“ hat keine Sanierungsmaßnahmen – vorläufige Formulierung, bis Basti einen Wortlaut gibt (PR #14)
+  const bei = sanierung ? 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen' : gb === '0' ? 'Bei Sanierungsarbeiten' : 'Bei Sanierungsarbeiten in den untersuchten Bereichen';
   const as = [];
   if (gb === '0') as.push({ t: 'p', runs: [`${bei} sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind ${VDS}, dem Gefahrenbereich 0 (GB 0) zuzuordnen.`] });
   else as.push({ t: 'p', runs: [`${bei} sind Arbeitsschutzmaßnahmen für den Gefahrenbereich `, gb ? `${gb} (GB ${gb})` : { gap: '[Gefahrenbereich wählen]' }, ` ${VDS}, vorzunehmen.`] });
