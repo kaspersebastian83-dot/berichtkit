@@ -47,7 +47,7 @@ function erstellen(D, m, bilder, optionen = {}) {
   /* Runs: Text, { gap } (gelb + Kommentar; mitKommentar = false nur für die Kopfzeilen) oder { b } (fett); ein Lauf '\t' wird ein
      echter Tab (w:tab) */
   const runs = (xs, o = {}, mitKommentar = true) => (Array.isArray(xs) ? xs : [xs]).filter(x => x !== '' && x != null).flatMap(x =>
-    x && typeof x === 'object' ? (x.gap != null ? luecke(x.gap, o, mitKommentar) : [new TextRun({ text: String(x.b == null ? '' : x.b), font: FONT, ...o, bold: true })])
+    x && typeof x === 'object' ? (x.gap != null ? luecke(x.gap, x.b ? { ...o, bold: true } : o, mitKommentar) : [new TextRun({ text: String(x.b == null ? '' : x.b), font: FONT, ...o, bold: true })])
       : x === '\t' ? [new TextRun({ font: FONT, ...o, children: [new Tab()] })]
       : [new TextRun({ text: String(x), font: FONT, ...o })]);
   const t = (text, o = {}) => new TextRun({ text, font: FONT, ...o });

@@ -182,8 +182,7 @@
      {
       "t": "p",
       "runs": [
-       "An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.",
-       " Probe 9 ist in Abbildung 1 dargestellt."
+       "An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt."
       ]
      },
      {
@@ -203,10 +202,16 @@
       ]
      },
      {
+      "t": "p",
+      "runs": [
+       "Probe 9 ist in Abbildung 1 dargestellt."
+      ]
+     },
+     {
       "t": "fig",
       "label": "P9",
       "datei": "P9_Fliesenkleber_Kueche.jpg",
-      "caption": "Abb. 1: Fliesenkleber, EG Küche Boden."
+      "caption": "Abb. 1: Fliesenkleber, EG Küche Boden"
      }
     ]
    },
@@ -662,7 +667,7 @@
      {
       "t": "p",
       "runs": [
-       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen im Obergeschoss sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, dem Gefahrenbereich 0 (GB 0) zuzuordnen."
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen im Obergeschoss sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche im Obergeschoss sind gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, dem Gefahrenbereich 0 (GB 0) zuzuordnen."
       ]
      },
      {
@@ -1155,7 +1160,13 @@
    "[Zustand des Bodenbelags prüfen]",
    "[Bewertung der PAK-Materialproben ergänzen]",
    "[Sanierungsmaßnahmen technische Einrichtung beschreiben]"
-  ]
+  ],
+  "lueckenFelder": {
+   "[Zustand des Bodenbelags prüfen]": {
+    "feld": "#fbSchadenbild",
+    "wo": "5.1"
+   }
+  }
  },
  "BR2_nur_PAK_ohne_Versicherung_GB0": {
   "dateiname": "1._Mitteilung_99.9002.docx",
@@ -1564,7 +1575,8 @@
   },
   "luecken": [
    "[Brandlast und Schadenbild beschreiben]"
-  ]
+  ],
+  "lueckenFelder": {}
  },
  "BR3_Luecken": {
   "dateiname": "1._Mitteilung_99.9002.docx",
@@ -2278,7 +2290,8 @@
    "[Gefahrenbereich wählen]",
    "[Zweiten Bereich eintragen]",
    "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
-  ]
+  ],
+  "lueckenFelder": {}
  },
  "BR4_Gewerbe_Teilnehmerliste_ENTWURF": {
   "dateiname": "1._Mitteilung_99.9002.docx",
@@ -2975,7 +2988,8 @@
    "[Bewertung der weiteren Untersuchungen ergänzen]",
    "[Sanierungsmaßnahmen Gebäude beschreiben]",
    "[Bildunterschrift ergänzen]"
-  ]
+  ],
+  "lueckenFelder": {}
  },
  "BR5_Gewerbe_Bohrmehl_Tabellen": {
   "dateiname": "1._Mitteilung_99.9002.docx",
@@ -3653,6 +3667,7 @@
    "[Bewertung der Chlorid-Materialproben ergänzen]",
    "[Bewertung der Chlorid-Bohrmehlproben ergänzen]",
    "[Schlussfolgerungen ergänzen]"
-  ]
+  ],
+  "lueckenFelder": {}
  }
 }

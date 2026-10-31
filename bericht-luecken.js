@@ -86,10 +86,13 @@ const IN_WORD = 'in Word ausfüllen';
 function eintrag(luecke, art) {
   return (FELDER[art || 'asbest'] || []).find(e => (e.luecke instanceof RegExp ? e.luecke.test(luecke) : e.luecke === luecke)) || null;
 }
-/** Lücken (modell.luecken, je Text einmal, in Berichtsreihenfolge) → [{ luecke, feld, ziel, wo, bekannt }] */
-function zuordnen(luecken, art) {
+/** Lücken (modell.luecken, je Text einmal, in Berichtsreihenfolge) → [{ luecke, feld, ziel, wo, bekannt }].
+    eigene = modell.lueckenFelder: Lücken, die jemand selbst in ein Freitextfeld geschrieben hat ({ '[Text]': { feld: '#id', wo } }) –
+    sie springen zu ihrem Feld; die Tabelle oben geht vor (gleicher Text wie eine Lücke von BerichtKit). */
+function zuordnen(luecken, art, eigene) {
   return (luecken || []).map(l => {
-    const e = eintrag(l, art);
+    const x = eigene && Object.prototype.hasOwnProperty.call(eigene, l) ? eigene[l] : null;
+    const e = eintrag(l, art) || (x && x.feld ? { feld: x.feld, ziel: x.feld, wo: `Brandbericht › ${x.wo || 'Freitext'} (selbst eingetragene Lücke – im Feld oder in Word ausfüllen)` } : null);
     return { luecke: l, feld: (e && e.feld) || '', ziel: (e && e.ziel) || '', wo: (e && e.wo) || IN_WORD, bekannt: !!e };
   });
 }

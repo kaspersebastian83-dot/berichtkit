@@ -151,6 +151,15 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
     const br1 = modellVon(BRAND.find(([n]) => n === 'BR1_voll_Versicherung')[1]), w1 = await wordVon(br1, undefined, brandBilder(br1));
     assert.ok(kommentareGenau(w1.tt, 'BR1').some(k => k.text === 'Noch ausfüllen: Zustand des Bodenbelags prüfen'), 'Lücke im Freitext');
     assert.equal((w1.tt['word/document.xml'].match(/<pic:pic /g) || []).length, 3, 'BR1: drei Fotos (Asbestprobe + zwei aus dem Freitext)');
+    // Review: Lücke im Fetten und „[Großbuchstabe …]“ in einer FotoKit-Beschreibung → gelb mit Kommentar, Zähler = Word (auch für word-luecken.js)
+    const f0 = BRAND.find(([n]) => n === 'BR1_voll_Versicherung')[1];
+    const fett = modellVon({ ...f0, fotoKit: { ...f0.fotoKit, 'IMG_0101.jpg': { beschreibung: 'Küche [Raum prüfen]' } },
+      form: { ...f0.form, brand: { ...f0.form.brand, schadenbild: '**Brand in der [Etage eintragen]**\n[Abb: IMG_0101.jpg]' } } });
+    const bf = brandBilder(fett), wf = await wordVon(fett, undefined, bf), kf = kommentareGenau(wf.tt, 'fett');
+    for (const t of ['Etage eintragen', 'Raum prüfen']) assert.ok(kf.some(k => k.text === 'Noch ausfüllen: ' + t), t);
+    assert.match(wf.tt['word/document.xml'], /<w:b\/>(?:(?!<\/w:r>)[\s\S])*<w:highlight w:val="yellow"\/>(?:(?!<\/w:r>)[\s\S])*\[Etage eintragen\]/, 'fett und gelb');
+    assert.deepEqual([...new Set(BL.offene(fett, ohneBild(fett, bf)))].sort(), [...new Set([...gelbeTexte(wf.tt, false), ...gelbeTexte(wf.tt, true)])].sort());
+    if (WL) { const befund = await WL.pruefen(wf.buf); const gefunden = JSON.stringify(befund); for (const t of ['[Etage eintragen]', '[Raum prüfen]']) assert.ok(gefunden.includes(t), 'word-luecken findet ' + t); }
     // „Schaden vom:⇥[Schadendatum]“ auf dem Deckblatt mit Tab wie die Projektnummer; im Kopf „Brandschaden vom [Schadendatum]“ ohne Kommentar
     const { tt } = await wordVon(modellVon(BRAND.find(([n]) => n === 'BR3_Luecken')[1]));
     const zeile = tt['word/document.xml'].match(/<w:p>(?:(?!<\/w:p>)[\s\S])*Schaden vom:(?:(?!<\/w:p>)[\s\S])*<\/w:p>/)[0];

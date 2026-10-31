@@ -398,7 +398,7 @@ function luecken(m) {
   return [...out];
 }
 /** Runs → reiner Text (Lücken in eckigen Klammern, Fettes ohne Auszeichnung) */
-const text = runs => (Array.isArray(runs) ? runs : [runs]).map(r => (r && typeof r === 'object' ? (r.gap != null ? r.gap : s(r.b)) : String(r == null ? '' : r))).join('');
+const text = runs => (Array.isArray(runs) ? runs : [runs]).map(r => (r && typeof r === 'object' ? (r.gap != null ? r.gap : String(r.b == null ? '' : r.b)) : String(r == null ? '' : r))).join('');
 
 /* ---------- Freitext (Formularfelder, ab 1.14.0) ----------
    Schreibweise im Feld, je Zeile:
@@ -413,13 +413,13 @@ const text = runs => (Array.isArray(runs) ? runs : [runs]).map(r => (r && typeof
    Blöcke: p, li (Aufzählung), h2 mit stufe 2 (Zwischentitel), fig { label: 'foto:'+Datei, datei, caption (Text oder Runs) }. */
 const ABB_ZEILE = /^\[\s*Abb\.?\s*:\s*([^\]|]+?)\s*(?:\|\s*([^\]]*?)\s*)?\]$/i;
 const LUECKE_IM_TEXT = /(\[[A-ZÄÖÜ][^\]\n]*\])/;
-/** Text mit **fett** und [Lücke] → Runs */
+/** Text mit **fett** und [Lücke] → Runs; eine Lücke im Fetten wird eine fette Lücke ({ gap, b: true }) – sonst stünde sie
+    in Word ohne Gelb und Kommentar, die Projektzentrale fände sie trotzdem */
 function textRuns(t) {
   const out = [];
   String(t).split(/\*\*(.+?)\*\*/).forEach((teil, i) => {
     if (!teil) return;
-    if (i % 2) { out.push({ b: teil }); return; }
-    teil.split(LUECKE_IM_TEXT).forEach((x, j) => { if (x) out.push(j % 2 ? { gap: x } : x); });
+    teil.split(LUECKE_IM_TEXT).forEach((x, j) => { if (x) out.push(j % 2 ? (i % 2 ? { gap: x, b: true } : { gap: x }) : (i % 2 ? { b: x } : x)); });
   });
   return out;
 }
@@ -427,7 +427,9 @@ function textRuns(t) {
 function labelRuns(t) {
   if (/^\*\*/.test(t)) return textRuns(t);
   const m = /^([^:]{1,60}?):\s+(\S.*)$/.exec(t);
-  if (!m || /[.!?]\s/.test(m[1]) || LUECKE_IM_TEXT.test(m[1])) return textRuns(t);
+  // kein Bereich, wenn vor dem Doppelpunkt ein ganzer Satz steht (Satzende + Großbuchstabe, mehr als vier Wörter) –
+  // Abkürzungen wie „Whg. 2:“, „Küche (ca. 12 m²):“ oder „z. B. Flur:“ bleiben ein Bereich
+  if (!m || (/[.!?]\s+[A-ZÄÖÜ]/.test(m[1]) && m[1].trim().split(/\s+/).length > 4) || LUECKE_IM_TEXT.test(m[1])) return textRuns(t);
   return [{ b: m[1].trim() + ':' }, ' ', ...textRuns(m[2])];
 }
 function freitext(roh, o = {}) {
@@ -442,12 +444,21 @@ function freitext(roh, o = {}) {
       if (fk && !info) hinweise.push(`Foto „${datei}“${wo} ist in FotoKit nicht bekannt – Dateinamen prüfen.`);
       else if (info && info.aussortiert) hinweise.push(`Foto „${datei}“${wo} ist in FotoKit aussortiert – trotzdem im Bericht.`);
       if (!beschr) hinweise.push(`Foto „${datei}“${wo}: keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: ${datei} | Bildunterschrift]“ schreiben.`);
-      out.push({ t: 'fig', label: 'foto:' + datei, datei, caption: beschr ? `Abb. ${n}: ${beschr}` : [`Abb. ${n}: `, { gap: '[Bildunterschrift ergänzen]' }] });
+      // Bildunterschrift wie Text gelesen: „[Brandraum]“ in einer FotoKit-Beschreibung ist sonst eine Lücke ohne Gelb und Kommentar
+      const cr = beschr ? textRuns(beschr) : [];
+      out.push({ t: 'fig', label: 'foto:' + datei, datei,
+        caption: !beschr ? [`Abb. ${n}: `, { gap: '[Bildunterschrift ergänzen]' }] : cr.every(r => typeof r === 'string') ? `Abb. ${n}: ${beschr}` : [`Abb. ${n}: `, ...cr] });
       continue;
     }
+    if (/^[-–•*]$/.test(z)) continue;   // leerer Aufzählungspunkt
     const li = /^[-–•*]\s+(.*)$/.exec(z);
     if (li || o.label) { const t = li ? s(li[1]) : z; if (t) out.push({ t: 'li', runs: o.label ? labelRuns(t) : textRuns(t) }); continue; }
     out.push({ t: 'p', runs: textRuns(z) });
+  }
+  // Lücken, die jemand selbst ins Feld geschrieben hat: o.lueckenFelder[Lücke] = Formularfeld (Zähler springt dorthin, nicht „in Word“)
+  if (o.lueckenFelder && o.feldId) {
+    const lauf = x => { if (Array.isArray(x)) x.forEach(lauf); else if (x && typeof x === 'object') { if (x.gap != null) { if (x.gap !== '[Bildunterschrift ergänzen]' && !(x.gap in o.lueckenFelder)) o.lueckenFelder[x.gap] = { feld: o.feldId, wo: o.feld }; } else Object.values(x).forEach(lauf); } };
+    out.forEach(b => lauf(b.runs || b.caption));
   }
   return out;
 }

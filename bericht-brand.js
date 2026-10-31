@@ -53,6 +53,8 @@ const SAN = [['gebaeude', 'sanGebaeude', 'Gebäude', '[Sanierungsmaßnahmen Geb�
   ['technik', 'sanTechnik', 'Technische Einrichtung', '[Sanierungsmaßnahmen technische Einrichtung beschreiben]'],
   ['waren', 'sanWaren', 'Warenvorräte', '[Sanierungsmaßnahmen Warenvorräte beschreiben]']];
 /** Freitextfelder der Brand-Seite (form.brand) – je Feld eine eigene Angabe */
+/** Formularfeld (index.html) je Sanierungsfeld */
+const SAN_FELD = { sanGebaeude: 'fbSanGebaeude', sanTechnik: 'fbSanTechnik', sanWaren: 'fbSanWaren' };
 const FREITEXT = ['schadenbild', 'sanGebaeude', 'sanTechnik', 'sanWaren', 'schlussfolgerungen', 'zusammenfassung', 'zusatz'];
 /** Hintergrundreferenz PAK nach der Nutzung (wie ResultKit usageFromNutzung): Wohn-/Bürobereiche 10, Gewerbe/Industrie 100 µg/m² */
 const REFERENZ_NUTZUNG = { 'Wohnen': '10', 'Büro': '10', 'Öffentlich': '10', 'Gesundheit & Labor': '10', 'Gewerbe/Industrie': '100', 'Landwirtschaft': '100' };
@@ -224,8 +226,9 @@ function bericht(eingabe) {
   const fb = { ...vorgabe(e.pj), ...(f.brand && typeof f.brand === 'object' ? f.brand : {}) };
   const hinweise = [], sperren = [], hinweisAktionen = {};
   /* Abbildungen laufen durch den ganzen Bericht: Asbest-/KMF-Fotos in 4., dann die Fotos der Freitextfelder (5.1, 6., 7., 8.) */
-  const abb = { n: 0 };
-  const ftx = (text, feld, o = {}) => G.freitext(text, { abb, fotoKit: e.fotoKit, hinweise, feld, ...o });
+  const abb = { n: 0 }, lueckenFelder = {};
+  /** Freitextfeld → Blöcke; feldId = Formularfeld (für selbst geschriebene Lücken: Zähler springt dorthin) */
+  const ftx = (text, feld, feldId, o = {}) => G.freitext(text, { abb, fotoKit: e.fotoKit, hinweise, feld, feldId, lueckenFelder, ...o });
   const sanierung = fb.titel !== 'Untersuchungsbericht';
   const titelArt = TITEL.includes(fb.titel) ? fb.titel : TITEL[0];
   const datum = datumDE(f.datum), mitteilung = `${+f.mitteilung || 1}. Mitteilung`, titel = `${titelArt} vom ${datum}`;
@@ -380,17 +383,15 @@ function bericht(eingabe) {
     if (kmfNr.length) r.push(kmfNr.length > 1 ? ' Die Ergebnisse sind in den Prüfberichten ' : kmf.length === 1 ? ' Das Ergebnis ist im Prüfbericht ' : ' Die Ergebnisse sind im Prüfbericht ', nrListe(kmfNr), ` dokumentiert ${anlNr(kmfNr)}.`);
     pr.push({ t: 'p', runs: r }); vorher = true;
   }
-  /* Fotos der Asbest-/KMF-Proben wie im Asbestbericht (ab 1.14.0): Satz am Ende des letzten Asbest-/KMF-Absatzes, die Abbildungen
-     selbst am Ende von 4. (nach dem Verweis auf Bilddokumentation/Probenplan) */
+  /* Fotos der Asbest-/KMF-Proben wie im Asbestbericht (ab 1.14.0): Satz mit den Probennummern und die Abbildungen am Ende von 4.
+     (nach dem Verweis auf Bilddokumentation/Probenplan) – mit Nummern, weil auch Brandgeruch-Proben „Materialproben“ heißen */
   const imBericht = proben.filter(p => p.befund || p.istKmf), mitFoto = imBericht.filter(p => p.foto);
   mitFoto.forEach(p => { p.abb = ++abb.n; });
-  if (mitFoto.length) {
+  const fotoSatz = !mitFoto.length ? '' : (() => {
     const a0 = mitFoto[0].abb, a1 = mitFoto[mitFoto.length - 1].abb;
     const wo = mitFoto.length === 1 ? `Abbildung ${a0}` : `den Abbildungen ${a0} ${mitFoto.length === 2 ? 'und' : 'bis'} ${a1}`;
-    const wer = mitFoto.length === imBericht.length ? (imBericht.length === 1 ? 'Die Materialprobe ist' : 'Die Materialproben sind')
-      : `${mitFoto.length === 1 ? '' : 'Die '}${probe(mitFoto.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} ${mitFoto.length === 1 ? 'ist' : 'sind'}`;
-    pr[pr.length - 1].runs.push(` ${wer} in ${wo} dargestellt.`);
-  }
+    return `${mitFoto.length === 1 ? '' : 'Die '}${probe(mitFoto.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} ${mitFoto.length === 1 ? 'ist' : 'sind'} in ${wo} dargestellt.`;
+  })();
   if (nBg) {
     pr.push({ t: 'p', runs: [`${zusatz()} ${nBg === 1 ? 'wurde eine Materialprobe' : `wurden ${zahlwort(nBg)} Materialproben`} entnommen und am `,
       L(datumDE(lk.bgDatum), 'Prüfdatum Brandgeruch'), ' sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ',
@@ -421,7 +422,10 @@ function bericht(eingabe) {
      Chlorid, PAK, KMF, Asbest (Reihenfolge wie im Doc), Brandgeruch, weitere Untersuchungen. Laborwerte wie im Prüfbericht;
      eingeordnet wird mit den Grenzen aus ResultKit (bericht-bewertung.js). Referenzproben und Freimessungen stehen in der
      Tabelle gekennzeichnet und in eigenen Sätzen, im Zähl-Absatz zählen sie nicht. */
-  const sb = s(fb.schadenbild), sbBloecke = sb.replace(/\s+/g, ' ') === SCHADENBILD_START.trim() ? [] : ftx(sb, '5.1');
+  const sb = s(fb.schadenbild), sbBloecke = sb.replace(/\s+/g, ' ') === SCHADENBILD_START.trim() ? [] : ftx(sb, '5.1', '#fbSchadenbild');
+  // Vorbelegung stehen gelassen, darunter weitergeschrieben (z. B. nur ein Foto): der halbe Satz wird die Lücke
+  if (sbBloecke[0] && sbBloecke[0].t === 'p' && G.text(sbBloecke[0].runs).trim() === SCHADENBILD_START.trim())
+    sbBloecke[0] = { t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] };
   const befund = [{ t: 'h2', runs: ['5.1 Brandlast und Schadenbild'] }, ...(sbBloecke.length ? sbBloecke : [{ t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] }])];
   let unter = 1, tabNr = 0;
   const h2 = titel_ => befund.push({ t: 'h2', runs: [`5.${++unter} ${titel_}`] });
@@ -431,8 +435,10 @@ function bericht(eingabe) {
   const stelle = roh => { const r = raumAusschreiben(roh); r.ersetzt.forEach(k => kuerzel.add(k)); return r.text; };
   [...clErg, ...pakErg].forEach(x => { x.stelle = stelle(x.roh); });
   proben.forEach(p => { p.stelleBericht = stelle(p.stelle); });
+  // Bildunterschrift ohne Punkt am Ende – wie die Fotos der Freitextfelder und die echten Brandberichte („Abb. 2: EG, Küche“)
+  if (fotoSatz) pr.push({ t: 'p', runs: [fotoSatz] });
   mitFoto.forEach(p => pr.push({ t: 'fig', label: p.label, datei: p.foto,
-    caption: `Abb. ${p.abb}: ${p.material || p.ref}${p.stelleBericht ? ', ' + p.stelleBericht : ''}.` }));
+    caption: `Abb. ${p.abb}: ${p.material || p.ref}${p.stelleBericht ? ', ' + p.stelleBericht : ''}` }));
   const mitTabellen = !!fb.tabellen;
   const rolleZusatz = x => (x.rolle === 'referenz' ? ' (Referenz)' : x.rolle === 'frei' ? ' (Freimessung)' : '');
   /** Einzelergebnisse: Tabelle (Haken) oder Verweis auf den Prüfbericht */
@@ -686,11 +692,15 @@ function bericht(eingabe) {
     if (!teile.length) massnahmen.push({ t: 'p', runs: [{ gap: '[Sanierungsmaßnahmen ergänzen]' }] });
     teile.forEach(([, feld, titel_, luecke], i) => {
       if (teile.length > 1) massnahmen.push({ t: 'h2', runs: [`6.${i + 1} ${titel_}`] });
-      massnahmen.push(...leerOder(ftx(fb[feld], `6. ${titel_}`), luecke));
+      massnahmen.push(...leerOder(ftx(fb[feld], `6. ${titel_}`, '#' + SAN_FELD[feld]), luecke));
     });
     SAN.filter(([k, feld]) => !(fb.umfang && fb.umfang[k]) && s(fb[feld])).forEach(([, , titel_]) =>
       hinweise.push(`Sanierungsmaßnahmen ${titel_}: Text eingetragen, aber „${titel_}“ ist unter Umfang nicht angehakt – steht nicht im Bericht.`));
-  } else massnahmen.push(...leerOder(ftx(fb.schlussfolgerungen, '6. Schlussfolgerungen'), '[Schlussfolgerungen ergänzen]'));
+  } else massnahmen.push(...leerOder(ftx(fb.schlussfolgerungen, '6. Schlussfolgerungen', '#fbSchluss'), '[Schlussfolgerungen ergänzen]'));
+  // Titel umgestellt: Texte des anderen Titels bleiben gespeichert, stehen aber nicht im Bericht – sagen, statt still wegzulassen
+  const fremd = sanierung ? (s(fb.schlussfolgerungen) ? ['6. Schlussfolgerungen'] : [])
+    : [...SAN.filter(([, feld]) => s(fb[feld])).map(([, , t]) => `6. Sanierungsmaßnahmen ${t}`), ...(s(fb.zusammenfassung) ? ['8. Zusammenfassung'] : [])];
+  if (fremd.length) hinweise.push(`${liste(fremd)}: Text eingetragen, gehört aber zum Titel „${sanierung ? 'Untersuchungsbericht' : 'Sanierungsvorschlag'}“ – steht nicht im Bericht.`);
 
   /* 7. Arbeitsschutzmaßnahmen: GB 0 eigener Satz (Befunde Nr. 10), GB 1–3 ein Satz mit der Nummer; KMF (TRGS 521) und Asbest (TRGS 519) */
   const gb = GB.includes(s(fb.gb)) ? s(fb.gb) : '', gb2 = GB.includes(s(fb.gb2)) ? s(fb.gb2) : '';
@@ -703,7 +713,12 @@ function bericht(eingabe) {
     const bei = sanierung ? 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen' : bereich ? 'Bei Sanierungsarbeiten'
       : g === '0' ? 'Bei Sanierungsarbeiten' : 'Bei Sanierungsarbeiten in den untersuchten Bereichen';
     const runs = typeof bereich === 'string' ? [bereich ? `${bei} ${bereich}` : bei] : [bei + ' ', bereich];
-    if (g === '0') return { t: 'p', runs: anhaengen(runs, ` sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind ${VDS}, dem Gefahrenbereich 0 (GB 0) zuzuordnen.`) };
+    if (g === '0') {
+      // mit Bereich „Die untersuchten Bereiche im Obergeschoss sind …“ – sonst widerspräche der Satz einem zweiten Bereich mit GB 1–3
+      anhaengen(runs, ' sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche');
+      if (typeof bereich === 'string') anhaengen(runs, bereich ? ' ' + bereich : ''); else runs.push(' ', bereich);
+      return { t: 'p', runs: anhaengen(runs, ` sind ${VDS}, dem Gefahrenbereich 0 (GB 0) zuzuordnen.`) };
+    }
     anhaengen(runs, ' sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ');
     if (g) anhaengen(runs, `${g} (GB ${g})`); else runs.push({ gap: gbLuecke });
     runs.push(` ${VDS}, vorzunehmen.`);
@@ -728,9 +743,9 @@ function bericht(eingabe) {
     as.push({ t: 'p', runs: r });
   }
   // Zusatz (optional, Befunde Nr. 10 – z. B. Belgien, TRGS 524) am Ende von 7.; leer → nichts
-  as.push(...ftx(fb.zusatz, '7. Zusatz'));
+  as.push(...ftx(fb.zusatz, '7. Zusatz', '#fbZusatz'));
   /* 8. Zusammenfassung Sanierungsmaßnahmen (nur Sanierungsvorschlag): je Zeile „Bereich: Maßnahme“ → Aufzählung mit fettem Bereich */
-  const zusammenfassung = sanierung ? leerOder(ftx(fb.zusammenfassung, '8. Zusammenfassung', { label: true }), '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]') : [];
+  const zusammenfassung = sanierung ? leerOder(ftx(fb.zusammenfassung, '8. Zusammenfassung', '#fbZusammenfassung', { label: true }), '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]') : [];
 
   /* Unterschriften und Anlagen */
   const { unterschriften, svQuelle } = unterschriftenBlock(e, f, { sv, pn, mt }, false, hinweise, hinweisAktionen);
@@ -763,6 +778,8 @@ function bericht(eingabe) {
       mitWischErgebnis: clW.length + pakW.length > 0, mitPakWisch: pakW.length > 0 || nPak > 0, referenzVorgabe: referenzVorgabe(P.nutzung) },
   };
   modell.luecken = luecken(modell);
+  // selbst geschriebene Lücken der Freitextfelder → Feld (bericht-luecken.js zuordnen); nur, was noch im Bericht steht
+  modell.lueckenFelder = Object.fromEntries(Object.entries(lueckenFelder).filter(([g]) => modell.luecken.includes(g)));
   return modell;
 }
 

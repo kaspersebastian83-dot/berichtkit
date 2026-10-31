@@ -437,8 +437,14 @@ const daten = {
     await page.selectOption(fotoWahl, '01_P1_Fliesenkleber.jpg');
     assert.equal(await page.inputValue('#fbSchadenbild'), 'Der Brand ereignete sich im Keller.\n## Keller\n- Decke **stark** verrußt\n[Abb: 01_P1_Fliesenkleber.jpg]');
     assert.equal(await page.inputValue(fotoWahl), '', 'Auswahl wieder zurück');
+    // Schreibmarke mitten in einer Zeile: das Foto kommt ans Zeilenende, der Satz bleibt ganz (Review)
+    await page.fill('#fbZusatz', 'Satz eins. Satz zwei.\nZweite Zeile.'); await page.dispatchEvent('#fbZusatz', 'change');
+    await page.evaluate(() => { const ta = document.getElementById('fbZusatz'); ta.focus(); ta.setSelectionRange(5, 5); });
+    await page.selectOption('select.foto-einfuegen[data-fuer="fbZusatz"]', '01_P1_Fliesenkleber.jpg');
+    assert.equal(await page.inputValue('#fbZusatz'), 'Satz eins. Satz zwei.\n[Abb: 01_P1_Fliesenkleber.jpg]\nZweite Zeile.');
+    await page.fill('#fbZusatz', ''); await page.dispatchEvent('#fbZusatz', 'change');
     // Asbestfoto der Probe P1 in 4. (wie im Asbestbericht) ist Abb. 1, das Foto aus 5.1 Abb. 2 mit der Beschreibung aus FotoKit
-    assert.deepEqual(await page.$$eval('#vorschau figcaption', fs => fs.map(f => f.textContent)), ['Abb. 1: Fliesenkleber, Umkleide Schwimmbad.', 'Abb. 2: Fliesenkleber']);
+    assert.deepEqual(await page.$$eval('#vorschau figcaption', fs => fs.map(f => f.textContent)), ['Abb. 1: Fliesenkleber, Umkleide Schwimmbad', 'Abb. 2: Fliesenkleber']);
     assert.match(await page.textContent('#vorschau'), /Probe 1 ist in Abbildung 1 dargestellt\./);
     // 6.: Felder nach den Umfang-Haken – einer ohne Nummer, zwei mit 6.1/6.2; leeres Feld ist eine Stelle mit Sprungziel
     assert.ok(await page.isVisible('#fbSanGebaeude')); assert.ok(await page.isHidden('#fbSanTechnik')); assert.ok(await page.isHidden('#fbSchluss'));

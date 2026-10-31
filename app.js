@@ -657,7 +657,7 @@ function render() {
   anlagenZeigen(m);
   document.querySelectorAll('input[name=einbau]').forEach(r => { r.checked = r.value === (f.einbau || 'unbekannt'); });
   // Hinweise
-  const lz = BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form));
+  const lz = BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form), m.lueckenFelder);
   $('hinweise').innerHTML = [
     ...m.sperren.map(x => `<li class="sperre">Gesperrt: ${esc(x)}</li>`),
     ...m.annahmen.map(a => `<li class="luecke">${esc(a.text)} <button type="button" class="klein-knopf" data-ok="${esc(a.id)}" title="Stimmt so – Hinweis ausblenden">✓ stimmt</button></li>`),
@@ -743,7 +743,9 @@ const BRAND_TEXTE = [['fbSchadenbild', 'schadenbild'], ['fbSanGebaeude', 'sanGeb
 const SAN_ID = { gebaeude: 'Gebaeude', technik: 'Technik', waren: 'Waren' };
 /** „[Abb: Datei]“ als eigene Zeile an der Schreibmarke des Feldes einfügen */
 function abbEinfuegen(ta, datei) {
-  const v = ta.value, pos = Math.min(ta.selectionStart == null ? v.length : ta.selectionStart, v.length);
+  // an der Schreibmarke – mitten in einer Zeile ans Zeilenende, damit kein Satz in zwei Absätze zerfällt
+  const v = ta.value, p0 = Math.min(ta.selectionStart == null ? v.length : ta.selectionStart, v.length), nl = v.indexOf('\n', p0);
+  const pos = p0 > 0 && v[p0 - 1] !== '\n' ? (nl < 0 ? v.length : nl) : p0;
   const vor = v.slice(0, pos), nach = v.slice(pos), zeile = `[Abb: ${datei}]`;
   const neu = vor + (vor && !vor.endsWith('\n') ? '\n' : '') + zeile + (nach && !nach.startsWith('\n') ? '\n' : '') + nach;
   ta.value = neu; const ende = neu.length - nach.length; ta.focus(); ta.setSelectionRange(ende, ende);
@@ -828,7 +830,7 @@ function anlagenZeigen(m) {
   $('anlagenInfo').textContent = `${(m.anlagenListe || []).length} im Bericht`;
   $('btnAnlageDazu').hidden = !window.showOpenFilePicker;
 }
-function runsHtml(r) { return (Array.isArray(r) ? r : [r]).map(x => x && typeof x === 'object' ? (x.gap != null ? `<span class="gap">${esc(x.gap)}</span>` : `<b>${esc(x.b)}</b>`) : esc(x)).join(''); }
+function runsHtml(r) { return (Array.isArray(r) ? r : [r]).map(x => x && typeof x === 'object' ? (x.gap != null ? `<span class="gap">${x.b ? `<b>${esc(x.gap)}</b>` : esc(x.gap)}</span>` : `<b>${esc(x.b)}</b>`) : esc(x)).join(''); }
 function vorschau(m) {
   const d = m.deckblatt;
   const kenn = (m.kennzeilen || []).length ? `<p class="kenn">${m.kennzeilen.map(k => `<span class="${esc(k.art)}">${esc(k.text)}</span>`).join(' · ')}</p>` : '';
@@ -1100,7 +1102,7 @@ function verbinden() {
   $('fEingang').onchange = e => setze('eingangsdatum', e.target.value);
   $('fAuftrag').onchange = e => setze('auftragsdatum', e.target.value);
   $('fAg').oninput = e => { S.form.agSatz = e.target.value; formMerken('agSatz'); const m = modell(); vorschau(m);
-    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form))); };
+    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form), m.lueckenFelder)); };
   $('fAg').onchange = () => render();
   $('fPn').onchange = e => { const k = e.target.value, mtAlt = S.form.mt; S.form.probenehmer = k; if (k && rolle(k) === 'mt') S.form.mt = k; else if (S.form.mt && S.form.mt !== k && rolle(S.form.mt) === 'mt') S.form.mt = '';
     S.form.pnQuelle = 'hand'; formMerken('probenehmer', 'pnQuelle', ...(S.form.mt !== mtAlt ? ['mt'] : [])); render(); };
@@ -1142,7 +1144,7 @@ function verbinden() {
   $('fbGb2').onchange = e => setzeBrand({ gb2: e.target.value });
   // Freitextfelder: beim Tippen merken und die Vorschau nachziehen (ohne das Formular neu zu zeichnen – der Cursor bleibt), beim Verlassen alles neu
   const brandLive = (feld, v) => { S.form.brand = { ...(S.form.brand || {}), [feld]: v }; formMerken(['brand', feld]); const m = modell(); vorschau(m.sperren.length ? T.alsEntwurf(m) : m);
-    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form))); };
+    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m, fotosFehlen()), T.berichtsart(S.form), m.lueckenFelder)); };
   for (const [id, feld] of BRAND_TEXTE) { $(id).oninput = e => brandLive(feld, e.target.value); $(id).onchange = () => render(); }
   document.querySelectorAll('select.foto-einfuegen').forEach(sel => { sel.onchange = () => {
     const datei = sel.value, ta = $(sel.dataset.fuer), feld = (BRAND_TEXTE.find(([id]) => id === sel.dataset.fuer) || [])[1];
