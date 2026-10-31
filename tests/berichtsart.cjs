@@ -27,8 +27,8 @@ const bilder = { logoSvg: fs.readFileSync(path.join(ROOT, 'assets/logo-schiffers
 const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bilder)), 'word/document.xml');
 
 (async () => {
-  await fall('Berichtsarten: Asbest bereit, Brand angekündigt', () => {
-    assert.deepEqual(T.BERICHTSARTEN.map(a => [a.art, a.bereit]), [['asbest', true], ['brand', false]]);
+  await fall('Berichtsarten: Asbest bereit, Brand im Aufbau (Modul da, nicht bereit)', () => {
+    assert.deepEqual(T.BERICHTSARTEN.map(a => [a.art, a.bereit, a.modul]), [['asbest', true, true], ['brand', false, true]]);
     assert.equal(T.berichtsart({}), 'asbest'); assert.equal(T.berichtsart(null), 'asbest');
     assert.equal(T.berichtsart({ art: ' Brand ' }), 'brand');
   });
@@ -39,9 +39,12 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     assert.equal(ohne.deckblatt.titel, 'Untersuchungsbericht vom 27.10.2026'); assert.equal(ohne.kopf[0], ohne.deckblatt.titel);
   });
 
-  await fall('bericht(): Berichtsart ohne Modul wirft – nie ein Asbestbericht stattdessen', () => {
-    assert.throws(() => T.bericht(eingabe(form({ art: 'brand' }))), /Berichtsart „brand“ gibt es in BerichtKit noch nicht/);
-    assert.throws(() => T.bericht(eingabe(form({ art: 'pak' }))), /„pak“/);
+  await fall('bericht(): Berichtsart ohne Modul wirft – nie ein Asbestbericht stattdessen; Brand im Aufbau baut, aber gesperrt', () => {
+    assert.throws(() => T.bericht(eingabe(form({ art: 'pak' }))), /Berichtsart „pak“ gibt es in BerichtKit noch nicht/);
+    const b = T.bericht(eingabe(form({ art: 'brand' })));
+    assert.equal(b.deckblatt.titel, 'Sanierungsvorschlag vom 27.10.2026'); assert.ok(b.brand, 'Brandmodell');
+    assert.match(b.sperren[0], /Brandbericht ist noch im Aufbau/);
+    assert.deepEqual(T.bericht(eingabe(form())).sperren, [], 'Asbestbericht ohne diese Sperre');
   });
 
   await fall('Fassade gibt die gemeinsamen Bausteine unverändert weiter', () => {
@@ -111,8 +114,8 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     assert.deepEqual(L.offene(mitFoto, ['x.jpg', 'anderes.jpg']), [...mitFoto.luecken, '[Foto fehlt: x.jpg]']);
     assert.deepEqual(L.offene(mitFoto, []), mitFoto.luecken);
     assert.equal(L.zuordnen(['[Foto fehlt: x.jpg]'])[0].ziel, '#probenListe');
-    // Jede fertige Berichtsart hat eine Tabelle (sonst hieße jede Lücke still „in Word ausfüllen“)
-    for (const a of T.BERICHTSARTEN.filter(x => x.bereit)) assert.ok(Array.isArray(L.FELDER[a.art]) && L.FELDER[a.art].length, `bericht-luecken.js: Tabelle für ${a.art}`);
+    // Jede Berichtsart mit Modul (auch im Aufbau, wegen der Vorschau) hat eine Tabelle (sonst hieße jede Lücke still „in Word ausfüllen“)
+    for (const a of T.BERICHTSARTEN.filter(x => x.bereit || x.modul)) assert.ok(Array.isArray(L.FELDER[a.art]) && L.FELDER[a.art].length, `bericht-luecken.js: Tabelle für ${a.art}`);
     // Felder der Tabelle gibt es im Formular (ids aus index.html)
     const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
     for (const e of L.FELDER.asbest) for (const id of `${e.feld || ''} ${e.ziel || ''}`.match(/#[\w-]+/g) || []) assert.ok(html.includes(`id="${id.slice(1)}"`), `${id} in index.html`);

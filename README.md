@@ -2,6 +2,9 @@
 
 Erstellt den **Asbest-Untersuchungsbericht** („1. Mitteilung“) als Word-Datei im Format des Büros – aus den Daten, die
 die anderen Spektron-Apps schon im Projektordner abgelegt haben. Läuft im Browser (Edge/Chrome), ohne Server, ohne Installation.
+Der **Brandbericht** („Sanierungsvorschlag“ / „Untersuchungsbericht“) ist im Aufbau: ab 1.12.0 als Vorschau mit
+`#projekt=<Ordner>&art=brand&vorschau=1` (Deckblatt, Kopf, 1.–4., 7., Unterschriften, Anlagen; 5., 6., 8. als Lücke) –
+Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht.
 
 Adresse: `https://kaspersebastian83-dot.github.io/berichtkit/` · aus der Projektzentrale: `…/berichtkit/#projekt=<Ordnername>`
 
@@ -79,7 +82,9 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
 
 `anlagen.js` (ohne Browserteile, `node tests/anlagen.cjs`) erkennt, was im Projektordner liegt, und nummeriert in der **festen
 Hausreihenfolge**: Anlage 1 = Prüfbericht(e) (mehrere zählen hoch), dann **Bilddokumentation**, dann **Probenplan**. Das Modul kennt
-nur Arten von Anlagen; welche ein Bericht erwartet, sagt das Profil (`PROFILE.asbest`) – weitere Berichtsarten bekommen ein eigenes.
+nur Arten von Anlagen; welche ein Bericht erwartet, sagt das Profil (`PROFILE.asbest`, `PROFILE.brand`). Brandbericht: Prüfberichte
+in der Reihenfolge Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter = eine Anlage), dann Bilddokumentation, Probenplan und
+– nur mit Brandgeruch-Proben in LabelKit – die **Sensorische Prüfung auf Brandgeruch** aus der Projektzentrale.
 
 | Art | Wo | Erkannt an | Veraltet, wenn … |
 |---|---|---|---|
@@ -87,6 +92,7 @@ nur Arten von Anlagen; welche ein Bericht erwartet, sagt das Profil (`PROFILE.as
 | Probenplan | `Pläne/` | `Probenplan <Ordner>.pdf` (alle Geschosse) oder `… - EG.pdf`, `… - OG.pdf` (= eine Anlage), „ (2)“ = neuere Fassung | `.probenplan` nach dem PDF gespeichert |
 | Ergebniskarte | `Pläne/` | `Probenplan … - Ergebniskarte.pdf` | wie Probenplan |
 | Raumbuch, Wandansichten, Anlage Probenahme | `Mitteilungen/` | PlanKit-Namen `<Nr>_Raumbuch_<Datum>.docx` usw. | Prüfsumme der `.probenplan` laut `_Anlagen-Protokoll.txt` ≠ jetzt; sonst Dateizeit |
+| Brandgeruch (nur Brandbericht) | `Mitteilungen/` | Projektzentrale `<Nr>_<Titel>_Brandgeruch_<Datum>.docx` bzw. `…_PN98-Brandgeruch_…` (neueste); Anlagen-Nr. aus dem Titel („Anlage-4“) | Prüfsumme der LabelKit-Datei laut `_Anlagen-Protokoll.txt` ≠ jetzt; sonst LabelKit-Datei neuer als die Anlage |
 
 - Gefunden und aktuell → angehakt. **Veraltet oder unvollständig → Hinweis und nicht angehakt** (selbst anhaken geht, mit Hinweis).
   Feste Anlagen, die fehlen, stehen grau da mit Link in die App. Jede feste Anlage, die nicht oder mit Mangel im Bericht ist (fehlt,
@@ -107,11 +113,13 @@ Aufbau (ab 1.10.0, Vorbereitung für weitere Berichtsarten):
 | `bericht-text.js` | Fassade für `app.js` und Tests (`BerichtText`): wählt die Berichtsart nach `form.art` (leer = `asbest`), `BERICHTSARTEN` mit `bereit` |
 | `bericht-gemeinsam.js` | Bausteine jeder Berichtsart: Helfer, Lücken, Personen/Rollen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund und Abgleich, Projektsicht, Deckblatt mit/ohne Versicherung, Kopfzeilen, Auftraggeber mit Artikel, Unterschriften, Anlagen |
 | `bericht-asbest.js` | Berichtsart `asbest` – die Texte unten |
-| `bericht-brand.js` | folgt (Brandbericht, Doc „Textbausteine Brand-Sanierungsvorschlag“) |
+| `bericht-brand.js` | Berichtsart `brand` (Doc „Textbausteine Brand-Sanierungsvorschlag“ + Entscheidungen aus fünf echten Mitteilungen) – ab 1.12.0 das Gerüst: Deckblatt („Schaden vom:“ / „Brandschaden“), Kopf, 1. Veranlassung, 2. Aufgabenstellung, 3. Ortsbesichtigung, 4. Probenahme, 7. Arbeitsschutzmaßnahmen, Unterschriften, Anlagen; 5., 6., 8. als Überschrift mit Lücke. Eigene Angaben der Brand-Seite stehen in `form.brand` (in `_BerichtKit.json` unter `brand`, feldweise gemerkt) |
 | `bericht-luecken.js` | je Berichtsart: welche Lücke welches Formularfeld füllt (Zähler, Sprung, gelbe Umrandung) bzw. wo sie sonst zu füllen ist |
 
 Berichtsart aus der Projektzentrale: `#projekt=<Ordner>&art=asbest|brand`. Eine Berichtsart, die noch nicht bereit ist, zeigt
-„kommt bald“ mit Knopf „Asbestbericht öffnen“ – nie einen Bericht der falschen Art. `form.art` ist eine Vorgabe und steht nicht in `_BerichtKit.json`.
+„kommt bald“ mit Knopf „Asbestbericht öffnen“ – nie einen Bericht der falschen Art; hat sie schon ein Modul (Brand), daneben
+„Vorschau ansehen (noch nicht fertig)“ (`&vorschau=1`): Formular und Vorschau wie sonst, das Modell trägt aber immer die Sperre
+„noch im Aufbau“ (`bericht-text.js` `BEREIT`). `form.art` ist eine Vorgabe und steht nicht in `_BerichtKit.json`.
 
 Die Asbest-Texte folgen dem Doc „Textbausteine Asbest-Untersuchungsbericht“ (Stand 30.10.2026):
 Veranlassung (Probenahme durch uns / zugestellte Probe mit Gewährleistungssatz), Probenahme und Untersuchung, Befund mit Tabelle 1
@@ -130,7 +138,10 @@ node tests/text.cjs              # alle Berichtsvarianten (Textbausteine)
 node tests/anlagen.cjs           # Anlagen: erkennen, Hausreihenfolge, veraltet, mehrteilig
 node tests/berichtsart.cjs       # Berichtsart wählen, Bausteine, Word: Spaltenbreiten je Tabelle, Unterüberschrift
 node tests/asbest-golden.cjs     # Asbestbericht festgeschrieben (Beispielberichte); gewollte Änderung: --neu, Diff ansehen
-node tests/luecken-kommentare.cjs  # Word-Kommentar je Lücke; mit ../projektzentrale: word-luecken.js findet dieselben Lücken
+node tests/brand.cjs             # Brandbericht: Regeln aus den Textbausteinen (erfundene Daten tests/daten/brand.cjs)
+node tests/brand-golden.cjs      # Brandbericht festgeschrieben (vier Beispiele); gewollte Änderung: --neu, Diff ansehen
+node tests/luecken-kommentare.cjs  # Word-Kommentar je Lücke (Asbest und Brand, Kopf-Lücken über alle Kombinationen); mit ../projektzentrale: word-luecken.js findet dieselben Lücken
+                                   # --beispiel <datei.docx> / --brand <Ordner>: Dateien zum Ansehen (z. B. in LibreOffice)
                                    # (--beispiel <datei.docx> schreibt eine Datei mit vielen Lücken zum Ansehen)
 node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich wie LabelKit (falls ../labelkit daneben)
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)

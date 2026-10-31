@@ -1,11 +1,13 @@
-/* BerichtKit – Untersuchungsbericht (Word) aus den Spektron-Projektdaten; Berichtsart über #…&art= (bisher: Asbest).
+/* BerichtKit – Untersuchungsbericht (Word) aus den Spektron-Projektdaten; Berichtsart über #…&art= (Asbest; Brand im Aufbau,
+   nur als Vorschau mit #…&art=brand&vorschau=1 – Speichern in „Mitteilungen“ gesperrt, „Entwurf herunterladen“ geht).
    Liest nur: _Projekt.json (Projektzentrale), *_Daten.json (LabelKit), _Ergebnisse.json (ResultKit), _Bildumbenenner.json + Fotos (FotoKit).
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.11.0';
+const APP_VERSION = '1.12.0';
 const APP_DATE = '31.10.2026';
 const CHANGELOG = [
+  ['1.12.0', '31.10.2026', 'Brandbericht Schritt 3 – Gerüst, als Vorschau (am Asbestbericht ändert sich nichts): Aus der „kommt bald“-Karte oder mit #…&art=brand&vorschau=1 öffnet BerichtKit den Brandbericht mit eigener Formularkarte „Brandbericht“ – Titel (Sanierungsvorschlag / Untersuchungsbericht), Umfang (Gebäude, technische Einrichtung, Warenvorräte), Brandort im Satz (Vorbelegung nach der Nutzung), Anwesende (eintragen / nur unser Büro / Teilnehmerliste), zweite Person vor Ort, Gefahrenbereich GB 0–3, Satz zu den übrigen Wohnungen/Bereichen. Der Bericht: Deckblatt mit „Schaden vom:“ bzw. „Brandschaden“ (Datum unbekannt) statt Betreff, Schaden-Nr. mehrzeilig; Kopfzeile „Brandschaden vom …“; 1. Veranlassung (Korrosionsabsätze nur mit Chlorid-Proben), 2. Aufgabenstellung, 3. Ortsbesichtigung (Ortstermin aus der Projektzentrale, sonst Probenahmedatum aus LabelKit), 4. Probenahme (Chlorid, PAK, Asbest mit Materialien, KMF, Brandgeruch; Zahlwort bis zwölf; gemeinsamer Prüfbericht Chlorid/PAK), 7. Arbeitsschutzmaßnahmen (GB 0 eigener Satz, TRGS 521/519), Unterschriften und Anlagen (Prüfberichte Chlorid, PAK, Asbest/KMF, Bilddokumentation, Probenplan, Brandgeruch aus der Projektzentrale – mit Stand über das Anlagen-Protokoll und Abgleich der Anlagen-Nr.). 5. Befund, 6. Sanierungsmaßnahmen/Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit gelber Lücke da (folgt in Schritt 4/5). Solange der Brandbericht nicht fertig ist, ist Speichern in „Mitteilungen“ gesperrt – „Entwurf herunterladen“ geht. Eigene Angaben der Brand-Seite stehen in _BerichtKit.json unter „brand“; das Protokoll der gespeicherten Berichte merkt sich die Berichtsart.'],
   ['1.11.0', '31.10.2026', 'Offene Stellen sichtbar (Brandbericht Schritt 2, gilt schon für den Asbestbericht): Jede gelbe Lücke in der Word-Datei bekommt einen Kommentar am Rand – „Noch ausfüllen: …“, Autor „BerichtKit“ –, in Word mit Überprüfen › Nächster Kommentar von Lücke zu Lücke; ist die Stelle gefüllt, Kommentar löschen. Gelbe Markierung und [Text] bleiben, die Projektzentrale findet bei der Übergabe dieselben Lücken wie bisher. Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb (LibreOffice kann Kommentare dort nicht laden) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar. Im Formular oben „n Stellen noch offen“: Klick springt zum Feld, das die nächste Lücke füllt; leere Pflichtfelder sind gelb umrandet; in den Hinweisen steht zu jeder Lücke, wo sie zu füllen ist (z. B. „Personen › Labor“, „in der Projektzentrale eintragen“). Zähler und Rückfrage vor dem Speichern zählen auch, was erst die Word-Datei als Lücke einsetzt: fehlende Projektnummer und ein Foto, dessen Datei sich nicht lesen lässt ([Foto fehlt: …]).'],
   ['1.10.0', '31.10.2026', 'Vorbereitung Brandbericht (Schritt 1, am Asbestbericht ändert sich nichts): Die Berichtstexte sind aufgeteilt in gemeinsame Bausteine (bericht-gemeinsam.js: Deckblatt mit/ohne Versicherung, Kopfzeilen, Personen, Unterschriften, Anlagen, Proben und Asbest-Befund) und den Asbestbericht (bericht-asbest.js); bericht-text.js wählt die Berichtsart. Die Projektzentrale kann die Berichtsart mitgeben (#…&art=asbest|brand) – „Brandbericht“ zeigt vorerst „kommt bald“ mit Knopf zum Asbestbericht. Word-Ausgabe: Spaltenbreiten je Tabelle und Unterüberschriften (kursiv) für spätere Berichtsarten. Geprüft: alle Beispielberichte als Modell und Word-Datei vorher/nachher gleich.'],
   ['1.9.0', '31.10.2026', 'Stornierte Proben (Folge zu LabelKit 4.49.0 „Proben stornieren“): Eine in LabelKit stornierte Asbestprobe ist keine Probe mehr – sie fehlt in Tabelle 1, im Text (Probenzahl, Aufzählungen, Sätze je Probe), in der Probenliste und im Abgleich der Entnahmestelle und sperrt das Speichern nie („… noch kein Ergebnis in ResultKit“ kommt für sie nicht mehr). Die übrigen Proben behalten ihre LabelKit-Nummer, es wird nicht neu durchnummeriert (z. B. 1, 2, 4). Steht im Prüfbericht trotzdem ein Wert für die stornierte Probe, kommt er nicht in den Bericht; ein Hinweis sagt es („P3 ist in LabelKit storniert – der Laborwert (Prüfbericht …) kommt nicht in den Bericht.“). Sind alle Asbestproben storniert, gibt es keinen Bericht ohne Proben: Speichern in „Mitteilungen“ ist dann gesperrt (nur Entwurf).'],
@@ -65,10 +67,23 @@ const ART_URL = {
     if (url.href !== location.href) try { history.replaceState(history.state, '', url); } catch (e) { /* file:// */ }
   },
 };
-/** Berichtsart laut Adresse → { art, name, bereit } oder { art, unbekannt: true } */
+/** Vorschau einer Berichtsart im Aufbau (#…&vorschau=1): Formular und Vorschau, Speichern gesperrt (bericht-text.js BEREIT) */
+const VORSCHAU_URL = {
+  lesen: () => /^(?:1|ja|true)$/i.test(String(new URLSearchParams(location.hash.slice(1)).get('vorschau') ?? '')),
+  setzen(an) {
+    const url = new URL(location.href);
+    const teile = url.hash.slice(1).split('&').filter(t => t && !new URLSearchParams(t).has('vorschau'));
+    if (an) teile.push('vorschau=1');
+    url.hash = teile.join('&');
+    if (url.href !== location.href) try { history.replaceState(history.state, '', url); } catch (e) { /* file:// */ }
+  },
+};
+/** Berichtsart laut Adresse → { art, name, bereit, modul, zeigen } oder { art, unbekannt: true }.
+    zeigen: Formular öffnen – bereit, oder im Aufbau mit #…&vorschau=1 */
 function artAusAdresse() {
   const art = ART_URL.lesen() || 'asbest';
-  return T.BERICHTSARTEN.find(a => a.art === art) || { art, name: '', bereit: false, unbekannt: true };
+  const a = T.BERICHTSARTEN.find(x => x.art === art) || { art, name: '', bereit: false, modul: false, unbekannt: true };
+  return { ...a, zeigen: a.bereit || (a.modul && VORSCHAU_URL.lesen()) };
 }
 
 const S = { art: 'asbest', bald: '', archiv: null, archivOk: false, dir: null, ordner: null, pj: null, lk: null, erg: null, fk: null, fotosDir: null, feldbogen: null,
@@ -104,7 +119,7 @@ async function start() {
   if (!('showDirectoryPicker' in window)) { zeigeStart('BerichtKit braucht Edge oder Chrome (Zugriff auf Ordner).', false); $('btnWaehlen').disabled = true; return; }
   S.archiv = await SUITE.get('archiv').catch(() => null) || null;   // vor der Berichtsart: auch aus „kommt bald“ heraus wird ein Projekt gewählt
   const art = artAusAdresse();
-  if (!art.bereit) { zeigeBald(art); return; }
+  if (!art.zeigen) { zeigeBald(art); return; }
   S.art = art.art; S.bald = '';
   const name = PROJEKT_URL.lesen();
   if (name && S.archiv) {
@@ -119,7 +134,7 @@ const START = { titel: $('startTitel').textContent, text: $('startText').textCon
 function zeigeStart(text, zugriff) {
   $('start').hidden = false; $('app').hidden = true; $('leiste').hidden = true;
   $('startTitel').textContent = START.titel; $('startText').textContent = text || START.text;
-  $('btnZugriff').hidden = !zugriff; $('btnWaehlen').hidden = false; $('btnAsbest').hidden = true;
+  $('btnZugriff').hidden = !zugriff; $('btnWaehlen').hidden = false; $('btnAsbest').hidden = true; $('btnArtVorschau').hidden = true;
 }
 /** Berichtsart aus der Adresse gibt es (noch) nicht: „kommt bald“ und ein Knopf zum Asbestbericht – nie ein Bericht der falschen Art */
 function zeigeBald(a) {
@@ -127,13 +142,16 @@ function zeigeBald(a) {
   zeigeStart(a.unbekannt ? `Die Berichtsart „${a.art}“ kennt BerichtKit nicht – bisher gibt es den Asbestbericht.`
     : `Der ${a.name} kommt bald. Bisher erstellt BerichtKit den Asbestbericht.`, false);
   $('startTitel').textContent = a.unbekannt ? 'Bericht' : a.name;
-  $('btnWaehlen').hidden = true; $('btnAsbest').hidden = false;
+  $('btnWaehlen').hidden = true; $('btnAsbest').hidden = false; $('btnArtVorschau').hidden = !a.modul;
 }
+/** „Vorschau ansehen (noch nicht fertig)“: Berichtsart im Aufbau mit gesperrtem Speichern öffnen */
+function zurVorschau() { VORSCHAU_URL.setzen(true); start(); }
 /** „Asbestbericht öffnen“: Angabe aus der Adresse nehmen; ein schon offenes Projekt wieder zeigen, sonst wie beim Start öffnen */
 function zumAsbestbericht() {
-  ART_URL.setzen(''); S.art = 'asbest'; S.bald = '';
+  ART_URL.setzen(''); VORSCHAU_URL.setzen(false); S.art = 'asbest'; S.bald = '';
   const name = PROJEKT_URL.lesen();
-  if (S.dir && (!name || name === S.dir.name)) { $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; return; }
+  if (S.dir && (!name || name === S.dir.name) && S.form.art !== 'brand') { $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; return; }
+  if (S.dir && (!name || name === S.dir.name)) { oeffnen(S.dir); return; }   // war im Brandbericht (Vorschau): Formular neu als Asbestbericht
   start();
 }
 async function projektAusArchiv(name) {
@@ -152,7 +170,7 @@ async function waehlen() {
     else if (await dir.isSameEntry(S.archiv)) { alert('Das ist der Archivordner – bitte einen Projektordner darin wählen.'); return; }
   }
   PROJEKT_URL.setzen(dir.name);
-  if (!artAusAdresse().bereit) { ART_URL.setzen(''); S.art = 'asbest'; S.bald = ''; }   // selbst gewählt aus „kommt bald“: Asbestbericht
+  if (!artAusAdresse().zeigen) { ART_URL.setzen(''); S.art = 'asbest'; S.bald = ''; }   // selbst gewählt aus „kommt bald“: Asbestbericht
   await oeffnen(dir);
 }
 
@@ -166,7 +184,7 @@ async function oeffnen(dir) {
   const nr = (/^(\d{2})\.(\d{4})/.exec(dir.name) || []).slice(1).join('.');
   S.ordner = { name: dir.name, nr, kuerzel: '' };
   S.quellen = []; S.thumbs = {}; S.feldbogen = null; S.anlagen = {}; S.anlagenVorhanden = null; uebergabeZeigen('');
-  S.pj = null; S.erg = null; S.lk = null; S.stempel = null; S.quellenDaten = []; S.meldungen = []; S.quellenLauf = (S.quellenLauf || 0) + 1;
+  S.pj = null; S.erg = null; S.lk = null; S.lkDatei = null; S.stempel = null; S.quellenDaten = []; S.meldungen = []; S.quellenLauf = (S.quellenLauf || 0) + 1;
   const q = (ok, text) => S.quellen.push({ ok, text });
   try {
     await archivLesen();
@@ -215,7 +233,7 @@ async function archivLesen() {
    Fenster (z. B. nach „Übernehmen“ in ResultKit) und vor dem Speichern/Herunterladen. Sonst landen alte Laborwerte im Word. */
 const QUELLE_NAME = { projekt: 'Projektdaten (Projektzentrale)', ergebnisse: 'Laborergebnisse (ResultKit)', labelkit: 'Proben (LabelKit)' };
 async function quellenLesen(dir) {
-  const r = { pj: null, erg: null, lk: null, feldbogen: null, quellen: [] }, q = (ok, text) => r.quellen.push({ ok, text });
+  const r = { pj: null, erg: null, lk: null, lkDatei: null, feldbogen: null, quellen: [] }, q = (ok, text) => r.quellen.push({ ok, text });
   // Projektdaten (Projektzentrale)
   const op = await SO.ort(dir, 'projekt');
   const rp = op.dir ? await leseJson(op.dir, '_Projekt.json') : null;
@@ -239,7 +257,10 @@ async function quellenLesen(dir) {
     const datei = genau || neu;
     if (datei) {
       try {
-        r.lk = JSON.parse(await datei.text());
+        const buf = await datei.arrayBuffer();
+        r.lk = JSON.parse(new TextDecoder().decode(buf));
+        // Stand der Brandgeruch-Anlage (Projektzentrale vermerkt die Prüfsumme der LabelKit-Datei im Anlagen-Protokoll)
+        r.lkDatei = { name: datei.name, t: datei.lastModified, sha: await sha256(buf) };
         if (genau) q(true, `LabelKit: ${datei.name} (wie in ResultKit übernommen)`);
         else q(false, quelle ? `LabelKit-Datei „${quelle}“ aus ResultKit nicht gefunden – genommen: ${datei.name} (neueste).`
           : `LabelKit: ${datei.name} (neueste) – ResultKit nennt keine LabelKit-Datei; dort die Ergebnisse erneut übernehmen.`);
@@ -252,7 +273,7 @@ async function quellenLesen(dir) {
   r.feldbogen = fp ? { text: String(fp.kopf.probenehmer).trim(), kuerzel: personFinden(fp.kopf.probenehmer) } : null;
   return r;
 }
-function quellenUebernehmen(r) { S.pj = r.pj; S.erg = r.erg; S.lk = r.lk; S.feldbogen = r.feldbogen; S.quellenDaten = r.quellen; }
+function quellenUebernehmen(r) { S.pj = r.pj; S.erg = r.erg; S.lk = r.lk; S.lkDatei = r.lkDatei; S.feldbogen = r.feldbogen; S.quellenDaten = r.quellen; }
 /** Stempel der drei Quellen: { projekt, ergebnisse, labelkit } – je „Name|Größe|Zeit“, LabelKit alle *_Daten.json */
 async function quellenStempel(dir) {
   const st = f => `${f.name}|${f.size}|${f.lastModified}`;
@@ -369,7 +390,7 @@ async function anlagenLesen() {
   for (const x of S.form.anlagenExtra || []) if (x && await pfadDa(dir, x.pfad)) vorhanden.add(x.pfad);
   if (lauf !== S.anlagenLauf || dir !== S.dir) return;
   if (rf && rf.data) { S.fk = rf.data; fotoListeBauen(); }
-  S.anlagen = BerichtAnlagen.erkennen({ ordnerName: dir.name, fotos, plaene, mitteilungen, protokoll, fk: S.fk, plan });
+  S.anlagen = BerichtAnlagen.erkennen({ ordnerName: dir.name, fotos, plaene, mitteilungen, protokoll, fk: S.fk, plan, labelkit: S.lkDatei });
   S.anlagenVorhanden = vorhanden;
 }
 async function anlageHinzufuegen() {
@@ -407,9 +428,15 @@ function vorgabenBerechnen() {
   const svV = T.svVorschlag(S.cfg, S.mitarbeiter, P.zustaendig);
   return { art: S.art, datum: heute(), mitteilung: S.naechste, variante: 'eigen', eingangsdatum: '', auftragsdatum: P.auftragsdatum,
     agSatz: T.mitArtikel(T.zeilen(P.ag)[0] || '').text, probenehmer: pn, sv: svV.kuerzel, svVorschlag: svV, mt: pn && rolle(pn) === 'mt' ? pn : '', labor: S.cfg.labor || '', einbau: 'unbekannt',
-    aus: {}, kmf: {}, who: {}, ki: {}, foto: {} };
+    aus: {}, kmf: {}, who: {}, ki: {}, foto: {},
+    // Brand-Seite: eigene Angaben stehen in form.brand (in _BerichtKit.json unter „brand“), je Feld gemerkt wie die Probenangaben
+    brand: T.brandVorgabe(S.pj) };
 }
-const formNeu = () => { S.form = { ...S.vorgabe, ...S.eigen }; };
+/** Formular = Vorgaben + eigene Angaben; die Brand-Seite feldweise (eigene Angaben nur für die geänderten Felder) */
+const formNeu = () => {
+  const eb = S.eigen.brand && typeof S.eigen.brand === 'object' ? S.eigen.brand : {};
+  S.form = { ...S.vorgabe, ...S.eigen, brand: { ...S.vorgabe.brand, ...eb, umfang: { ...((S.vorgabe.brand || {}).umfang || {}), ...(eb.umfang || {}) } } };
+};
 /** Projektdaten oder Einstellungen neu: Vorgaben neu, eigene Angaben bleiben. */
 function vorgabenNeu() { S.vorgabe = vorgabenBerechnen(); formNeu(); }
 const bereinigenCtx = (alt, berichte) => ({ vorgabe: S.vorgabe, naechste: S.naechste, heute: heute(), alt, berichte: berichte || [] });
@@ -558,7 +585,8 @@ function render() {
   meldungenZeigen();
   $('fDatum').value = f.datum || ''; $('fMitteilung').value = f.mitteilung || 1;
   document.querySelectorAll('input[name=variante]').forEach(r => { r.checked = r.value === (f.variante || 'eigen'); });
-  const zug = f.variante === 'zugestellt';
+  const brand = !!m.brand, zug = !brand && f.variante === 'zugestellt';   // Brandbericht: immer eigene Probenahme
+  $('zeileVariante').hidden = brand; $('karteBrand').hidden = !brand; if (brand) brandZeigen(m, f);
   $('zeileEingang').hidden = !zug; $('fEingang').value = f.eingangsdatum || '';
   $('fAuftrag').value = f.auftragsdatum || ''; $('fAuftrag').closest('.feld').hidden = zug;
   $('qAuftrag').textContent = P.auftragsdatum ? (f.auftragsdatum === P.auftragsdatum ? 'aus der Projektzentrale' : `Projektzentrale: ${T.datumDE(P.auftragsdatum)}`) : 'in der Projektzentrale nicht eingetragen';
@@ -575,7 +603,7 @@ function render() {
   document.querySelectorAll('input[name=deckblatt]').forEach(r => { r.checked = r.value === (m.versicherungsfall ? 'versicherung' : 'direkt'); });
   $('qDeckblatt').textContent = f.deckblatt ? 'selbst gewählt' : `automatisch: ${P.versicherungsfallGrund}`;
   $('btnDeckblattAuto').hidden = !f.deckblatt;
-  optionen($('fPn'), f.probenehmer, '– bitte wählen –'); $('zeilePn').hidden = zug;
+  optionen($('fPn'), f.probenehmer, '– bitte wählen –'); $('zeilePn').hidden = zug; $('lbPn').textContent = brand ? 'Vor Ort / Probenahme' : 'Probenahme durch';
   { const q = m.probenehmerQuelle; $('qPn').textContent = q ? (q.angenommen ? 'angenommen – bitte prüfen' : q.text) : '';
     $('qPn').classList.toggle('annahme', !!(q && q.angenommen)); $('btnPnOk').hidden = !(q && q.angenommen); }
   optionen($('fSv'), f.sv, '– bitte wählen –');
@@ -602,7 +630,7 @@ function render() {
         unter += p.kmf.ki ? `<span>KI = ${esc(p.kmf.ki)} <span class="klein">(Labor)</span></span>`
           : `<label>KI <input type="text" data-art="ki" data-l="${esc(p.label)}" value="${esc((f.ki || {})[p.label] || '')}" placeholder="aus PDF" title="Steht nicht in den Labordaten – genau wie im Prüfbericht eintragen"></label>`;
       }
-      unter += `<label>Foto <select data-art="foto" data-l="${esc(p.label)}"><option value="">kein Foto</option>${fotos.map(o => `<option value="${esc(o.datei)}" ${o.datei === b.foto ? 'selected' : ''}>${esc(o.datei)}</option>`).join('')}</select></label>`;
+      if (!brand) unter += `<label>Foto <select data-art="foto" data-l="${esc(p.label)}"><option value="">kein Foto</option>${fotos.map(o => `<option value="${esc(o.datei)}" ${o.datei === b.foto ? 'selected' : ''}>${esc(o.datei)}</option>`).join('')}</select></label>`;
     }
     return `<tr class="${an ? '' : 'aus'}"><td><input type="checkbox" data-art="aus" data-l="${esc(p.label)}" ${an ? 'checked' : ''} title="Im Bericht"></td>
       <td style="white-space:nowrap">${esc(p.ref || p.label)}<div class="klein" style="font-size:10.5px">${esc(p.labNr)}</div></td>
@@ -610,7 +638,8 @@ function render() {
       <td>${bef}</td></tr>`;
   }).join('') + m.offen.map(o => `<tr class="${o.aus ? 'aus' : ''}"><td><input type="checkbox" data-art="aus" data-l="${esc(o.label)}" ${o.aus ? '' : 'checked'} title="Abwählen, wenn die Probe nicht in diesen Bericht gehört"></td>
       <td>${esc(o.label)}</td><td>${o.material ? esc(o.material) : '–'}<div class="klein">${esc(o.stelle)}</div></td><td><span class="befund unk">noch kein Ergebnis</span></td></tr>`).join('')
-    : '<tr><td colspan="4" class="klein">Keine Asbestergebnisse gefunden.</td></tr>';
+    : `<tr><td colspan="4" class="klein">${brand ? 'Keine Asbest- oder KMF-Ergebnisse – im Brandbericht nur, wenn Materialproben darauf untersucht wurden.' : 'Keine Asbestergebnisse gefunden.'}</td></tr>`;
+  $('probenTitel').textContent = brand ? 'Asbest- / KMF-Proben' : 'Proben';
   $('einbauWahl').hidden = !m.proben.some(p => p.istKmf && p.whoNachgewiesen);
   anlagenZeigen(m);
   document.querySelectorAll('input[name=einbau]').forEach(r => { r.checked = r.value === (f.einbau || 'unbekannt'); });
@@ -633,6 +662,33 @@ function render() {
   if (S.statusFest && Date.now() < S.statusFest.bis) $('status').innerHTML = S.statusFest.html;   // eben gemeldet – nicht gleich überschreiben
   else (S.statusFest = null, $('status')).textContent = gesperrt ? `Speichern gesperrt (${m.sperren.length}) – siehe Hinweise. „Entwurf herunterladen“ geht.`
     : `Speichert als Mitteilungen/${m.dateiname}` + (lz.length ? ` · ${lz.length} Lücke(n) gelb markiert` : '');
+}
+/** Brand-Seite füllen (nur Brandbericht): Titel, Umfang, Brandort im Satz, Anwesende, zweite Person, Gefahrenbereich; darunter
+    Angaben der Projektzentrale und Probenzahlen als Hilfe (nicht im Bericht) */
+function brandZeigen(m, f) {
+  const b = f.brand || {}, mb = m.brand || {}, z = mb.zahlen || {};
+  document.querySelectorAll('input[name=brTitel]').forEach(r => { r.checked = r.value === mb.titel; });
+  document.querySelectorAll('#fbUmfang input[data-umfang]').forEach(el => { el.checked = !!(b.umfang || {})[el.dataset.umfang]; });
+  $('fbBrandort').value = b.brandort || ''; $('fbBrandort').placeholder = mb.objektartVorgabe || '';
+  const ort = b.brandort || mb.objektartVorgabe;
+  $('qbBrandort').textContent = (mb.schadendatum === 'unbekannt' ? `„${ort ? ort[0].toUpperCase() + ort.slice(1) : ''} <Objekt> kam es zu einem Brandschaden.“` : `„Am … kam es ${ort} <Objekt> zu einem Brandschaden.“`) + ' – leer = nach der Nutzung'
+    + (mb.nutzung ? ` (${mb.nutzung})` : ' (in der Projektzentrale nicht eingetragen)') + '; eigener Text z. B. „in einer Wohnung im Erdgeschoss des Mehrfamilienhauses“ – die Adresse folgt direkt';
+  const anw = b.teilnehmerliste ? 'teilnehmer' : b.nurBuero ? 'buero' : 'liste';
+  document.querySelectorAll('input[name=brAnw]').forEach(r => { r.checked = r.value === anw; });
+  $('zeileAnwesende').hidden = anw !== 'liste'; $('fbAnwesende').value = b.anwesende || '';
+  $('zeilePerson2').hidden = anw === 'teilnehmer';   // mit Teilnehmerliste nennt 3. keine Personen
+  optionen($('fbPerson2'), b.person2, 'keine', k => k !== f.probenehmer);
+  $('fbGb').value = b.gb || '';
+  $('zeileUebrige').hidden = !b.gb || b.gb === '0'; $('fbUebrige').checked = !!b.uebrige;
+  $('lbUebrige').textContent = `Satz „in den übrigen ${mb.nutzung === 'Wohnen' ? 'Wohnungen' : 'Bereichen'} keine besonderen Maßnahmen“ in 7.`;
+  const proben = [z.chlorid && `${z.chlorid} Chlorid`, z.pak && `${z.pak} PAK (Wischproben)`, z.pakMaterial && `${z.pakMaterial} PAK (Material)`,
+    z.asbest && `${z.asbest} Asbest`, z.kmf && `${z.kmf} KMF`, z.brandgeruch && `${z.brandgeruch} Brandgeruch`].filter(Boolean);
+  $('qbProjekt').textContent = [`Proben: ${proben.length ? proben.join(' · ') : 'keine gefunden'}`,
+    mb.schadendatum === 'unbekannt' ? 'Schadendatum: nicht bekannt' : mb.schadendatum === 'leer' ? 'Schadendatum: in der Projektzentrale nicht eingetragen' : '',
+    mb.schadenereignis && `Schadenereignis: ${mb.schadenereignis}`, mb.brandgut && `Brandgut: ${mb.brandgut}`].filter(Boolean).join(' · ') + ' (Projektzentrale/LabelKit, nur zur Hilfe)';
+  const art = T.BERICHTSARTEN.find(a => a.art === 'brand');
+  $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau: 5. Befund, 6. und 8. stehen als Lücke da. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht. ';
+  $('brandVorschau').hidden = !!(art && art.bereit);
 }
 /* Offene Stellen (Lücken im Bericht): Zähler oben „n Stellen noch offen“, leere Pflichtfelder gelb umrandet, Klick auf den
    Zähler springt zum Feld der ersten Stelle – jeder weitere Klick zur nächsten. Welche Lücke welches Feld füllt, steht nur in
@@ -719,7 +775,9 @@ function vorschau(m) {
   const kenn = (m.kennzeilen || []).length ? `<p class="kenn">${m.kennzeilen.map(k => `<span class="${esc(k.art)}">${esc(k.text)}</span>`).join(' · ')}</p>` : '';
   const deck = `<div class="blatt">${kenn}<p class="titel">${esc(d.titel)}</p><p class="mitt">(${esc(d.mitteilung)})</p>
     <div class="zeile"><span>Projektnummer:</span><span>${runsHtml(d.projektnummer || { gap: '[Projektnummer]' })}</span></div>
-    <p style="margin:0 0 12px;text-align:left;line-height:1.35">${runsHtml(d.betreff)}</p>
+    ${(Array.isArray(d.betreff) ? d.betreff : [d.betreff]).includes('\t')   // Brand: „Schaden vom:⇥Datum“ wie eine Feldzeile
+      ? (([k, , ...r]) => `<div class="zeile" style="margin-bottom:12px"><span>${runsHtml(k)}</span><span>${runsHtml(r)}</span></div>`)(d.betreff)
+      : `<p style="margin:0 0 12px;text-align:left;line-height:1.35">${runsHtml(d.betreff)}</p>`}
     ${d.felder.map(([k, v]) => `<div class="zeile"><span>${esc(k)}</span><span>${v.map(runsHtml).join('<br>')}</span></div>`).join('')}</div>`;
   const teile = [`${kenn}<div class="kopfzeilen">${m.kopf.map(runsHtml).join('<br>')}</div>`];
   for (const a of m.abschnitte) {
@@ -785,7 +843,7 @@ async function bilderLaden(m) {
   return { bilder, fehlen };
 }
 async function wordBlob(m, geladen) {
-  if (!m.proben.length) throw new Error('Keine Proben im Bericht.');
+  if (!m.proben.length && !m.brand) throw new Error('Keine Proben im Bericht.');   // Asbestbericht; der Brandbericht nennt fehlende Proben als Lücke
   const { bilder, fehlen } = geladen || await bilderLaden(m);
   const blob = await docx.Packer.toBlob(BerichtDocx.erstellen(docx, m, bilder));
   return { blob, m, fehlen };
@@ -844,7 +902,7 @@ async function speichern() {
     clearTimeout(S.zustand.geplant);
     // Protokoll: welche Dateien als Anlage dazugehören (für die Übergabe: Pfade im Projektordner), wie viele Lücken beim Speichern offen waren,
     // Nummer und Datum (beim nächsten Öffnen: eine Nummer, die es schon gibt, und das Datum dazu werden nicht mehr vorgeschlagen)
-    await zustandSchreiben({ datei: name, am: new Date().toISOString(), von: ich(), mitteilung: +S.form.mitteilung || 1, datum: S.form.datum || '',
+    await zustandSchreiben({ datei: name, am: new Date().toISOString(), von: ich(), art: T.berichtsart(S.form), mitteilung: +S.form.mitteilung || 1, datum: S.form.datum || '',
       anlagen: m.anlagenDateien, anlagenListe: m.anlagenListe, luecken: BerichtLuecken.offene(m, fehlen).length })
       .catch(e => fehler('Bericht gespeichert, Angaben dazu nicht: ' + (e && e.message || e)));
     if (window.MosaikLeiste) MosaikLeiste.aktualisieren();
@@ -966,7 +1024,7 @@ async function einstellungenSpeichern() {
 /* ---------- Eingaben ---------- */
 function setze(k, v) { S.form[k] = v; formMerken(k); render(); }
 function verbinden() {
-  $('btnWaehlen').onclick = waehlen; $('btnOrdner').onclick = waehlen; $('btnAsbest').onclick = zumAsbestbericht;
+  $('btnWaehlen').onclick = waehlen; $('btnOrdner').onclick = waehlen; $('btnAsbest').onclick = zumAsbestbericht; $('btnArtVorschau').onclick = zurVorschau; $('btnZumAsbest').onclick = zumAsbestbericht;
   $('btnEinstellungen').onclick = einstellungenOeffnen;
   $('eAbbrechen').onclick = () => $('dlgEinstellungen').close(); $('eSpeichern').onclick = einstellungenSpeichern;
   $('btnErstellen').onclick = speichern; $('btnLaden').onclick = herunterladen;
@@ -1000,6 +1058,16 @@ function verbinden() {
   $('fVers').onchange = e => setze('versicherer', e.target.value.trim());
   document.querySelectorAll('input[name=variante]').forEach(r => { r.onchange = () => setze('variante', r.value); });
   document.querySelectorAll('input[name=einbau]').forEach(r => { r.onchange = () => setze('einbau', r.value); });
+  // Brand-Seite: je Feld eine eigene Angabe in form.brand (bleibt bei Änderungen der Kollegen an anderen Feldern erhalten)
+  const setzeBrand = (werte) => { S.form.brand = { ...(S.form.brand || {}), ...werte }; formMerken(...Object.keys(werte).map(k => ['brand', k])); render(); };
+  document.querySelectorAll('input[name=brTitel]').forEach(r => { r.onchange = () => setzeBrand({ titel: r.value }); });
+  $('fbUmfang').addEventListener('change', e => { const k = e.target.dataset.umfang; if (k) setzeBrand({ umfang: { ...((S.form.brand || {}).umfang || {}), [k]: e.target.checked } }); });
+  $('fbBrandort').onchange = e => setzeBrand({ brandort: e.target.value.trim() });
+  document.querySelectorAll('input[name=brAnw]').forEach(r => { r.onchange = () => setzeBrand({ nurBuero: r.value === 'buero', teilnehmerliste: r.value === 'teilnehmer' }); });
+  $('fbAnwesende').onchange = e => setzeBrand({ anwesende: e.target.value.trim() });
+  $('fbPerson2').onchange = e => setzeBrand({ person2: e.target.value });
+  $('fbGb').onchange = e => setzeBrand({ gb: e.target.value });
+  $('fbUebrige').onchange = e => setzeBrand({ uebrige: e.target.checked });
   $('probenListe').addEventListener('change', e => {
     const el = e.target, art = el.dataset.art, l = el.dataset.l; if (!art) return;
     const map = S.form[art] = { ...(S.form[art] || {}) };
@@ -1023,14 +1091,15 @@ function verbinden() {
   window.addEventListener('focus', () => {
     if (!S.dir || S.laedt || S.speichert) return;
     const anl = () => V.stabil([S.anlagen, [...(S.anlagenVorhanden || [])]]), vorher = anl();
-    S.fokusLauf = Promise.all([quellenAuffrischen('fokus'), anlagenLesen()]).then(([g]) => { if (g.length || anl() !== vorher) render(); }).catch(() => {});
+    // Anlagen erst nach dem Neu-Lesen: der Stand der Brandgeruch-Anlage hängt an der Prüfsumme der eben gelesenen LabelKit-Datei
+    S.fokusLauf = quellenAuffrischen('fokus').then(g => anlagenLesen().then(() => g)).then(g => { if (g.length || anl() !== vorher) render(); }).catch(() => {});
   });
   $('btnMeldungenWeg').onclick = () => { S.meldungen = []; meldungenZeigen(); };
   window.addEventListener('hashchange', () => {
     const n = PROJEKT_URL.lesen(), a = artAusAdresse();
     // Von „kommt bald“ zurück zu einer bereiten Berichtsart (Link aus der Projektzentrale, Zurück im Browser): Bericht wieder zeigen
-    if (S.bald && a.bereit && S.dir && (!n || n === S.dir.name) && a.art === S.art) { S.bald = ''; $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; return; }
-    if ((n && (!S.dir || n !== S.dir.name)) || !a.bereit || S.bald || (S.dir && a.art !== S.art)) start();
+    if (S.bald && a.zeigen && S.dir && (!n || n === S.dir.name) && a.art === S.art) { S.bald = ''; $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; return; }
+    if ((n && (!S.dir || n !== S.dir.name)) || !a.zeigen || S.bald || (S.dir && a.art !== S.art)) start();
   });
 }
 verbinden();

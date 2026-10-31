@@ -38,6 +38,10 @@ jobs:
         run: node tests/berichtsart.cjs
       - name: Asbestbericht wie festgeschrieben (Beispielberichte)
         run: node tests/asbest-golden.cjs
+      - name: Brandbericht – Regeln (Gerüst)
+        run: node tests/brand.cjs
+      - name: Brandbericht wie festgeschrieben (Beispielberichte)
+        run: node tests/brand-golden.cjs
       - name: Word-Kommentar je Lücke, Lücken-Prüfung der Projektzentrale findet dieselben Lücken
         run: node tests/luecken-kommentare.cjs
         env:

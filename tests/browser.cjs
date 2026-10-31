@@ -404,6 +404,30 @@ const daten = {
     await startZeigt('Brandbericht', /kommt bald/);
     // Archiv ist auch hier bekannt – „Projekt wählen“ im Kopf öffnet dann mit Mitarbeitern, Unterschriften, Einstellungen aus dem Archiv
     assert.ok(await page.evaluate(() => !!S.archiv), 'Archiv geladen');
+    // Brandbericht im Aufbau: „Vorschau ansehen“ öffnet das Formular mit der Brand-Seite – Speichern gesperrt, nur Entwurf
+    assert.ok(await page.isVisible('#btnArtVorschau'));
+    await page.click('#btnArtVorschau'); await page.waitForSelector('#app:not([hidden]) .blatt');
+    assert.match(page.url(), /art=brand/); assert.match(page.url(), /vorschau=1/);
+    assert.ok(await page.isVisible('#karteBrand')); assert.ok(await page.isHidden('#zeileVariante'));
+    assert.match(await page.textContent('#vorschau'), /Sanierungsvorschlag vom/); assert.match(await page.textContent('#vorschau'), /7\. Arbeitsschutzmaßnahmen/);
+    assert.ok(await page.isDisabled('#btnErstellen')); assert.equal(await page.textContent('#btnLaden'), 'Entwurf herunterladen');
+    assert.match(await page.textContent('#hinweise'), /Gesperrt: Der Brandbericht ist noch im Aufbau/);
+    assert.ok(await page.evaluate(() => S.luecken.some(x => x.luecke === '[Gefahrenbereich wählen]')));
+    await page.selectOption('#fbGb', '2');
+    assert.match(await page.textContent('#vorschau'), /Gefahrenbereich 2 \(GB 2\)/);
+    assert.ok(await page.evaluate(() => !S.luecken.some(x => x.luecke === '[Gefahrenbereich wählen]')));
+    await page.check('input[name=brTitel][value=Untersuchungsbericht]');
+    assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom[\s\S]*6\. Schlussfolgerungen/);
+    if (process.env.BERICHT_AUSGABE) { await page.setViewportSize({ width: 1440, height: 1400 }); await page.waitForTimeout(400); await page.locator('#karteBrand').scrollIntoViewIfNeeded(); await page.screenshot({ path: path.join(process.env.BERICHT_AUSGABE, 'brand.png') }); }
+    let mitBrand = null;   // eigene Angaben der Brand-Seite feldweise unter „brand“, die Berichtsart nie
+    for (let i = 0; i < 40 && !(mitBrand && mitBrand.form.brand && mitBrand.form.brand.titel); i++) { await page.waitForTimeout(150); mitBrand = JSON.parse(await projektDatei(bkPfad)); }
+    assert.deepEqual(mitBrand.form.brand, { gb: '2', titel: 'Untersuchungsbericht' }); assert.ok(!('art' in mitBrand.form));
+    // „Zum Asbestbericht“ in der Brand-Karte: dasselbe Projekt als Asbestbericht, Brand-Angaben bleiben draußen
+    await page.click('#btnZumAsbest');
+    await page.waitForSelector('#karteBrand', { state: 'hidden' }); await page.waitForSelector('#app:not([hidden]) .blatt');
+    assert.match(await page.textContent('#vorschau'), /Betreff|Untersuchung auf Asbest/);
+    assert.doesNotMatch(page.url(), /art=|vorschau=/); assert.ok(await page.isHidden('#karteBrand')); assert.ok(await page.isEnabled('#btnErstellen'));
+    assert.doesNotMatch(await page.textContent('#vorschau'), /Gefahrenbereich|Sanierungsvorschlag|Untersuchungsbericht vom[\s\S]*Schlussfolgerungen[\s\S]*Arbeitsschutz/);
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest');
     await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.ok(await page.isHidden('#start')); assert.match(await page.textContent('#vorschau'), /Untersuchung auf Asbest/);

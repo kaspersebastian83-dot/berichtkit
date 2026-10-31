@@ -158,7 +158,8 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     <p id="startText">Projekt in der Projektzentrale öffnen und dort „Bericht“ wählen – oder hier den Projektordner wählen.</p>
     <p><button class="primary" id="btnZugriff" hidden>Zugriff auf den Archivordner erlauben</button>
        <button class="primary" id="btnWaehlen">Projektordner wählen</button>
-       <button class="primary" id="btnAsbest" hidden>Asbestbericht öffnen</button></p>
+       <button class="primary" id="btnAsbest" hidden>Asbestbericht öffnen</button>
+       <button id="btnArtVorschau" hidden title="Vorschau des Berichts im Aufbau – speichern in „Mitteilungen“ geht noch nicht, nur „Entwurf herunterladen“">Vorschau ansehen (noch nicht fertig)</button></p>
   </div>
 </div>
 
@@ -172,7 +173,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
       <h2>Bericht</h2>
       <div class="feld"><label for="fDatum">Berichtsdatum</label><input type="date" id="fDatum"></div>
       <div class="feld"><label for="fMitteilung">Mitteilung Nr.</label><input type="number" id="fMitteilung" min="1" max="20" style="width:90px"></div>
-      <div class="radio" role="radiogroup" aria-label="Probenahme">
+      <div class="radio" role="radiogroup" aria-label="Probenahme" id="zeileVariante">
         <label><input type="radio" name="variante" value="eigen"> Probenahme durch uns</label>
         <label><input type="radio" name="variante" value="zugestellt"> zugestellte Probe</label>
       </div>
@@ -188,8 +189,30 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
       <div class="feld"><label for="fAg">Auftraggeber im Satz</label><input type="text" id="fAg" placeholder="z. B. die Firma … / den Bauverein …"><span class="quelle">„… wurde unser Büro durch <b>…</b> beauftragt“ – Artikel wird bei Firmen (GmbH, eG, AG …) ergänzt, sonst bitte selbst</span></div>
       <div class="feld" id="zeileVers"><label for="fVers">Versicherer</label><input type="text" id="fVers"><span class="quelle"><span id="qVers"></span> <button type="button" class="klein-knopf" id="btnVersOk" hidden title="Auftraggeber ist der Versicherer – Hinweis ausblenden">✓ stimmt</button></span></div>
     </div>
+    <div class="karte" id="karteBrand" hidden>
+      <h2>Brandbericht</h2>
+      <p class="klein" id="brandVorschau" style="margin:0 0 8px"><span id="brandVorschauText"></span><button type="button" class="klein-knopf" id="btnZumAsbest" title="Dieses Projekt als Asbestbericht öffnen">Zum Asbestbericht</button></p>
+      <div class="feld"><span class="lbl">Titel</span><div class="radio zwei" role="radiogroup" aria-label="Titel des Berichts">
+        <label><input type="radio" name="brTitel" value="Sanierungsvorschlag"> Sanierungsvorschlag</label>
+        <label title="Ohne Sanierungskonzept: 6. heißt „Schlussfolgerungen“, kein Abschnitt 8"><input type="radio" name="brTitel" value="Untersuchungsbericht"> Untersuchungsbericht</label></div></div>
+      <div class="feld"><span class="lbl">Umfang</span><div class="radio zwei" id="fbUmfang" tabindex="-1" role="group" aria-label="Umfang der Untersuchung (2. Aufgabenstellung)">
+        <label><input type="checkbox" data-umfang="gebaeude"> Gebäude</label>
+        <label><input type="checkbox" data-umfang="technik"> Technische Einrichtung</label>
+        <label><input type="checkbox" data-umfang="waren"> Warenvorräte</label></div>
+        <span class="quelle">„… die Schadstoffbelastung <b>an den Gebäudeoberflächen</b> festzustellen“</span></div>
+      <div class="feld"><label for="fbBrandort">Brandort im Satz</label><input type="text" id="fbBrandort"><span class="quelle" id="qbBrandort"></span></div>
+      <div class="feld"><span class="lbl">Anwesende</span><div class="radio zwei" role="radiogroup" aria-label="Anwesende beim Ortstermin">
+        <label><input type="radio" name="brAnw" value="liste"> weitere Anwesende eintragen</label>
+        <label><input type="radio" name="brAnw" value="buero"> nur unser Büro vor Ort</label>
+        <label><input type="radio" name="brAnw" value="teilnehmer"> Teilnehmerliste vor Ort</label></div></div>
+      <div class="feld" id="zeileAnwesende"><label for="fbAnwesende">Weitere Anwesende</label><input type="text" id="fbAnwesende" placeholder="z. B. Herr Müller (VN), Herr Schmidt (Sanierungsfirma XY)"><span class="quelle">„Bei dem Ortstermin waren <b>…</b> sowie Herr … (Sachverständigenbüro …) anwesend.“</span></div>
+      <div class="feld" id="zeilePerson2"><label for="fbPerson2">Zweite Person vor Ort</label><select id="fbPerson2"></select><span class="quelle">aus unserem Büro, zusätzlich zu „Probenahme durch“</span></div>
+      <div class="feld"><label for="fbGb">Gefahrenbereich</label><select id="fbGb"><option value="">– bitte wählen –</option><option value="0">GB 0</option><option value="1">GB 1</option><option value="2">GB 2</option><option value="3">GB 3</option></select><span class="quelle">7. Arbeitsschutzmaßnahmen nach VdS 2357</span></div>
+      <div class="feld" id="zeileUebrige"><span class="lbl"></span><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="fbUebrige"> <span id="lbUebrige">Satz „übrige Wohnungen“ in 7.</span></label></div>
+      <p class="klein" id="qbProjekt" style="margin:6px 0 0"></p>
+    </div>
     <div class="karte">
-      <h2>Proben <span class="klein" style="text-transform:none" id="probenInfo"></span></h2>
+      <h2><span id="probenTitel">Proben</span> <span class="klein" style="text-transform:none" id="probenInfo"></span></h2>
       <table class="proben"><thead><tr><th></th><th>Probe</th><th>Material · Entnahmestelle</th><th>Ergebnis</th></tr></thead><tbody id="probenListe" tabindex="-1"></tbody></table>
       <div id="einbauWahl" hidden style="margin-top:10px">
         <div class="klein">Dämmstoff (KMF) – Einbaujahr:</div>
@@ -203,7 +226,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     </div>
     <div class="karte">
       <h2>Personen</h2>
-      <div class="feld" id="zeilePn"><label for="fPn">Probenahme durch</label><select id="fPn"></select><span class="quelle"><span id="qPn"></span> <button type="button" class="klein-knopf" id="btnPnOk" hidden title="Auswahl stimmt – Hinweis ausblenden">✓ stimmt</button></span></div>
+      <div class="feld" id="zeilePn"><label for="fPn" id="lbPn">Probenahme durch</label><select id="fPn"></select><span class="quelle"><span id="qPn"></span> <button type="button" class="klein-knopf" id="btnPnOk" hidden title="Auswahl stimmt – Hinweis ausblenden">✓ stimmt</button></span></div>
       <div class="feld"><label for="fSv">Unterschrift</label><div class="paar"><select id="fSv"></select><select id="fR1" aria-label="Unterschrift als"><option value="sv">als Sachverständige(r)</option><option value="mt">als Messtechniker(in)</option></select></div><span class="quelle"><span id="qSv"></span> <button type="button" class="klein-knopf" id="btnSvOk" hidden title="Unterschrift stimmt – Hinweis ausblenden">✓ stimmt</button></span></div>
       <div class="feld" id="zeileMt"><label for="fMt">Zweite Unterschrift</label><div class="paar"><select id="fMt"></select><select id="fR2" aria-label="Zweite Unterschrift als"><option value="sv">als Sachverständige(r)</option><option value="mt">als Messtechniker(in)</option></select></div><span class="quelle">z. B. Messtechniker, der die Proben genommen hat – „als …“ folgt den Einstellungen, hier für diesen Bericht änderbar</span></div>
       <div class="feld"><label for="fLabor">Labor</label><input type="text" id="fLabor" list="laborListe"><datalist id="laborListe"><option value="Eurofins Boden und Grundwasser Südwest GmbH"><option value="Eurofins Umwelt West GmbH"></datalist></div>
@@ -257,6 +280,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 <script src="bericht-vorgaben.js"></script>
 <script src="bericht-gemeinsam.js"></script>
 <script src="bericht-asbest.js"></script>
+<script src="bericht-brand.js"></script>
 <script src="bericht-text.js"></script>
 <script src="bericht-docx.js"></script>
 <script src="bericht-luecken.js"></script>

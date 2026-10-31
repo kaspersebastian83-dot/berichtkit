@@ -7,6 +7,7 @@
    man mit Überprüfen › Nächster Kommentar von Lücke zu Lücke. Text und Markierung der Lücke bleiben wie vorher, damit die
    Projektzentrale (word-luecken.js: gelb oder [Großbuchstabe …]) jede Lücke weiterhin findet.
    Alle Texte kommen aus dem Modell – auch der Titel (deckblatt.titel, kopf[0]); hier steht nur das Layout.
+   deckblatt.betreff: Runs unter der Projektnummer; ein Lauf '\t' setzt den Tab wie bei „Projektnummer:“ (Brand: „Schaden vom:⇥…“).
    Blöcke in abschnitte[].inhalt: { t:'p', runs } Absatz · { t:'h2', runs } Unterüberschrift (kursiv, nicht unterstrichen, z. B. „5.1 …“)
    · { t:'fig', label, datei, caption } Foto · { t:'tab', caption, kopf[], zeilen[][], ausrichtung[], spalten[] } Tabelle
    (spalten = Breiten in twips, zusammen 9070; fehlen sie, gleich breit; ohneUmbruch = Spalten, deren Text nicht am Bindestrich
@@ -19,7 +20,7 @@
 function erstellen(D, m, bilder, optionen = {}) {
   const { Document, Paragraph, TextRun, ImageRun, Header, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType,
     TabStopType, PageNumber, ShadingType, HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType,
-    SectionType, VerticalAlign, UnderlineType, NoBreakHyphen, CommentRangeStart, CommentRangeEnd, CommentReference } = D;
+    SectionType, VerticalAlign, UnderlineType, NoBreakHyphen, CommentRangeStart, CommentRangeEnd, CommentReference, Tab } = D;
   const FONT = 'Arial';
   const cmPx = cm => cm / 2.54 * 96, cmEmu = cm => Math.round(cm * 360000);
   const LINE15 = { line: 360, lineRule: 'auto' }, LINE1 = { line: 240, lineRule: 'auto' };
@@ -42,9 +43,10 @@ function erstellen(D, m, bilder, optionen = {}) {
     return [new CommentRangeStart(id), new TextRun({ text, font: FONT, highlight: 'yellow', ...o }), new CommentRangeEnd(id),
       new TextRun({ font: FONT, children: [new CommentReference(id)] })];
   };
-  /* Runs: Text oder { gap } (gelb + Kommentar; mitKommentar = false nur für die Kopfzeilen) */
+  /* Runs: Text oder { gap } (gelb + Kommentar; mitKommentar = false nur für die Kopfzeilen); ein Lauf '\t' wird ein echter Tab (w:tab) */
   const runs = (xs, o = {}, mitKommentar = true) => (Array.isArray(xs) ? xs : [xs]).filter(x => x !== '' && x != null).flatMap(x =>
-    x && typeof x === 'object' ? luecke(x.gap, o, mitKommentar) : [new TextRun({ text: String(x), font: FONT, ...o })]);
+    x && typeof x === 'object' ? luecke(x.gap, o, mitKommentar) : x === '\t' ? [new TextRun({ font: FONT, ...o, children: [new Tab()] })]
+      : [new TextRun({ text: String(x), font: FONT, ...o })]);
   const t = (text, o = {}) => new TextRun({ text, font: FONT, ...o });
   const einfach = (children, o = {}) => new Paragraph({ children, spacing: { ...LINE1, after: 0 }, ...o });
 
@@ -95,7 +97,9 @@ function erstellen(D, m, bilder, optionen = {}) {
     new Paragraph({ children: [t(d.titel, { bold: true, italics: true, size: 28 })], spacing: { ...LINE15, before: kenn ? 0 : 2760, after: 0 } }),
     new Paragraph({ children: [t(`(${d.mitteilung})`, { bold: true, italics: true })], spacing: { ...LINE15, after: 600 } }),
     einfach([t('Projektnummer:'), t('\t'), ...runs(d.projektnummer || { gap: '[Projektnummer]' })], { tabStops: [{ type: TabStopType.LEFT, position: TAB }], spacing: { ...LINE1, after: 360 } }),
-    einfach(runs(d.betreff), { spacing: { ...LINE1, after: 720 } }),
+    // Betreff (Asbest) bzw. „Schaden vom:⇥Datum“ / „Brandschaden“ (Brand): mit Tab bündig wie die Projektnummer
+    einfach(runs(d.betreff), { ...((Array.isArray(d.betreff) ? d.betreff : [d.betreff]).includes('\t') ? { tabStops: [{ type: TabStopType.LEFT, position: TAB }] } : {}),
+      spacing: { ...LINE1, after: 720 } }),
   ];
   d.felder.forEach(([label, zeilen], i) => zeilen.forEach((z, j) => deckblatt.push(einfach([t(j === 0 ? label : ''), t('\t'), ...runs(z)], {
     tabStops: [{ type: TabStopType.LEFT, position: TAB }],
