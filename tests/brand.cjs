@@ -310,7 +310,7 @@ fall('5.2 Chlorid: fester Text, Spanne, Zähl-Absatz Form B, höchster Wert, Ref
   assert.match(utext(modell(mitForm(F.BR1_voll_Versicherung, { tabellen: false })), 'Korrosionsschäden'), /Die Referenzprobe \(Probe 3\) ergab < 0,5 µg\/cm²\. Die Einzelergebnisse sind dem Prüfbericht \(Anlage 1\) zu entnehmen\.\n/);
   // mg/m² (älterer Bericht): Wert und Einheit wie im Bericht, Einordnung umgerechnet; drei Gruppen, „in diesem Bereich“, < BG-Satz
   const g = modell(F.BR5_Gewerbe_Bohrmehl_Tabellen), gt = utext(g, 'Korrosionsschäden').split('\n');
-  assert.equal(gt[1], 'Die ermittelten Chloridflächenbelastungen liegen zwischen 20 und 150 mg/m². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 150 mg/m² in Probe 1 (Verkaufsraum Regal 1) festgestellt. In Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst.');
+  assert.equal(gt[1], 'Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 20 und 150 mg/m². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 150 mg/m² in Probe 1 (Verkaufsraum Regal 1) festgestellt. Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst.');
   assert.deepEqual(tabellen(g)[0].zeilen.map(z => [z[3], z[4]]), [['150', 'oberhalb'], ['70', 'im Bereich'], ['60', 'im Bereich'], ['20', 'unterhalb'], ['< 5', 'unterhalb']]);
   assert.equal(tabellen(g)[0].kopf[3], 'Chlorid [mg/m²]');
   // Untersuchungsbericht: Abschluss B ohne „unter 6. angegebenen Sanierungsmaßnahmen“ (vorläufig wie 7.)
@@ -375,7 +375,7 @@ fall('5.3 PAK: fester Text, Referenz aus der Nutzung oder gewählt (mit Begründ
   // Gewerbe mit 10 µg/m² und Begründung (Befunde Nr. 5); n. n.-Satz; Proben-Liste mit „und“
   const g = utext(modell(F.BR5_Gewerbe_Bohrmehl_Tabellen), 'Organische Schadstoffe').split('\n');
   assert.match(g[2], /Für das vorliegende Objekt wird die Hintergrundreferenz von ca\. 10 µg\/m² herangezogen\. Aufgrund der Nutzung als Lebensmittelverkaufsstätte wird die für Wohn- und Bürobereiche übliche Hintergrundbelastung herangezogen\.$/);
-  assert.equal(g[3], 'Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 4 und 31 µg/m². Von den vier PAK-Wischproben erreichen oder überschreiten zwei die Hintergrundreferenz von ca. 10 µg/m² (Proben 7 und 10); zwei liegen darunter. Der höchste Summenwert wurde mit 31 µg/m² in Probe 10 (Lager Wand) festgestellt. In Probe 8 war keine der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar. Die Referenzprobe (Probe 11) ergab 3 µg/m². Die Ergebnisse sind in Tabelle 2 zusammengefasst.');
+  assert.equal(g[3], 'Die oberhalb der Bestimmungsgrenze ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 4 und 31 µg/m². Von den vier PAK-Wischproben erreichen oder überschreiten zwei die Hintergrundreferenz von ca. 10 µg/m² (Proben 7 und 10); zwei liegen darunter. Der höchste Summenwert wurde mit 31 µg/m² in Probe 10 (Lager Wand) festgestellt. Bei Probe 8 war keine der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar. Die Referenzprobe (Probe 11) ergab 3 µg/m². Die Ergebnisse sind in Tabelle 2 zusammengefasst.');
   assert.match(g[4], /nach ordnungsgemäßer Durchführung von Sanierungsarbeiten keine Gesundheitsgefährdung/, 'Untersuchungsbericht: vorläufig wie 7.');
   assert.ok(!modell(F.BR5_Gewerbe_Bohrmehl_Tabellen).hinweise.some(h => /weicht von der Nutzung/.test(h)), 'mit Begründung kein Hinweis');
   const ohneGrund = modell(mitForm(F.BR5_Gewerbe_Bohrmehl_Tabellen, { referenzGrund: '' }));
@@ -408,7 +408,7 @@ fall('Referenzprobe und Freimessung: erkannt wie im Datenarchiv der Projektzentr
 fall('5.4 KMF und 5.5 Asbest: Texte wie im Asbestbericht, Methode VDI 3866 Blatt 5 mit Anhang B aus der Nachweisgrenze, Tabelle immer', () => {
   const m = modell(F.BR1_voll_Versicherung);
   assert.equal(utext(m, 'Künstliche Mineralfaserwolle'), 'In der Dämmstoffprobe 11 (EG Küche Decke) wurden WHO-Fasern (lungengängige Fasern) nachgewiesen. Der Prüfbericht weist einen Kanzerogenitätsindex von KI = 26 aus.\nNach der seit 05.06.2026 geltenden Fassung der TRGS 905 werden WHO-Fasern nicht mehr über den Kanzerogenitätsindex, sondern nach den Kategorien für krebserzeugende Stoffe in Anhang I der CLP-Verordnung bewertet. Der KI-Wert wird daher nur ergänzend angegeben.');
-  assert.equal(utext(m, 'Asbest'), 'Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht, Probe 10 unter Anwendung des Verfahrens nach Anhang B. Die Ergebnisse sind in Tabelle 3 zusammengefasst.\nIn Probe 9 (Material: „Fliesenkleber“) wurde Asbest nachgewiesen: Chrysotil, 5 - 20 %.\nIn den übrigen Proben wurde kein Asbest nachgewiesen.');
+  assert.equal(utext(m, 'Asbest'), 'Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht, bei Probe 10 unter Anwendung des Verfahrens nach Anhang B. Die Ergebnisse sind in Tabelle 3 zusammengefasst.\nIn Probe 9 (Material: „Fliesenkleber“) wurde Asbest nachgewiesen: Chrysotil, 5 - 20 %.\nIn den übrigen Proben wurde kein Asbest nachgewiesen.');
   assert.deepEqual(unterabschnitt(m, 'Asbest').at(-1).zeilen[0], ['9', '999-2026-0001109', 'EG Küche Boden', 'Fliesenkleber', 'Chrysotil, 5 - 20 %']);
   assert.ok(!m.hinweise.some(h => /Anhang B/.test(h)), 'positive Probe (1 %-Stufe) braucht kein Anhang B');
   // eine Probe, negativ, Anhang B; keine Probe positiv → „In der Materialprobe …“; ohne Haken trotzdem Tabelle
@@ -462,6 +462,109 @@ fall('Entnahmestelle im Befund: LabelKit Raum/Ort, Raum-Kürzel ausgeschrieben w
     lk: D.lk({ pak: [[1, '', 'OG SZ Decke', 'Wischprobe'], [2, '', 'OG WZ Wand', 'Wischprobe']] }) });
   assert.deepEqual(tabellen(m)[0].zeilen.map(z => z[2]), ['OG Schlafzimmer Decke', 'OG Wohnzimmer Wand']);
   assert.ok(m.hinweise.some(h => /Abkürzungen ausgeschrieben \(SZ → Schlafzimmer, WZ → Wohnzimmer\)/.test(h)));
+});
+
+/* Zweiter Review (PR #15): Fälle, die vorher falsch oder ungetestet waren */
+const B2 = F.BR2_nur_PAK_ohne_Versicherung_GB0;
+const clFall = (proben, lkChlorid, o = {}) => modell({ ...B2, lk: D.lk({ chlorid: lkChlorid || proben.map((x, i) => [i + 1, '', 'Raum ' + (i + 1), 'Wischprobe']), ...o.lk }),
+  erg: o.erg || D.erg([{ nr: 'CL-1', proben: proben.map((w, i) => [i + 1, Array.isArray(w) ? w : D.W.cl(w), 'Chlorid']) }]) });
+const keineDoppelLeer = m => m.abschnitte.forEach(a => a.inhalt.filter(x => x.t === 'p').forEach(x => assert.ok(!/ {2}/.test(T.text(x.runs)), `doppeltes Leerzeichen in ${a.titel}: ${T.text(x.runs)}`)));
+
+fall('Review: Material-/Bohrmehlproben ohne Wischproben – Satz mit „wurde/wurden“, PAK-Bohrmehl mit eigener Lücke', () => {
+  const bm = (werte, liste_ = 'sonstige') => modell({ ...B2, lk: D.lk({ ui: { bohrmehlAktiv: true },
+    sonstige: werte.map((w, i) => [i + 1, '', 'Stütze', 'Bohrmehl', { tiefe: `${i * 2} – ${i * 2 + 2} mm`, notiz: 'Chlorid' }]) }),
+    erg: D.erg([{ nr: 'S-1', proben: werte.map((w, i) => [i + 1, w, 'Sonstige']) }]) });
+  assert.equal(utext(bm([D.W.clMat('300', 'mg/kg')]), 'Korrosionsschäden'), 'An der Bohrmehlprobe (Probe 1, Stütze, Tiefe 0 – 2 mm) wurde ein Chloridgehalt von 300 mg/kg ermittelt. [Bewertung der Chlorid-Bohrmehlproben ergänzen]');
+  assert.equal(utext(bm([D.W.clMat('300', 'mg/kg'), D.W.clMat('120', 'mg/kg')]), 'Korrosionsschäden'),
+    'An den Bohrmehlproben wurden folgende Chloridgehalte ermittelt: 300 mg/kg (Probe 1, Stütze, Tiefe 0 – 2 mm) und 120 mg/kg (Probe 2, Stütze, Tiefe 2 – 4 mm). [Bewertung der Chlorid-Bohrmehlproben ergänzen]');
+  assert.match(utext(bm([D.W.pakMat('2')]), 'Organische Schadstoffe'), /^Schädliche[^\n]*\nAn der Bohrmehlprobe \(Probe 1, Stütze, Tiefe 0 – 2 mm\) wurde ein Summenwert \(16 EPA-PAK\) von 2 mg\/kg ermittelt\. \[Bewertung der PAK-Bohrmehlproben ergänzen\]\n/);
+  const mat = modell({ ...B2, lk: D.lk({ pak: [[1, '', 'EG Dämmung', 'Dämmstoff']] }), erg: D.erg([{ nr: 'P-1', proben: [[1, D.W.pakMat('14'), 'PAK']] }]) });
+  assert.match(utext(mat, 'Organische Schadstoffe'), /\nAn der Materialprobe \(Probe 1, EG Dämmung\) wurde ein Summenwert \(16 EPA-PAK\) von 14 mg\/kg ermittelt\. \[Bewertung der PAK-Materialproben ergänzen\]\n/);
+  // 4.: nach dem Chlorid-Absatz (nur Material) beginnt der nächste Absatz mit „Zusätzlich“
+  const vor = modell({ ...B2, lk: D.lk({ chlorid: [[1, '', 'EG Putz', 'Putze / Spachtelmassen']], sonstige: [[2, '', 'Schutt', 'Bauschutt', { notiz: 'Schwermetalle' }]] }),
+    erg: D.erg([{ nr: 'CL-1', proben: [[1, D.W.clMat('0,02', 'M.-%'), 'Chlorid'], [2, D.W.blei('40'), 'Sonstige']] }]) });
+  assert.match(text(vor, 4), /\nZusätzlich wurde eine weitere Probe entnommen und auf Schwermetalle untersucht\./);
+});
+
+fall('Review: Spanne und höchster Wert in einer Einheit verglichen, < BG ehrlich benannt, unklare Werte ohne Spanne', () => {
+  const t = utext(clFall(['12', D.W.cl('60', 'mg/m²'), '3']), 'Korrosionsschäden').split('\n')[1];
+  assert.match(t, /^Die ermittelten Chloridflächenbelastungen liegen zwischen 3 und 12 µg\/cm²\./, '60 mg/m² = 6 µg/cm² liegt dazwischen');
+  assert.match(t, /Die höchste Belastung wurde mit 12 µg\/cm² in Probe 1 \(Raum 1\) festgestellt\./);
+  const pak = modell({ ...B2, erg: D.erg([{ nr: 'P-1', proben: [[1, [{ p: 'Summe 16 EPA-PAK exkl. BG', r: '0,5', u: 'µg/100 cm²' }], 'PAK'], [2, D.W.pak('20'), 'PAK']] }]) });
+  const pt = utext(pak, 'Organische Schadstoffe');
+  assert.match(pt, /liegen zwischen 20 µg\/m² und 0,5 µg\/100 cm²\./); assert.match(pt, /Der höchste Summenwert wurde mit 0,5 µg\/100 cm² in Probe 1 /);
+  assert.match(utext(clFall(['< 0,5', '4,1', '12,3']), 'Korrosionsschäden'), /^[^\n]*\nDie oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 4,1 und 12,3 µg\/cm²\. [^\n]* Bei Probe 1 lag der Chloridgehalt unterhalb der Bestimmungsgrenze\./);
+  // „1.250“ nicht lesbar: keine Spanne (sie könnte falsch sein), Zähl-Absatz über die übrigen
+  const amb = utext(clFall(['1.250', '4', '7']), 'Korrosionsschäden').split('\n')[1];
+  assert.ok(!/zwischen/.test(amb)); assert.match(amb, /^Von den zwei Chlorid-Wischproben liegt eine im Bereich/);
+});
+
+fall('Review: Abschluss 5.2 nur aus regulären, eingeordneten Proben – sonst Lücke; nichts einzuordnen → Lücke statt Zähl-Absatz', () => {
+  const ende = m => utext(m, 'Korrosionsschäden').split('\n').at(-1);
+  const teil = clFall(['2', D.W.cl('12', 'µg/Probe')]);
+  assert.equal(ende(teil), '[Abschluss Chlorid ergänzen]', 'eine nicht einzuordnen, keine darüber: kein Schluss A, auch nicht B');
+  assert.ok(teil.hinweise.includes('5.2: nicht alle Chlorid-Wischproben einzuordnen – Abschluss (Variante A/B) bitte in Word ergänzen.'));
+  assert.match(ende(clFall(['2', D.W.cl('12', 'µg/Probe'), '7'])), /^Nach fachgerechter Durchführung/, 'eine im Bereich: B gilt trotzdem');
+  const keine = clFall([D.W.cl('12', 'µg/Probe'), D.W.cl('13', 'µg/Probe')]), kt = utext(keine, 'Korrosionsschäden').split('\n');
+  assert.equal(kt[1], '[Einordnung der Chlorid-Wischproben ergänzen] Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen.');
+  assert.equal(kt.at(-1), '[Abschluss Chlorid ergänzen]');
+  const ref = clFall(['8'], [[1, '', 'REF Flur Wand', 'Wischprobe']]), frei = clFall(['6', '2'], [[1, '', 'F-EG Küche Wand', 'Wischprobe'], [2, '', 'F-EG Flur Wand', 'Wischprobe']]);
+  for (const m of [ref, frei]) {
+    assert.equal(ende(m), '[Abschluss Chlorid ergänzen]', 'nur Referenz/Freimessung: kein „wird reduziert“');
+    assert.ok(m.hinweise.includes('5.2: nur Referenzproben/Freimessungen – Abschluss (Variante A/B) bitte in Word ergänzen.'));
+  }
+  assert.match(utext(frei, 'Korrosionsschäden'), /Die Freimessungen ergaben 6 µg\/cm² \(Probe 1\) und 2 µg\/cm² \(Probe 2\)\./);
+  const pak = modell({ ...B2, erg: D.erg([{ nr: 'P-1', proben: [[1, [{ p: 'Summe 16 EPA-PAK exkl. BG', r: '30', u: 'µg/Probe' }], 'PAK'], [2, [{ p: 'Summe 16 EPA-PAK exkl. BG', r: '5', u: 'µg/Probe' }], 'PAK']] }]) });
+  assert.match(utext(pak, 'Organische Schadstoffe'), /\n\[Einordnung der PAK-Wischproben ergänzen\] Die Einzelergebnisse/);
+  for (const g of ['[Abschluss Chlorid ergänzen]', '[Einordnung der Chlorid-Wischproben ergänzen]', '[Einordnung der PAK-Wischproben ergänzen]']) assert.ok(L.eintrag(g, 'brand'), g);
+});
+
+fall('Review: eine Probe in mehreren Prüfberichten – Werte zusammen, Wert je Fläche gewinnt (wie ResultKit uebersicht.ts)', () => {
+  const m = modell({ ...mitForm(B2, { tabellen: true }), lk: D.lk({ chlorid: [[1, '', 'A', 'Wischprobe'], [2, '', 'B', 'Wischprobe']] }),
+    erg: D.erg([{ nr: 'CL-1', proben: [[1, D.W.cl('7200', 'µg/Probe'), 'Chlorid'], [2, D.W.cl('1800', 'µg/Probe'), 'Chlorid']] },
+      { nr: 'CL-2', proben: [[1, D.W.cl('12'), 'Chlorid'], [2, D.W.cl('3'), 'Chlorid']] }]) });
+  assert.deepEqual(tabellen(m)[0].zeilen.map(z => [z[3], z[4]]), [['12', 'oberhalb'], ['3', 'unterhalb']]);
+  assert.equal(tabellen(m)[0].kopf[3], 'Chlorid [µg/cm²]');
+  assert.ok(!m.hinweise.some(h => /nicht einzuordnen/.test(h)));
+  assert.equal(tabellen(m)[0].zeilen[0][1], '999-2026-0001101', 'Labor-Nr. aus dem Bericht des gewählten Werts');
+});
+
+fall('Review: „n. n.“/„unter BG“ ohne Einheit, keine doppelten Leerzeichen, vorläufiger Bericht „weitere“, Anhang B ohne „%“, PlanKit-Skalen', () => {
+  const nn = modell({ ...B2, lk: D.lk({ pak: [[1, '', 'A', 'Wischprobe'], [2, '', 'REF Flur', 'Wischprobe'], [3, '', 'C', 'Wischprobe'], [4, '', 'D', 'Wischprobe']] }),
+    erg: D.erg([{ nr: 'P-1', proben: [[1, D.W.pak('20'), 'PAK'], [2, D.W.pakNn(), 'PAK'], [3, D.W.pakNn(), 'PAK'], [4, D.W.pak('4'), 'PAK']] }]) });
+  const t = utext(nn, 'Organische Schadstoffe');
+  assert.match(t, /Die Referenzprobe \(Probe 2\) ergab n\. n\.\s/); assert.ok(!/n\. n\. µg/.test(t));
+  assert.match(t, /festgestellt\. Bei Probe 3 war keine der untersuchten PAK-Einzelverbindungen/);
+  for (const m of [nn, ...Object.values(F).map(f => modell(f))]) keineDoppelLeer(m);
+  assert.match(utext(clFall(['n. n.']), 'Korrosionsschäden'), /ergab n\. n\. und liegt damit unterhalb/);
+  // Prüfbericht nur mit weiteren Proben ist vorläufig → Hinweis nennt ihn
+  const v = modell({ ...B2, lk: D.lk({ pak: [[1, '', 'A', 'Wischprobe']], sonstige: [[2, '', 'Schutt', 'Bauschutt', { notiz: 'Schwermetalle' }]] }),
+    erg: D.erg([{ nr: 'P-1', proben: [[1, D.W.pak('20'), 'PAK']] }, { nr: 'S-1', vorlaeufig: true, proben: [[2, D.W.blei('40'), 'Sonstige']] }]) });
+  assert.ok(v.hinweise.includes('Prüfbericht S-1 ist vorläufig – der Bericht bekommt die Kopfzeile „Vorläufig“.'));
+  // Anhang B: bloße Zahl nur bei Einheit %
+  assert.equal(BW.anhangB([{ p: 'Asbest', r: 'n. n.', u: '%', nwg: '0,001' }]), true);
+  assert.equal(BW.anhangB([{ p: 'Asbest', r: 'n. n.', u: 'Masse-%', nwg: 'NWG 0,1' }]), false);
+  assert.equal(BW.anhangB([{ p: 'Asbest', r: 'n. n.', u: '', nwg: '0,001' }]), null);
+  assert.equal(BW.anhangB([{ p: 'Asbest', r: 'n. n.', u: '', nwg: '0,001 %' }]), true);
+  // PlanKit: eigene Chlorid-/PAK-Skala oder andere Nutzung der Ergebniskarte → Hinweis
+  const pl = modell(F.BR5_Gewerbe_Bohrmehl_Tabellen, { planSkalen: { usage: 'industrial', vds: ['Chlorid|mg/m²', 'Summe 16 EPA-PAK exkl. BG|µg/m²'] } });
+  assert.ok(pl.hinweise.some(h => /^5\.2: In PlanKit ist für Chlorid eine eigene Skala eingestellt/.test(h)));
+  assert.ok(pl.hinweise.some(h => /^5\.3: In PlanKit ist für Σ 16 EPA-PAK eine eigene Skala eingestellt/.test(h)));
+  assert.ok(pl.hinweise.includes('5.3: Hintergrundreferenz 10 µg/m², in PlanKit ist für die Ergebniskarte „Gewerbe/Industrie“ (100 µg/m²) eingestellt – Bericht und Karte ordnen sonst verschieden ein.'));
+  assert.ok(!modell(F.BR5_Gewerbe_Bohrmehl_Tabellen, { planSkalen: { usage: 'residential', vds: [] } }).hinweise.some(h => /PlanKit/.test(h)));
+});
+
+fall('Rolle gleich wie Projektzentrale archiv/auswertung.js (in CI liegt die Projektzentrale daneben; Rollen „quelle“/„brand“ braucht der Bericht nicht)', () => {
+  const fs = require('node:fs'), path = require('node:path'), pz = path.join(__dirname, '..', '..', 'projektzentrale', 'archiv', 'auswertung.js');
+  if (!fs.existsSync(pz)) { if (process.env.SPEKTRON_ORDNER_PFLICHT) assert.fail('Projektzentrale fehlt daneben'); console.log('   (Projektzentrale nicht daneben – übersprungen)'); return; }
+  const P = require(pz), teile = ['', 'F-', 'f_', 'F ', 'REF', 'ref.', 'Referenz', 'unbelastet', 'Nullprobe', 'Hintergrund', 'Freimessung', 'nach Sanierung', 'nach der Sanierung',
+    'Sanierungskontrolle', 'Refektorium', 'Prefab', 'EG Küche', 'Kleber', 'Brandraum', 'Ref-3', ' F-1 ', 'Ä-ref'];
+  let n_ = 0;
+  for (const a of teile) for (const b of teile) for (const c of ['', ' Wand', 'REF']) {
+    const ref = a + b + c, desc = b + ' ' + a, pzR = P.rolleAuto(ref, desc);
+    assert.equal(BW.rolleAuto(ref, desc), ['quelle', 'brand'].includes(pzR) ? '' : pzR, `${ref} | ${desc}`); n_++;
+  }
+  console.log(`   (Projektzentrale daneben: rolleAuto gleich, ${n_} Kombinationen)`);
 });
 
 console.log(`Brandbericht: ${n} Fälle bestanden.`);

@@ -328,12 +328,7 @@
      {
       "t": "p",
       "runs": [
-       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 85 und 2300 µg/m². ",
-       "Beide PAK-Wischproben erreichen oder überschreiten die Hintergrundreferenz von ca. 10 µg/m². ",
-       "Der höchste Summenwert wurde mit 2300 µg/m² in Probe 4 (EG Küche Brandraum Decke) festgestellt.",
-       " Die Referenzprobe (Probe 6) ergab 9 µg/m².",
-       " Die Freimessung (Probe 7) ergab 7 µg/m².",
-       " Die Ergebnisse sind in Tabelle 2 zusammengefasst."
+       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 85 und 2300 µg/m². Beide PAK-Wischproben erreichen oder überschreiten die Hintergrundreferenz von ca. 10 µg/m². Der höchste Summenwert wurde mit 2300 µg/m² in Probe 4 (EG Küche Brandraum Decke) festgestellt. Die Referenzprobe (Probe 6) ergab 9 µg/m². Die Freimessung (Probe 7) ergab 7 µg/m². Die Ergebnisse sind in Tabelle 2 zusammengefasst."
       ]
      },
      {
@@ -441,7 +436,7 @@
      {
       "t": "p",
       "runs": [
-       "Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht, Probe 10 unter Anwendung des Verfahrens nach Anhang B.",
+       "Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht, bei Probe 10 unter Anwendung des Verfahrens nach Anhang B.",
        " Die Ergebnisse sind in Tabelle 3 zusammengefasst."
       ]
      },
@@ -1191,10 +1186,7 @@
      {
       "t": "p",
       "runs": [
-       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 8 und 16 µg/m². ",
-       "Von den zwei PAK-Wischproben erreicht oder überschreitet eine die Hintergrundreferenz von ca. 10 µg/m² (Probe 1); eine liegt darunter. ",
-       "Der höchste Summenwert wurde mit 16 µg/m² in Probe 1 (EG Büro Decke) festgestellt.",
-       " Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
+       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 8 und 16 µg/m². Von den zwei PAK-Wischproben erreicht oder überschreitet eine die Hintergrundreferenz von ca. 10 µg/m² (Probe 1); eine liegt darunter. Der höchste Summenwert wurde mit 16 µg/m² in Probe 1 (EG Büro Decke) festgestellt. Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
       ]
      },
      {
@@ -1717,9 +1709,7 @@
        {
         "gap": "[Hintergrundreferenz 10 oder 100 µg/m²]"
        },
-       " ",
-       "Der höchste Summenwert wurde mit 140 µg/m² in Probe 2 (EG Küche Decke) festgestellt.",
-       " Die Einzelergebnisse sind den Prüfberichten (Anlagen 2 und 3) zu entnehmen."
+       " Der höchste Summenwert wurde mit 140 µg/m² in Probe 2 (EG Küche Decke) festgestellt. Die Einzelergebnisse sind den Prüfberichten (Anlagen 2 und 3) zu entnehmen."
       ]
      },
      {
@@ -2394,8 +2384,7 @@
      {
       "t": "p",
       "runs": [
-       "Die PAK-Wischprobe (Probe 2, Halle Regal 3) ergab einen Summenwert von 410 µg/m² und erreicht oder überschreitet damit die Hintergrundreferenz von ca. 100 µg/m².",
-       " Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
+       "Die PAK-Wischprobe (Probe 2, Halle Regal 3) ergab einen Summenwert von 410 µg/m² und erreicht oder überschreitet damit die Hintergrundreferenz von ca. 100 µg/m². Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
       ]
      },
      {
@@ -2976,7 +2965,7 @@
      {
       "t": "p",
       "runs": [
-       "Die ermittelten Chloridflächenbelastungen liegen zwischen 20 und 150 mg/m². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 150 mg/m² in Probe 1 (Verkaufsraum Regal 1) festgestellt. In Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst."
+       "Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 20 und 150 mg/m². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 150 mg/m² in Probe 1 (Verkaufsraum Regal 1) festgestellt. Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst."
       ]
      },
      {
@@ -3099,12 +3088,7 @@
      {
       "t": "p",
       "runs": [
-       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 4 und 31 µg/m². ",
-       "Von den vier PAK-Wischproben erreichen oder überschreiten zwei die Hintergrundreferenz von ca. 10 µg/m² (Proben 7 und 10); zwei liegen darunter. ",
-       "Der höchste Summenwert wurde mit 31 µg/m² in Probe 10 (Lager Wand) festgestellt.",
-       " In Probe 8 war keine der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar.",
-       " Die Referenzprobe (Probe 11) ergab 3 µg/m².",
-       " Die Ergebnisse sind in Tabelle 2 zusammengefasst."
+       "Die oberhalb der Bestimmungsgrenze ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 4 und 31 µg/m². Von den vier PAK-Wischproben erreichen oder überschreiten zwei die Hintergrundreferenz von ca. 10 µg/m² (Proben 7 und 10); zwei liegen darunter. Der höchste Summenwert wurde mit 31 µg/m² in Probe 10 (Lager Wand) festgestellt. Bei Probe 8 war keine der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar. Die Referenzprobe (Probe 11) ergab 3 µg/m². Die Ergebnisse sind in Tabelle 2 zusammengefasst."
       ]
      },
      {

@@ -93,20 +93,25 @@ function rolleAuto(ref, desc) {
    untersuchten Stufen mit „-“. Die LabelKit-Matrix dient nur zur Plausibilität (Labore wenden Anhang B auf Putze, Spachtelmassen,
    Kleber, Farben, Kitte, Estriche, Ausgleichsmassen, Dichtungen, Bitumen, Vinyl-/Flexbeläge an). */
 const ASBEST = /asbest|chrysotil|amosit|krokydolith|tremolit|aktinolith|anthophyllit/i;
-const nwgProzent = v => { const m = /([\d.,]+)\s*%/.exec(String(v == null ? '' : v)); return m ? labNumber(m[1]) : NaN; };
+/** NWG in % – „0,001 %“, „NWG 0,001 %“; eine bloße Zahl („0,001“) nur, wenn die Einheit des Werts selbst % ist (u = „%“, „Masse-%“).
+    ResultKit nachweisgrenze() hängt „%“ nur an, wenn es im Prüfbericht steht. */
+const nwgProzent = (v, u) => {
+  const t = String(v == null ? '' : v), m = /([\d.,]+)\s*%/.exec(t); if (m) return labNumber(m[1]);
+  const b = /^\s*(?:NWG\s*)?([\d.,]+)\s*$/i.exec(t); return b && /%/.test(String(u == null ? '' : u)) ? labNumber(b[1]) : NaN;
+};
 /** true = Anhang B angewendet, false = andere Stufe, null = keine Angabe zur Nachweisgrenze */
 function anhangB(werte) {
   const a = (werte || []).filter(w => w && ASBEST.test(String(w.p || '')) && !/^[-–—]?$/.test(String(w.r || '').trim()));
-  const mit = a.filter(w => Number.isFinite(nwgProzent(w.nwg)));
+  const mit = a.filter(w => Number.isFinite(nwgProzent(w.nwg, w.u)));
   if (!mit.length) return null;
-  return mit.some(w => nwgProzent(w.nwg) <= 0.005);
+  return mit.some(w => nwgProzent(w.nwg, w.u) <= 0.005);
 }
 const MATRIX_ANHANG_B = new Set(['Putze / Spachtelmassen', 'Bituminöse Proben / Kleber', 'Kitte', 'Farben', 'Estriche', 'Ausgleichsmassen',
   'Dichtungen', 'Cushion-Vinyl (Bodenbelag)', 'Fußbodenplatten (Flexplatten)']);
 const matrixErwartetAnhangB = m => MATRIX_ANHANG_B.has(String(m == null ? '' : m).normalize('NFC').trim());
 
 const API = { VERSION: 1, labNumber, labQualifier, CHLORID_JE_UG_CM2, chloridEinheit, PAK_JE_UG_M2, pakEinheit, FLAECHE, bevorzugt,
-  einordnen, chloridStufe, pakStufe, ohneNachweis, istFrei, rolleAuto, anhangB, nwgProzent, matrixErwartetAnhangB };
+  einordnen, chloridStufe, pakStufe, ohneNachweis, istFrei, rolleAuto, ASBEST, anhangB, nwgProzent, matrixErwartetAnhangB };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtBewertung = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

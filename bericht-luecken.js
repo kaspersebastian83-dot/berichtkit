@@ -52,6 +52,8 @@ const FELDER = {
     { luecke: '[Hintergrundreferenz 10 oder 100 µg/m²]', feld: '#fbReferenz', wo: 'Brandbericht › Hintergrundreferenz PAK (Vorbelegung aus der Nutzung der Projektzentrale)' },
     { luecke: '[Ergebnis der Brandgeruchprüfung ergänzen]', wo: 'LabelKit › Brandgeruch: Ergebnisse aufdecken und alle fünf Bewertungen eintragen' },
     { luecke: /^\[Bewertung der .+ ergänzen\]$/, wo: 'in Word ergänzen' },
+    { luecke: /^\[Einordnung der (?:Chlorid|PAK)-Wischproben ergänzen\]$/, wo: 'ResultKit › Werte prüfen (Einheit je Fläche), sonst in Word ergänzen' },
+    { luecke: '[Abschluss Chlorid ergänzen]', wo: 'in Word ergänzen (Variante A oder B, siehe Hinweise)' },
     { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
     { luecke: '[Projektnummer]', wo: PZ },
     { luecke: '[Schadendatum]', wo: PZ + ' (Schadendatum oder „nicht bekannt“)' },

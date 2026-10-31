@@ -7,7 +7,7 @@
 const APP_VERSION = '1.13.0';
 const APP_DATE = '31.10.2026';
 const CHANGELOG = [
-  ['1.13.0', '31.10.2026', 'Brandbericht Schritt 4 – 5. Befund, weiter als Vorschau (am Asbestbericht ändert sich nichts): Unter „5. Befund“ steht 5.1 „Brandlast und Schadenbild“ noch als gelbe Lücke (Freitext folgt), danach – nur, wozu es Ergebnisse gibt, fortlaufend nummeriert – 5.2 Korrosionsschäden (Chlorid), 5.3 Organische Schadstoffe (PAK), 5.4 Künstliche Mineralfaserwolle, 5.5 Asbest, 5.6 Sensorische Prüfung auf Brandgeruch und 5.7 Weitere Untersuchungen. Chlorid und PAK: fester Text, Spanne der Werte, Zähl-Absatz (wie viele Wischproben oberhalb/im Bereich/unterhalb von 5–10 µg/cm² bzw. über/unter der Hintergrundreferenz), höchster Wert mit Probe und Entnahmestelle, Proben ohne Nachweis über der Bestimmungsgrenze, Referenzproben („REF“/„Referenz“) und Freimessungen („F-…“) in eigenen Sätzen. Laborwerte stehen wie im Prüfbericht; eingeordnet wird mit denselben Grenzen wie in ResultKit (Chlorid in mg/m² umgerechnet). Neu unter „Brandbericht“: Haken „Ergebnistabellen“ (Chlorid/PAK als Tabelle, sonst Verweis auf den Prüfbericht; Asbest-Tabelle immer), Hintergrundreferenz PAK 10/100 µg/m² (Vorbelegung aus der Nutzung) mit optionaler Begründung. Asbest mit Methode nach VDI 3866 Blatt 5 (Anhang B aus der Nachweisgrenze des Prüfberichts), KMF wie im Asbestbericht, Brandgeruch mit Ergebnis-Satz je Probe aus den fünf Bewertungen (verdeckt/unvollständig → Lücke). Chlorid-Materialproben, Chlorid-Bohrmehl und weitere Proben aus LabelKit „Sonstige“ stehen jetzt in 4. und 5. (Werte im Satz, Bewertung als Lücke); Prüfberichte der weiteren Proben werden Anlage.'],
+  ['1.13.0', '31.10.2026', 'Brandbericht Schritt 4 – 5. Befund, weiter als Vorschau (am Asbestbericht ändert sich nichts): Unter „5. Befund“ steht 5.1 „Brandlast und Schadenbild“ noch als gelbe Lücke (Freitext folgt), danach – nur, wozu es Ergebnisse gibt, fortlaufend nummeriert – 5.2 Korrosionsschäden (Chlorid), 5.3 Organische Schadstoffe (PAK), 5.4 Künstliche Mineralfaserwolle, 5.5 Asbest, 5.6 Sensorische Prüfung auf Brandgeruch und 5.7 Weitere Untersuchungen. Chlorid und PAK: fester Text, Spanne der Werte, Zähl-Absatz (wie viele Wischproben oberhalb/im Bereich/unterhalb von 5–10 µg/cm² bzw. über/unter der Hintergrundreferenz), höchster Wert mit Probe und Entnahmestelle, Proben ohne Nachweis über der Bestimmungsgrenze, Referenzproben („REF“/„Referenz“) und Freimessungen („F-…“) in eigenen Sätzen. Laborwerte stehen wie im Prüfbericht; eingeordnet wird mit denselben Grenzen wie in ResultKit (Chlorid in mg/m² umgerechnet). Neu unter „Brandbericht“: Haken „Ergebnistabellen“ (Chlorid/PAK als Tabelle, sonst Verweis auf den Prüfbericht; Asbest-Tabelle immer), Hintergrundreferenz PAK 10/100 µg/m² (Vorbelegung aus der Nutzung) mit optionaler Begründung. Asbest mit Methode nach VDI 3866 Blatt 5 (Anhang B aus der Nachweisgrenze des Prüfberichts), KMF wie im Asbestbericht, Brandgeruch mit Ergebnis-Satz je Probe aus den fünf Bewertungen (verdeckt/unvollständig → Lücke). Chlorid-Materialproben, Chlorid-Bohrmehl und weitere Proben aus LabelKit „Sonstige“ stehen jetzt in 4. und 5. (Werte im Satz, Bewertung als Lücke); Prüfberichte der weiteren Proben werden Anlage. Vorsichtig, wo die Daten nicht reichen: Höchstwert und Spanne werden in einer Einheit verglichen (µg/cm² bzw. µg/m²); gibt es Werte unter der Bestimmungsgrenze, heißt es „Die oberhalb der Bestimmungsgrenze ermittelten …“; der Chlorid-Abschluss A/B kommt nur aus regulär eingeordneten Proben, sonst eine Lücke; eine Probe in mehreren Prüfberichten nimmt wie ResultKit den Wert je Fläche. Hinweis, wenn in PlanKit für Chlorid/PAK eine eigene Skala oder eine andere Nutzung der Ergebniskarte eingestellt ist.'],
   ['1.12.0', '31.10.2026', 'Brandbericht Schritt 3 – Gerüst, als Vorschau (am Asbestbericht ändert sich nichts): Aus der „kommt bald“-Karte oder mit #…&art=brand&vorschau=1 öffnet BerichtKit den Brandbericht mit eigener Formularkarte „Brandbericht“ – Titel (Sanierungsvorschlag / Untersuchungsbericht), Umfang (Gebäude, technische Einrichtung, Warenvorräte), Brandort im Satz (Vorbelegung nach der Nutzung), Anwesende (eintragen / nur unser Büro / Teilnehmerliste), zweite Person vor Ort, Gefahrenbereich GB 0–3, Satz zu den übrigen Wohnungen/Bereichen. Der Bericht: Deckblatt mit „Schaden vom:“ bzw. „Brandschaden“ (Datum unbekannt) statt Betreff, Schaden-Nr. mehrzeilig; Kopfzeile „Brandschaden vom …“; 1. Veranlassung (Korrosionsabsätze nur mit Chlorid-Proben), 2. Aufgabenstellung, 3. Ortsbesichtigung (Ortstermin aus der Projektzentrale, sonst Probenahmedatum aus LabelKit), 4. Probenahme (Chlorid, PAK, Asbest mit Materialien, KMF, Brandgeruch; Zahlwort bis zwölf; gemeinsamer Prüfbericht Chlorid/PAK), 7. Arbeitsschutzmaßnahmen (GB 0 eigener Satz, TRGS 521/519), Unterschriften und Anlagen (Prüfberichte Chlorid, PAK, Asbest/KMF, Bilddokumentation, Probenplan, Brandgeruch aus der Projektzentrale – mit Stand über das Anlagen-Protokoll und Abgleich der Anlagen-Nr.). 5. Befund, 6. Sanierungsmaßnahmen/Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit gelber Lücke da (folgt in Schritt 4/5). Solange der Brandbericht nicht fertig ist, ist Speichern in „Mitteilungen“ gesperrt – „Entwurf herunterladen“ geht. Eigene Angaben der Brand-Seite stehen in _BerichtKit.json unter „brand“; das Protokoll der gespeicherten Berichte merkt sich die Berichtsart.'],
   ['1.11.0', '31.10.2026', 'Offene Stellen sichtbar (Brandbericht Schritt 2, gilt schon für den Asbestbericht): Jede gelbe Lücke in der Word-Datei bekommt einen Kommentar am Rand – „Noch ausfüllen: …“, Autor „BerichtKit“ –, in Word mit Überprüfen › Nächster Kommentar von Lücke zu Lücke; ist die Stelle gefüllt, Kommentar löschen. Gelbe Markierung und [Text] bleiben, die Projektzentrale findet bei der Übergabe dieselben Lücken wie bisher. Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb (LibreOffice kann Kommentare dort nicht laden) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar. Im Formular oben „n Stellen noch offen“: Klick springt zum Feld, das die nächste Lücke füllt; leere Pflichtfelder sind gelb umrandet; in den Hinweisen steht zu jeder Lücke, wo sie zu füllen ist (z. B. „Personen › Labor“, „in der Projektzentrale eintragen“). Zähler und Rückfrage vor dem Speichern zählen auch, was erst die Word-Datei als Lücke einsetzt: fehlende Projektnummer und ein Foto, dessen Datei sich nicht lesen lässt ([Foto fehlt: …]).'],
   ['1.10.0', '31.10.2026', 'Vorbereitung Brandbericht (Schritt 1, am Asbestbericht ändert sich nichts): Die Berichtstexte sind aufgeteilt in gemeinsame Bausteine (bericht-gemeinsam.js: Deckblatt mit/ohne Versicherung, Kopfzeilen, Personen, Unterschriften, Anlagen, Proben und Asbest-Befund) und den Asbestbericht (bericht-asbest.js); bericht-text.js wählt die Berichtsart. Die Projektzentrale kann die Berichtsart mitgeben (#…&art=asbest|brand) – „Brandbericht“ zeigt vorerst „kommt bald“ mit Knopf zum Asbestbericht. Word-Ausgabe: Spaltenbreiten je Tabelle und Unterüberschriften (kursiv) für spätere Berichtsarten. Geprüft: alle Beispielberichte als Modell und Word-Datei vorher/nachher gleich.'],
@@ -184,7 +184,7 @@ async function oeffnen(dir) {
   fehler('');
   const nr = (/^(\d{2})\.(\d{4})/.exec(dir.name) || []).slice(1).join('.');
   S.ordner = { name: dir.name, nr, kuerzel: '' };
-  S.quellen = []; S.thumbs = {}; S.feldbogen = null; S.anlagen = {}; S.anlagenVorhanden = null; uebergabeZeigen('');
+  S.quellen = []; S.thumbs = {}; S.feldbogen = null; S.anlagen = {}; S.planSkalen = null; S.anlagenVorhanden = null; uebergabeZeigen('');
   S.pj = null; S.erg = null; S.lk = null; S.lkDatei = null; S.stempel = null; S.quellenDaten = []; S.meldungen = []; S.quellenLauf = (S.quellenLauf || 0) + 1;
   const q = (ok, text) => S.quellen.push({ ok, text });
   try {
@@ -372,7 +372,7 @@ async function anlagenLesen() {
   let protokoll = null;
   const op = await SO.ort(dir, 'anlagenProtokoll').catch(() => ({}));
   if (op.dir) try { protokoll = await (await (await op.dir.getFileHandle('_Anlagen-Protokoll.txt')).getFile()).text(); } catch (e) { /* ohne Protokoll */ }
-  let plan = null;
+  let plan = null, planSkalen = null;
   const ok = await SO.ort(dir, 'plankit').catch(() => ({}));
   if (ok.dir) {
     const soll = `Probenplan ${dir.name}.probenplan`.normalize('NFC'); let best = null;
@@ -382,7 +382,16 @@ async function anlagenLesen() {
       if (h.name.normalize('NFC') === soll) { best = f; break; }
       if (!best || f.lastModified > best.lastModified) best = f;
     }
-    if (best) plan = { name: best.name, t: best.lastModified, sha: await sha256(await best.arrayBuffer()) };
+    if (best) {
+      const buf = await best.arrayBuffer();
+      plan = { name: best.name, t: best.lastModified, sha: await sha256(buf) };
+      // Einstellungen der Ergebniskarte wie ResultKit planEinstellungen(): Nutzung und in PlanKit angepasste VdS-Skalen (nur die Schlüssel)
+      try {
+        const r = JSON.parse(new TextDecoder().decode(buf))?.results;
+        if (r && typeof r === 'object') planSkalen = { usage: r.usage === 'residential' || r.usage === 'industrial' ? r.usage : '',
+          vds: r.vds && typeof r.vds === 'object' && !Array.isArray(r.vds) ? Object.keys(r.vds).filter(k => typeof k === 'string' && k.length <= 330).slice(0, 100) : [] };
+      } catch (e) { /* Plan nicht lesbar */ }
+    }
   }
   // FotoKit-Daten frisch: dort steht, welche Bilddoku zuletzt erstellt wurde und wann sich ihre Inhalte geändert haben
   const of = await SO.ort(dir, 'fotokit').catch(() => ({}));
@@ -391,6 +400,7 @@ async function anlagenLesen() {
   for (const x of S.form.anlagenExtra || []) if (x && await pfadDa(dir, x.pfad)) vorhanden.add(x.pfad);
   if (lauf !== S.anlagenLauf || dir !== S.dir) return;
   if (rf && rf.data) { S.fk = rf.data; fotoListeBauen(); }
+  S.planSkalen = planSkalen;
   S.anlagen = BerichtAnlagen.erkennen({ ordnerName: dir.name, fotos, plaene, mitteilungen, protokoll, fk: S.fk, plan, labelkit: S.lkDatei });
   S.anlagenVorhanden = vorhanden;
 }
@@ -568,7 +578,7 @@ function formLokal() { try { localStorage.setItem(S.formKey, JSON.stringify({ v:
 /* ---------- Modell ---------- */
 function modell(ueber) {
   const da = S.anlagenVorhanden, form = { ...S.form, ...(ueber || {}), anlagenExtra: (S.form.anlagenExtra || []).map(x => ({ ...x, fehlt: !!da && !da.has(x.pfad) })) };
-  return T.bericht({ pj: S.pj, ordner: S.ordner, lk: S.lk, erg: S.erg, cfg: S.cfg, mitarbeiter: S.mitarbeiter, fotos: S.fotoListe, feldbogen: S.feldbogen, anlagen: S.anlagen, form });
+  return T.bericht({ pj: S.pj, ordner: S.ordner, lk: S.lk, erg: S.erg, cfg: S.cfg, mitarbeiter: S.mitarbeiter, fotos: S.fotoListe, feldbogen: S.feldbogen, anlagen: S.anlagen, planSkalen: S.planSkalen, form });
 }
 
 /* ---------- Anzeige ---------- */

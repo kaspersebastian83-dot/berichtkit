@@ -38,8 +38,10 @@ jobs:
         run: node tests/berichtsart.cjs
       - name: Asbestbericht wie festgeschrieben (Beispielberichte)
         run: node tests/asbest-golden.cjs
-      - name: Brandbericht – Regeln (Gerüst, 5. Befund, Einordnung)
+      - name: Brandbericht – Regeln (Gerüst, 5. Befund, Einordnung, Rolle wie Projektzentrale)
         run: node tests/brand.cjs
+        env:
+          SPEKTRON_ORDNER_PFLICHT: '1'
       - name: Brandbericht wie festgeschrieben (Beispielberichte)
         run: node tests/brand-golden.cjs
       - name: Word-Kommentar je Lücke, Lücken-Prüfung der Projektzentrale findet dieselben Lücken

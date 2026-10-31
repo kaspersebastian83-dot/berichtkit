@@ -127,19 +127,23 @@ function laborProben(erg, weg) {
   }
   return out;
 }
-/** Ergebnisse eines Parameters (re) je Probe – erster Bericht mit Wert gewinnt (ResultKit hat ersetzte Werte schon entfernt).
+/** Ergebnisse eines Parameters (re) je Probe. Wie ResultKit uebersicht.ts: erst alle Werte einer Probe über alle Prüfberichte
+    sammeln (ResultKit hat ersetzte Werte schon entfernt), dann der bevorzugte Wert (je Fläche vor „je Probe“); Labor-Nr. und
+    Prüfbericht kommen aus dem Bericht dieses Werts.
     wisch: Wischprobe laut LabelKit (Liste und Matrix), ohne LabelKit-Eintrag nach der Einheit (je Fläche).
     rolle: 'referenz' | 'frei' | '' (Projektzentrale-Datenarchiv) */
 function ergebnisse(proben, re, karte, liste_) {
-  const out = [], gesehen = new Set();
+  const je = new Map();
   for (const p of proben) {
-    if (gesehen.has(p.label)) continue;
-    const w = BW.bevorzugt(p.werte, re);
-    if (!w || /^[-–—]?$/.test(s(w.r))) continue;
-    gesehen.add(p.label);
-    const l = karte.get(p.label) || null;
+    if (!je.has(p.label)) je.set(p.label, []);
+    for (const w of p.werte || []) if (w && !/^[-–—]?$/.test(s(w.r))) je.get(p.label).push({ w, p });
+  }
+  const out = [];
+  for (const [label, ws] of je) {
+    const w = BW.bevorzugt(ws.map(x => x.w), re); if (!w) continue;
+    const p = ws.find(x => x.w === w).p, l = karte.get(label) || null;
     const wisch = l ? l.liste === liste_ && l.matrix.toLowerCase() === 'wischprobe' : BW.FLAECHE.test(s(w.u));
-    out.push({ label: p.label, nr: (l && l.nr) || PNR(p.ref) || PNR(p.label), ref: p.ref, labNr: p.labNr, bericht: p.bericht,
+    out.push({ label, nr: (l && l.nr) || PNR(p.ref) || PNR(label), ref: p.ref, labNr: p.labNr, bericht: p.bericht,
       w: { r: s(w.r), u: s(w.u) }, wisch, lk: l, roh: (l && l.z2) || p.raum || tidy(p.desc), rolle: BW.rolleAuto(l ? l.z2 : '', p.desc) });
   }
   return out.sort((a, b) => (a.nr || 0) - (b.nr || 0));
@@ -164,11 +168,22 @@ function nrText(xs) {
 /** „Beide“ / „Alle drei“ / „Alle 13“ */
 const alleN = n => (n === 2 ? 'Beide' : `Alle ${zahlwort(n)}`);
 const probe = xs => `${xs.length === 1 ? 'Probe' : 'Proben'} ${nrText(xs)}`;
-const wertText = w => `${w.r}${w.u ? ' ' + w.u : ''}`;
+/** Wert mit Einheit wie im Prüfbericht – „n. n.“, „n. b.“, „unter BG“ ohne Einheit (keine Zahl, zu der sie gehört) */
+const wertText = w => { const q = BW.labQualifier(w.r), ohne = q === 'notDetected' || q === 'notDetermined' || (q === 'below' && !/^\(?\s*</.test(w.r)); return `${w.r}${w.u && !ohne ? ' ' + w.u : ''}`; };
 /** „(Probe 4, EG Küche Decke)“ – mit Tiefe bei Bohrmehl */
 const ortKlammer = x => `(Probe ${x.nr != null ? x.nr : x.ref || x.label}${x.stelle ? ', ' + x.stelle : ''}${x.lk && x.lk.tiefe ? ', Tiefe ' + x.lk.tiefe : ''})`;
-/** „1.250“ oder „n. b.“ → nicht vergleichbar; sonst Zahl (BG-Werte zählen für die Spanne nicht) */
-const zahl = x => (BW.labQualifier(x.w.r) === 'measured' ? BW.labNumber(x.w.r) : NaN);
+/** Zahl zum Vergleichen (Spanne, höchster Wert), umgerechnet über faktor(u) in eine gemeinsame Einheit – Chlorid µg/cm², PAK µg/m².
+    „1.250“, „n. b.“, < BG oder unbekannte Einheit → NaN (nicht vergleichbar). */
+const zahl = (x, faktor) => { const f = faktor(x.w.u); return f && BW.labQualifier(x.w.r) === 'measured' ? BW.labNumber(x.w.r) / f : NaN; };
+/** Laufende Texte zusammenfügen: benachbarte Zeichenketten verbinden, doppelte Leerzeichen weg, vorn/hinten trimmen */
+function fuegen(runs) {
+  const out = [];
+  for (const r of runs) { if (r === '' || r == null) continue; if (typeof r === 'string' && typeof out[out.length - 1] === 'string') out[out.length - 1] += r; else out.push(r); }
+  const t = out.map(r => (typeof r === 'string' ? r.replace(/ {2,}/g, ' ') : r));
+  if (typeof t[0] === 'string') t[0] = t[0].replace(/^\s+/, '');
+  if (typeof t[t.length - 1] === 'string') t[t.length - 1] = t[t.length - 1].replace(/\s+$/, '');
+  return t.filter(r => r !== '');
+}
 
 /** „(Anlage 1)“, „(Anlagen 1 und 2)“, „(Anlagen 1 bis 3)“ */
 function anlagenVerweis(ns) {
@@ -327,7 +342,7 @@ function bericht(eingabe) {
     pr.push({ t: 'p', runs: r });
     if (!rk.pak.length) hinweise.push('PAK: noch kein Prüfbericht mit Σ 16 EPA-PAK in ResultKit – Ergebnisse übernehmen.');
   }
-  let vorher = nCl + nPak + nPakM > 0;
+  let vorher = nClAlle + nPak + nPakM > 0;
   const zusatz = () => { const z = vorher ? 'Zusätzlich' : 'Es'; vorher = true; return z; };
   if (asb.length) {
     const mats = [...new Set(asb.map(p => p.material))];
@@ -377,6 +392,8 @@ function bericht(eingabe) {
   let unter = 1, tabNr = 0;
   const h2 = titel_ => befund.push({ t: 'h2', runs: [`5.${++unter} ${titel_}`] });
   const kuerzel = new Set();
+  // Ergebniskarte in PlanKit (wie ResultKit planEinstellungen): Nutzung und angepasste VdS-Skalen – nur für Hinweise
+  const planUsage = s(e.planSkalen && e.planSkalen.usage), planVds = (e.planSkalen && Array.isArray(e.planSkalen.vds) ? e.planSkalen.vds : []).map(s);
   const stelle = roh => { const r = raumAusschreiben(roh); r.ersetzt.forEach(k => kuerzel.add(k)); return r.text; };
   [...clErg, ...pakErg].forEach(x => { x.stelle = stelle(x.roh); });
   proben.forEach(p => { p.stelleBericht = stelle(p.stelle); });
@@ -394,16 +411,20 @@ function bericht(eingabe) {
   /** Referenzproben / Freimessungen: eigener Satz je Rolle */
   const rollenSaetze = xs => [['referenz', 'Die Referenzprobe', 'Die Referenzproben'], ['frei', 'Die Freimessung', 'Die Freimessungen']].flatMap(([r, eins, mehr]) => {
     const ys = xs.filter(x => x.rolle === r); if (!ys.length) return [];
-    return [ys.length === 1 ? ` ${eins} (Probe ${nrText(ys)}) ergab ${wertText(ys[0].w)}.` : ` ${mehr} ergaben ${liste(ys.map(y => `${wertText(y.w)} (Probe ${nrText([y])})`))}.`];
+    return [ys.length === 1 ? ` ${eins} (Probe ${nrText(ys)}) ergab ${wertText(ys[0].w).replace(/\.$/, '')}.` : ` ${mehr} ergaben ${liste(ys.map(y => `${wertText(y.w)} (Probe ${nrText([y])})`))}.`];
   });
-  /** Spanne „zwischen … und …“ über die gemessenen Werte (ohne < BG) */
-  const spanne = (xs, wer) => {
-    const g = xs.filter(x => Number.isFinite(zahl(x))); if (g.length < 2) return '';
-    const lo = g.reduce((a, b) => (zahl(b) < zahl(a) ? b : a)), hi = g.reduce((a, b) => (zahl(b) > zahl(a) ? b : a));
-    if (zahl(lo) === zahl(hi) && lo.w.u === hi.w.u) return '';
+  /** Spanne „zwischen … und …“ über die gemessenen Werte, verglichen in einer gemeinsamen Einheit (faktor), genannt wie im
+      Prüfbericht. Gibt es Werte < BG / n. n., heißt es „Die oberhalb der Bestimmungsgrenze ermittelten …“ (der < BG-Satz folgt).
+      Ist ein Wert weder vergleichbar noch < BG (z. B. „1.250“), entfällt der Satz – sonst stimmte die Spanne womöglich nicht. */
+  const spanne = (xs, nomen, faktor) => {
+    if (xs.some(x => !Number.isFinite(zahl(x, faktor)) && !BW.ohneNachweis(x.w.r))) return '';
+    const g = xs.filter(x => Number.isFinite(zahl(x, faktor))); if (g.length < 2) return '';
+    const lo = g.reduce((a, b) => (zahl(b, faktor) < zahl(a, faktor) ? b : a)), hi = g.reduce((a, b) => (zahl(b, faktor) > zahl(a, faktor) ? b : a));
+    if (zahl(lo, faktor) === zahl(hi, faktor)) return '';
+    const wer = `${g.length < xs.length ? 'Die oberhalb der Bestimmungsgrenze ermittelten' : 'Die ermittelten'} ${nomen}`;
     return lo.w.u === hi.w.u ? `${wer} liegen zwischen ${lo.w.r} und ${hi.w.r}${hi.w.u ? ' ' + hi.w.u : ''}. ` : `${wer} liegen zwischen ${wertText(lo.w)} und ${wertText(hi.w)}. `;
   };
-  const hoechster = xs => { const g = xs.filter(x => Number.isFinite(zahl(x))); return g.length ? g.reduce((a, b) => (zahl(b) > zahl(a) ? b : a)) : null; };
+  const hoechster = (xs, faktor) => { const g = xs.filter(x => Number.isFinite(zahl(x, faktor))); return g.length ? g.reduce((a, b) => (zahl(b, faktor) > zahl(a, faktor) ? b : a)) : null; };
   /** Material-, Bohrmehl- oder weitere Proben mit Chlorid- bzw. PAK-Wert: je Art ein Satz mit den Werten, Bewertung als Lücke
       (das Doc nennt dafür keine Einordnung). luecken = { material, bohrmehl, probe } → Lückentext je Art */
   const materialSaetze = (xs, zus, groesse, groessen, luecken_) => {
@@ -411,8 +432,9 @@ function bericht(eingabe) {
     return ['material', 'bohrmehl', 'probe'].map(a => [a, xs.filter(x => art(x) === a)]).filter(([, ys]) => ys.length).map(([a, ys], i) => {
       const [eins, mehr] = { bohrmehl: ['Bohrmehlprobe', 'Bohrmehlproben'], material: ['Materialprobe', 'Materialproben'], probe: ['weiteren Probe', 'weiteren Proben'] }[a];
       const z = zus || i > 0;
-      const r = ys.length === 1 ? `${z ? 'Zusätzlich wurde an der' : 'An der'} ${eins} ${ortKlammer(ys[0])} ein ${groesse} von ${wertText(ys[0].w)} ermittelt.`
-        : `${z ? 'Zusätzlich wurden an den' : 'An den'} ${mehr} folgende ${groessen} ermittelt: ${liste(ys.map(x => `${wertText(x.w)} ${ortKlammer(x)}`))}.`;
+      const r = ys.length === 1 ? (z ? `Zusätzlich wurde an der ${eins} ${ortKlammer(ys[0])} ein ${groesse} von ${wertText(ys[0].w)} ermittelt.`
+        : `An der ${eins} ${ortKlammer(ys[0])} wurde ein ${groesse} von ${wertText(ys[0].w)} ermittelt.`)
+        : `${z ? `Zusätzlich wurden an den ${mehr}` : `An den ${mehr} wurden`} folgende ${groessen} ermittelt: ${liste(ys.map(x => `${wertText(x.w)} ${ortKlammer(x)}`))}.`;
       return { t: 'p', runs: [r, ' ', { gap: luecken_[a] }] };
     });
   };
@@ -432,14 +454,18 @@ function bericht(eingabe) {
     if (clW.length) {
       befund.push({ t: 'p', runs: ['Abhängig von Material und Umgebungsbedingungen ist ab Chloridflächenbelastungen in der Größenordnung von 5 bis 10 µg/cm² (korrosionschemisch relevante Größenordnung nach VdS 2357) davon auszugehen, dass beschleunigte Korrosionsvorgänge einsetzen und fortschreiten.'] });
       clW.forEach(x => { x.stufe = BW.chloridStufe(x.w); });
+      if (planVds.some(k => CHLORID.test(k))) hinweise.push(`${nr52}: In PlanKit ist für Chlorid eine eigene Skala eingestellt – der Bericht ordnet nach VdS 2357 (5–10 µg/cm²) ein, die Ergebniskarte nach der PlanKit-Skala. Bitte prüfen.`);
       const reg = clW.filter(x => !x.rolle), bew = reg.filter(x => x.stufe >= 0);
       reg.filter(x => x.stufe < 0).forEach(x => nichtBewertbar(x, 'Chlorid', nr52));
       const r = [];
+      const CLF = BW.chloridEinheit;
+      // regulär, aber keine einzige einzuordnen (Einheit je Probe, „1.250“ …): Zähl-Absatz und höchster Wert fehlen sonst still
+      if (reg.length && !bew.length) r.push({ gap: '[Einordnung der Chlorid-Wischproben ergänzen]' });
       if (bew.length === 1) {
         const x = bew[0];
         r.push(`Die Chlorid-Wischprobe ${ortKlammer(x)} ergab ${wertText(x.w)} und liegt damit ${CL_STUFE[x.stufe]} ${CL_GROESSE}.`);
       } else if (bew.length > 1) {
-        r.push(spanne(bew, 'Die ermittelten Chloridflächenbelastungen'));
+        r.push(spanne(reg, 'Chloridflächenbelastungen', CLF));   // alle regulären: ein unklarer Wert („1.250“) kann außerhalb liegen
         const gr = [2, 1, 0].map(i => bew.filter(x => x.stufe === i));
         const voll = gr.filter(g => g.length);
         if (voll.length === 1) r.push(`${alleN(bew.length)} Chlorid-Wischproben liegen ${CL_STUFE[voll[0][0].stufe]} ${CL_GROESSE}.`);
@@ -450,11 +476,11 @@ function bericht(eingabe) {
           if (gr[2].length) teile.push(`${zahlwort(gr[2].length)} darunter`);
           r.push(`Von den ${zahlwort(bew.length)} Chlorid-Wischproben ${voll[0].length === 1 ? 'liegt' : 'liegen'} ${liste(teile)}.`);
         }
-        const hi = hoechster(bew);
+        const hi = hoechster(bew, CLF);
         if (hi) r.push(` Die höchste Belastung wurde mit ${wertText(hi.w)} in Probe ${nrText([hi])}${hi.stelle ? ` (${hi.stelle})` : ''} festgestellt.`);
         const nn = bew.filter(x => BW.ohneNachweis(x.w.r));
         if (nn.length === bew.length) r.push(` In keiner der ${zahlwort(bew.length)} Chlorid-Wischproben war Chlorid oberhalb der Bestimmungsgrenze nachweisbar.`);
-        else if (nn.length) r.push(` In ${nn.length === 1 ? 'Probe' : 'den Proben'} ${nrText(nn)} lag der Chloridgehalt unterhalb der Bestimmungsgrenze.`);
+        else if (nn.length) r.push(` Bei ${nn.length === 1 ? 'Probe' : 'den Proben'} ${nrText(nn)} lag der Chloridgehalt unterhalb der Bestimmungsgrenze.`);
       }
       r.push(...rollenSaetze(clW));
       const u = einheitVon(clW);
@@ -462,15 +488,20 @@ function bericht(eingabe) {
         kopf: ['Probe', 'Labor-Nr.', 'Entnahmestelle', u ? `Chlorid [${u}]` : 'Chlorid', 'Einordnung'], ausrichtung: ['center', 'center', 'left', 'center', 'left'],
         spalten: SPALTEN_ERG, ohneUmbruch: [1],
         zeilen: clW.map(x => [`${x.nr != null ? x.nr : x.label}${rolleZusatz(x)}`, x.labNr, x.stelle, u ? x.w.r : wertText(x.w), x.stufe >= 0 ? CL_STUFE[x.stufe] : '–']) });
-      if (r.join('').trim()) befund.push({ t: 'p', runs: [r.join('').replace(/^\s+/, '')] });
+      const runs = fuegen(r); if (runs.length) befund.push({ t: 'p', runs });
       if (tab) befund.push(tab);
-      // Abschluss: A, wenn keine (regulär bewertete) Probe im Bereich oder darüber liegt; sonst B
-      const basis = reg.length ? reg : clW;
-      const varianteA = basis.length > 0 && basis.every(x => x.stufe === 0);
+      /* Abschluss nur aus den regulären, eingeordneten Proben (ohne Referenz/Freimessung):
+         B, sobald eine im Bereich oder darüber liegt · A, wenn alle regulären eingeordnet und unterhalb sind ·
+         sonst (keine regulären, oder eine nicht einzuordnen und keine darüber) → Lücke, statt einen Schluss zu behaupten */
+      const varianteB = bew.some(x => x.stufe > 0), varianteA = !varianteB && reg.length > 0 && bew.length === reg.length;
       if (varianteA) abschluss = { t: 'p', runs: ['Eine korrosionschemisch relevante Chloridbelastung liegt nicht vor.'] };
       // „Untersuchungsbericht“ hat keine Sanierungsmaßnahmen – vorläufige Formulierung wie in 7. (bis Basti einen Wortlaut gibt)
-      else abschluss = ({ t: 'p', runs: [sanierung ? 'Nach fachgerechter Durchführung der unter 6. angegebenen Sanierungsmaßnahmen ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden.'
+      else if (varianteB) abschluss = ({ t: 'p', runs: [sanierung ? 'Nach fachgerechter Durchführung der unter 6. angegebenen Sanierungsmaßnahmen ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden.'
         : 'Nach fachgerechter Durchführung von Sanierungsarbeiten ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden.'] });
+      else {
+        abschluss = { t: 'p', runs: [{ gap: '[Abschluss Chlorid ergänzen]' }] };
+        hinweise.push(`${nr52}: ${reg.length ? 'nicht alle Chlorid-Wischproben einzuordnen' : 'nur Referenzproben/Freimessungen'} – Abschluss (Variante A/B) bitte in Word ergänzen.`);
+      }
     }
     if (clM.length) befund.push(...materialSaetze(clM, clW.length > 0, 'Chloridgehalt', 'Chloridgehalte', { material: '[Bewertung der Chlorid-Materialproben ergänzen]',
       bohrmehl: '[Bewertung der Chlorid-Bohrmehlproben ergänzen]', probe: '[Bewertung der weiteren Chlorid-Proben ergänzen]' }));
@@ -494,15 +525,19 @@ function bericht(eingabe) {
       const rv = referenzVorgabe(P.nutzung);
       if (R && rv && String(R) !== rv && !s(fb.referenzGrund)) hinweise.push(`Hintergrundreferenz ${R} µg/m² weicht von der Nutzung „${P.nutzung}“ (${rv} µg/m²) ab – Begründung unter „Brandbericht“ ergänzen?`);
       pakW.forEach(x => { x.stufe = R ? BW.pakStufe(x.w, R) : -1; });
+      if (planVds.some(k => SUMME_PAK.test(k))) hinweise.push(`${nr53}: In PlanKit ist für Σ 16 EPA-PAK eine eigene Skala eingestellt – der Bericht ordnet nach der Hintergrundreferenz ein, die Ergebniskarte nach der PlanKit-Skala. Bitte prüfen.`);
+      const planR = planUsage === 'residential' ? 10 : planUsage === 'industrial' ? 100 : 0;
+      if (R && planR && R !== planR) hinweise.push(`${nr53}: Hintergrundreferenz ${R} µg/m², in PlanKit ist für die Ergebniskarte „${planR === 10 ? 'Wohnen/Büro' : 'Gewerbe/Industrie'}“ (${planR} µg/m²) eingestellt – Bericht und Karte ordnen sonst verschieden ein.`);
       const reg = pakW.filter(x => !x.rolle), bew = R ? reg.filter(x => x.stufe >= 0) : reg;
       if (R) reg.filter(x => x.stufe < 0).forEach(x => nichtBewertbar(x, 'Σ 16 EPA-PAK', nr53));
       const r = [];
-      const ref = `die Hintergrundreferenz von ca. ${R} µg/m²`;
+      const ref = `die Hintergrundreferenz von ca. ${R} µg/m²`, PF = BW.pakEinheit;
+      if (R && reg.length && !bew.length) r.push({ gap: '[Einordnung der PAK-Wischproben ergänzen]' });
       if (bew.length === 1 && R) {
         const x = bew[0];
         r.push(`Die PAK-Wischprobe ${ortKlammer(x)} ergab einen Summenwert von ${wertText(x.w)} und ${x.stufe ? `erreicht oder überschreitet damit ${ref}` : `liegt damit unterhalb der Hintergrundreferenz von ca. ${R} µg/m²`}.`);
       } else if (bew.length) {
-        r.push(spanne(bew, 'Die ermittelten Summenwerte (16 EPA-PAK)'));
+        r.push(spanne(reg, 'Summenwerte (16 EPA-PAK)', PF));
         if (!R) r.push(refLuecke, ' ');
         else {
           const ueber = bew.filter(x => x.stufe === 1), drunter = bew.filter(x => x.stufe === 0);
@@ -510,11 +545,13 @@ function bericht(eingabe) {
           else if (!ueber.length) r.push(`${alleN(bew.length)} PAK-Wischproben liegen unterhalb der Hintergrundreferenz von ca. ${R} µg/m². `);
           else r.push(`Von den ${zahlwort(bew.length)} PAK-Wischproben ${ueber.length === 1 ? 'erreicht oder überschreitet eine' : `erreichen oder überschreiten ${zahlwort(ueber.length)}`} ${ref} (${probe(ueber)}); ${drunter.length === 1 ? 'eine liegt' : `${zahlwort(drunter.length)} liegen`} darunter. `);
         }
-        const hi = hoechster(bew);
+        const hi = hoechster(bew, PF);
         if (hi && bew.length > 1) r.push(`Der höchste Summenwert wurde mit ${wertText(hi.w)} in Probe ${nrText([hi])}${hi.stelle ? ` (${hi.stelle})` : ''} festgestellt.`);
         else if (hi) r.push(`Die PAK-Wischprobe ${ortKlammer(hi)} ergab einen Summenwert von ${wertText(hi.w)}.`);
         const nn = bew.filter(x => BW.ohneNachweis(x.w.r));
-        if (bew.length > 1 && nn.length) r.push(` In ${nn.length === 1 ? 'Probe' : 'den Proben'} ${nrText(nn)} ${nn.length === 1 ? 'war keine' : 'waren keine'} der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar.`);
+        // Befunde Nr. 6 (26.0527): „Bei den übrigen Proben (P2, P6 bis P8) waren keine …“ – hier ohne „übrigen“, weil nicht alle anderen vorher genannt sind
+        if (bew.length > 1 && nn.length === bew.length) r.push(` In keiner der ${zahlwort(bew.length)} PAK-Wischproben war eine der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar.`);
+        else if (bew.length > 1 && nn.length) r.push(` Bei ${nn.length === 1 ? 'Probe' : 'den Proben'} ${nrText(nn)} ${nn.length === 1 ? 'war keine' : 'waren keine'} der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar.`);
       }
       r.push(...rollenSaetze(pakW));
       const u = einheitVon(pakW);
@@ -522,19 +559,18 @@ function bericht(eingabe) {
         kopf: ['Probe', 'Labor-Nr.', 'Entnahmestelle', u ? `Σ 16 EPA-PAK [${u}]` : 'Σ 16 EPA-PAK', 'Einordnung'], ausrichtung: ['center', 'center', 'left', 'center', 'left'],
         spalten: SPALTEN_ERG, ohneUmbruch: [1],
         zeilen: pakW.map(x => [`${x.nr != null ? x.nr : x.label}${rolleZusatz(x)}`, x.labNr, x.stelle, u ? x.w.r : wertText(x.w), x.stufe >= 0 ? PAK_STUFE[x.stufe] : '–']) });
-      const runs = r.filter(x => x !== ''); if (typeof runs[0] === 'string') runs[0] = runs[0].replace(/^\s+/, '');
-      if (runs.length) befund.push({ t: 'p', runs });
+      const runs = fuegen(r); if (runs.length) befund.push({ t: 'p', runs });
       if (tab) befund.push(tab);
     }
     if (pakM.length) befund.push(...materialSaetze(pakM, pakW.length > 0, 'Summenwert (16 EPA-PAK)', 'Summenwerte (16 EPA-PAK)', { material: '[Bewertung der PAK-Materialproben ergänzen]',
-      bohrmehl: '[Bewertung der PAK-Materialproben ergänzen]', probe: '[Bewertung der weiteren PAK-Proben ergänzen]' }));
+      bohrmehl: '[Bewertung der PAK-Bohrmehlproben ergänzen]', probe: '[Bewertung der weiteren PAK-Proben ergänzen]' }));
     befund.push({ t: 'p', runs: [`Die beim Brand gebildeten organischen Schadstoffe sind adsorptiv sehr stark an den Ruß gebunden. Mit Entfernung der schadensbedingten Verunreinigungen werden somit auch zwangsläufig die gebildeten Schadstoffe entfernt, so dass nach ordnungsgemäßer Durchführung ${sanierung ? 'der angegebenen Sanierungsmaßnahmen' : 'von Sanierungsarbeiten'} keine Gesundheitsgefährdung durch Brandkondensate gegeben ist.`] });
   }
 
   /* 5.4 Künstliche Mineralfaserwolle – Texte wie im Asbestbericht (TRGS 905, Fassung 2026) */
   if (kmf.length) {
     h2('Künstliche Mineralfaserwolle');
-    kmf.forEach(p => befund.push({ t: 'p', runs: [`In der Dämmstoffprobe ${p.nr || p.ref || p.label}${p.stelleBericht ? ` (${p.stelleBericht})` : ''} wurden ${p.whoNachgewiesen ? '' : 'keine '}WHO-Fasern${p.whoNachgewiesen ? ' (lungengängige Fasern)' : ''} nachgewiesen. `,
+    kmf.forEach(p => befund.push({ t: 'p', runs: [`In der Dämmstoffprobe ${p.nr || PNR(p.ref) || p.ref || p.label}${p.stelleBericht ? ` (${p.stelleBericht})` : ''} wurden ${p.whoNachgewiesen ? '' : 'keine '}WHO-Fasern${p.whoNachgewiesen ? ' (lungengängige Fasern)' : ''} nachgewiesen. `,
       'Der Prüfbericht weist einen Kanzerogenitätsindex von KI = ', L(p.ki, 'KI-Wert'), ' aus.'] }));
     if (kmf.some(p => p.whoNachgewiesen)) befund.push({ t: 'p', runs: ['Nach der seit 05.06.2026 geltenden Fassung der TRGS 905 werden WHO-Fasern nicht mehr über den Kanzerogenitätsindex, ',
       'sondern nach den Kategorien für krebserzeugende Stoffe in Anhang I der CLP-Verordnung bewertet. Der KI-Wert wird daher nur ergänzend angegeben.'] });
@@ -547,12 +583,14 @@ function bericht(eingabe) {
     asb.forEach(p => {
       const b = BW.anhangB(werteVon(e.erg, p));
       // positiv schon bei 1 % / 0,1 %: Anhang B ist dann nicht nötig – nur negative Ergebnisse prüfen
+      const nwgRoh = werteVon(e.erg, p).filter(w => w && BW.ASBEST.test(s(w.p)) && !/^[-–—]?$/.test(s(w.r))).map(w => s(w.nwg)).filter(Boolean);
+      if (b === null && nwgRoh.length) hinweise.push(`${p.ref || p.label}: Nachweisgrenze „${nwgRoh[0]}“ nicht lesbar – ob Anhang B angewendet wurde, bitte im Prüfbericht prüfen.`);
       if (b === false && !p.befund.gefunden && BW.matrixErwartetAnhangB(p.matrix)) hinweise.push(`${p.ref || p.label}: Matrix „${p.matrix}“ wird meist nach VDI 3866 Blatt 5 Anhang B untersucht, der Prüfbericht nennt dafür keine Nachweisgrenze von 0,001 % – bitte prüfen.`);
     });
     const eine = asb.length === 1, rPos = asb.filter(p => p.befund.gefunden), rNeg = asb.filter(p => !p.befund.gefunden && p.befund.eindeutig), rUnklar = asb.filter(p => !p.befund.eindeutig);
     const methode = eine ? `Die Materialprobe wurde gemäß VDI 3866 Blatt 5${anB.length ? ' unter Anwendung des Verfahrens nach Anhang B' : ''} auf Asbest untersucht.`
       : anB.length === asb.length ? 'Die Materialproben wurden gemäß VDI 3866 Blatt 5 unter Anwendung des Verfahrens nach Anhang B auf Asbest untersucht.'
-      : `Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht${anB.length ? `, ${probe(anB.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} unter Anwendung des Verfahrens nach Anhang B` : ''}.`;
+      : `Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht${anB.length ? `, bei ${probe(anB.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} unter Anwendung des Verfahrens nach Anhang B` : ''}.`;
     tabNr++;
     befund.push({ t: 'p', runs: [methode, ` ${eine ? 'Das Ergebnis ist' : 'Die Ergebnisse sind'} in Tabelle ${tabNr} zusammengefasst.`] });
     const mat = p => ['„', L(p.material, 'Material'), '“'];
@@ -631,7 +669,7 @@ function bericht(eingabe) {
   const { unterschriften, svQuelle } = unterschriftenBlock(e, f, { sv, pn, mt }, false, hinweise, hinweisAktionen);
   const { anlagenTeile, anlagen, anlagenDateien, anlagenListe } = anlagenAusgabe(A);
   prb.forEach(nr => { if (!pdfVon(nr)) hinweise.push(`Prüfbericht ${nr}: PDF nicht in „Laborergebnisse“ – für die Anlage bitte ablegen.`); });
-  [...rk.vorlaeufig].filter(nr => (rk.cl.includes(nr) || rk.pak.includes(nr)) && !asbNr.includes(nr))
+  [...rk.vorlaeufig].filter(nr => (rk.cl.includes(nr) || rk.pak.includes(nr) || weitereNr.includes(nr)) && !asbNr.includes(nr))
     .forEach(nr => hinweise.push(`Prüfbericht ${nr} ist vorläufig – der Bericht bekommt die Kopfzeile „Vorläufig“.`));
   const kennzeilen = kennzeilenVorlaeufig(proben.some(p => p.vorlaeufig) || [...rk.vorlaeufig].some(nr => prb.includes(nr)));
 
