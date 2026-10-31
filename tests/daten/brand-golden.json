@@ -1,0 +1,2108 @@
+{
+ "BR1_voll_Versicherung": {
+  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "deckblatt": {
+   "titel": "Sanierungsvorschlag vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9002",
+   "betreff": [
+    "Schaden vom:",
+    "\t",
+    "12.10.2026"
+   ],
+   "felder": [
+    [
+     "VN:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Risiko:",
+     [
+      "Erdgeschoss links",
+      "Brandweg 7",
+      "54321 Beispielstadt"
+     ]
+    ],
+    [
+     "Versicherer:",
+     [
+      "Beispiel Versicherung AG"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      "BV-2026-0815"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Sanierungsvorschlag vom 27.10.2026",
+   [
+    "Brandschaden vom ",
+    "12.10.2026"
+   ],
+   [
+    "VN: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Risiko: ",
+    "Erdgeschoss links, Brandweg 7, 54321 Beispielstadt"
+   ]
+  ],
+  "kennzeilen": [
+   {
+    "art": "entwurf",
+    "text": "ENTWURF – nicht versenden"
+   }
+  ],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "12.10.2026",
+       " kam es in dem Wohngebäude ",
+       "Brandweg 7, 54321 Beispielstadt (Erdgeschoss links)",
+       " zu einem Brandschaden."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schadenbedingt kann es auch zur Bildung und Freisetzung von Schadstoffen sowie deren räumlicher Verteilung kommen. Im Wesentlichen können Schadstoffe eine Gefährdung von Mensch und Umwelt und ein erhöhtes Korrosionsrisiko bedingen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polycyclischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Ein Korrosionsrisiko besteht für metallische Bauteile und mineralische Bausubstanz, insbesondere für Stahlbeton."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Aus halogenorganischen Materialien (meist PVC) wird beim Abbrand Halogenwasserstoffsäure freigesetzt. Auch beim Verschmoren von PVC wird bei Temperaturen oberhalb 200 °C bereits in merklichem Umfang Chlorwasserstoff abgespalten. Somit wird als Leitmessgröße für ein erhöhtes Korrosionsrisiko die Konzentration an Chloriden herangezogen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Aufgabenstellung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "05.10.2026",
+       " wurde unser Büro durch ",
+       "die Beispiel Versicherung AG",
+       " beauftragt, Art und Ausmaß der Schadstoffbelastung ",
+       "an den Gebäudeoberflächen und an der technischen Einrichtung",
+       " festzustellen.",
+       " Zusätzlich waren Materialproben auf Asbest zu untersuchen.",
+       " Aus den getroffenen Feststellungen ist ein Sanierungskonzept abzuleiten."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "3. Ortsbesichtigung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "14.10.2026",
+       " fand eine Besichtigung der Schadenstelle mit Probenahme statt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Ortstermin waren ",
+       "Herr Muster (VN) und Herr Beispiel (Sanierungsfirma Muster GmbH)",
+       " sowie ",
+       "Herr Messer und Herr vom Beispiel",
+       " (Sachverständigenbüro Dr. Heinz Schiffers & Partner) anwesend."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Probenahme",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der Chloridbelastung wurden drei Wischproben entnommen. ",
+       "Die Proben wurden der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Chlorid übergeben."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der PAK-Belastung wurden vier Wischproben entnommen und auf die 16 Einzelkomponenten nach EPA (Environmental Protection Agency) untersucht; zusätzlich wird der Summenwert angegeben.",
+       " Zusätzlich wurde eine Materialprobe entnommen und auf PAK untersucht.",
+       " ",
+       "Die Analysenergebnisse sind dem Prüfbericht ",
+       "Nr. AR-999-2026-000101-01",
+       " zu entnehmen (Anlage 1)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "An einer Materialprobe künstlicher Mineralfaserdämmung wurde untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zusätzlich wurden drei Materialproben (",
+       "Fliesenkleber",
+       ", ",
+       "Putz",
+       ", ",
+       "Dämmstoff Mineralwolle",
+       ") entnommen und der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Asbest übergeben. ",
+       "Die Ergebnisse sind im Prüfbericht ",
+       "Nr. AR-999-2026-000102-01",
+       " dokumentiert (Anlage 2)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zusätzlich wurden zwei Materialproben entnommen und am ",
+       "20.10.2026",
+       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ",
+       "5",
+       " dargestellt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "5. Befund",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Befund ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "6. Sanierungsmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Sanierungsmaßnahmen ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "7. Arbeitsschutzmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
+       "2 (GB 2)",
+       " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei Arbeiten in den übrigen Wohnungen sind keine über den normalen Arbeitsschutz hinausgehenden Maßnahmen notwendig."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Das Einbaujahr des Dämmstoffs ist nicht bekannt. Solange nicht belegt ist, dass es sich um neue Mineralwolle handelt, ",
+       "ist er wie alte Mineralwolle im Sinne der TRGS 521 „Tätigkeiten mit alter Mineralwolle“ zu behandeln. Bei Ausbau, Demontage und Instandhaltung sind die Schutzmaßnahmen der TRGS 521 einzuhalten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Material ",
+       "„",
+       "Fliesenkleber",
+       "“ (Probe 9)",
+       " handelt es sich um ein asbesthaltiges Material. ",
+       "Bei allen Tätigkeiten, bei denen dieses Material bearbeitet, beschädigt oder entfernt wird, ",
+       "sind die Gefahrstoffverordnung (GefStoffV) und die TRGS 519 „Asbest: Abbruch-, Sanierungs- oder Instandhaltungsarbeiten“ einzuhalten. ",
+       "Die Arbeiten dürfen nur von Fachbetrieben mit der erforderlichen Sachkunde ausgeführt werden."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "8. Zusammenfassung Sanierungsmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   },
+   {
+    "kuerzel": "Mes",
+    "rolle": "Der Messtechniker",
+    "name": "Max Messer"
+   }
+  ],
+  "versicherungsfall": true,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000101-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ],
+   [
+    "Anlage 2: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000102-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ],
+   [
+    "Anlage 3: ",
+    "Bilddokumentation"
+   ],
+   [
+    "Anlage 4: ",
+    "Probenplan"
+   ],
+   [
+    "Anlage 5: ",
+    "Sensorische Prüfung auf Brandgeruch"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000101-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 2:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000102-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 3:",
+    "zeilen": [
+     [
+      "Bilddokumentation"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 4:",
+    "zeilen": [
+     [
+      "Probenplan"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 5:",
+    "zeilen": [
+     [
+      "Sensorische Prüfung auf Brandgeruch"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000101-01.pdf",
+   "Laborergebnisse/AR-999-2026-000102-01.pdf",
+   "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf",
+   "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf",
+   "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000101-01.pdf"
+    ]
+   },
+   {
+    "nr": 2,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000102-01.pdf"
+    ]
+   },
+   {
+    "nr": 3,
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ]
+   },
+   {
+    "nr": 4,
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ]
+   },
+   {
+    "nr": 5,
+    "art": "brandgeruch",
+    "titel": "Sensorische Prüfung auf Brandgeruch",
+    "dateien": [
+     "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000101-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000101-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000102-01",
+    "nr": 2,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000102-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": 3,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": 4,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   },
+   {
+    "art": "brandgeruch",
+    "titel": "Sensorische Prüfung auf Brandgeruch",
+    "nr": 5,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx"
+    ],
+    "t": 1792576800000,
+    "key": "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Sensorische Prüfung auf Brandgeruch",
+     "app": "Projektzentrale",
+     "link": "../Projektzentrale/",
+     "ziel": "projektzentrale"
+    }
+   }
+  ],
+  "proben": [
+   {
+    "label": "P9",
+    "nr": 9,
+    "ref": "Probe 9",
+    "labNr": "999-2026-0001109",
+    "bericht": "AR-999-2026-000102-01",
+    "stelle": "EG Küche Boden",
+    "material": "Fliesenkleber",
+    "materialAusMatrix": false,
+    "matrix": "Bituminöse Proben / Kleber",
+    "datum": "2026-10-14",
+    "befund": {
+     "text": "Chrysotil, 5 - 20 %",
+     "gefunden": true,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "",
+     "who": "",
+     "whoPositiv": null
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": false,
+    "ki": "",
+    "kiQuelle": "",
+    "whoNachgewiesen": false,
+    "foto": ""
+   },
+   {
+    "label": "P10",
+    "nr": 10,
+    "ref": "Probe 10",
+    "labNr": "999-2026-0001110",
+    "bericht": "AR-999-2026-000102-01",
+    "stelle": "EG Küche Wand",
+    "material": "Putz",
+    "materialAusMatrix": false,
+    "matrix": "Putze / Spachtelmassen",
+    "datum": "2026-10-14",
+    "befund": {
+     "text": "Kein Asbest nachgewiesen",
+     "gefunden": false,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "",
+     "who": "",
+     "whoPositiv": null
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": false,
+    "ki": "",
+    "kiQuelle": "",
+    "whoNachgewiesen": false,
+    "foto": ""
+   },
+   {
+    "label": "P11",
+    "nr": 11,
+    "ref": "Probe 11",
+    "labNr": "999-2026-0001111",
+    "bericht": "AR-999-2026-000102-01",
+    "stelle": "EG Küche Decke",
+    "material": "Dämmstoff Mineralwolle",
+    "materialAusMatrix": false,
+    "matrix": "Sonstige",
+    "datum": "2026-10-14",
+    "befund": {
+     "text": "Kein Asbest nachgewiesen",
+     "gefunden": false,
+     "eindeutig": true
+    },
+    "kmf": {
+     "ki": "26",
+     "who": "WHO-Fasern: nachgewiesen",
+     "whoPositiv": true
+    },
+    "vorlaeufig": false,
+    "abgleich": {
+     "labelkit": "",
+     "bericht": "",
+     "auftrag": false,
+     "ok": null
+    },
+    "istKmf": true,
+    "ki": "26",
+    "kiQuelle": "labor",
+    "whoNachgewiesen": true,
+    "foto": ""
+   }
+  ],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [],
+  "hinweisAktionen": {},
+  "sperren": [
+   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+  ],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": {
+   "angenommen": true,
+   "wert": "Beispiel Versicherung AG",
+   "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale)."
+  },
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   },
+   {
+    "id": "versicherer",
+    "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
+    "wert": "Beispiel Versicherung AG"
+   }
+  ],
+  "brand": {
+   "titel": "Sanierungsvorschlag",
+   "objektartVorgabe": "in dem Wohngebäude",
+   "nutzung": "Wohnen",
+   "schadenereignis": "Brand im Erdgeschoss (Küche)",
+   "brandgut": "Küche/Lebensmittel",
+   "schadendatum": "datum",
+   "ortstermin": "14.10.2026",
+   "probenahme": [
+    "14.10.2026"
+   ],
+   "zahlen": {
+    "chlorid": 3,
+    "pak": 4,
+    "pakMaterial": 1,
+    "kmf": 1,
+    "asbest": 3,
+    "brandgeruch": 2,
+    "chloridAndere": 0,
+    "sonstige": 0
+   }
+  },
+  "luecken": [
+   "[Befund ergänzen]",
+   "[Sanierungsmaßnahmen ergänzen]",
+   "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+  ]
+ },
+ "BR2_nur_PAK_ohne_Versicherung_GB0": {
+  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "deckblatt": {
+   "titel": "Untersuchungsbericht vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9002",
+   "betreff": [
+    "Brandschaden"
+   ],
+   "felder": [
+    [
+     "Auftraggeber:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Schadenort:",
+     [
+      "Erdgeschoss links",
+      "Brandweg 7",
+      "54321 Beispielstadt"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Untersuchungsbericht vom 27.10.2026",
+   [
+    "Brandschaden"
+   ],
+   [
+    "AG: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Schadenort: ",
+    "Erdgeschoss links, Brandweg 7, 54321 Beispielstadt"
+   ]
+  ],
+  "kennzeilen": [
+   {
+    "art": "entwurf",
+    "text": "ENTWURF – nicht versenden"
+   }
+  ],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "In dem Bürogebäude",
+       " ",
+       "Brandweg 7, 54321 Beispielstadt (Erdgeschoss links)",
+       " kam es zu einem Brandschaden. Der genaue Zeitpunkt des Schadens ist nicht bekannt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schadenbedingt kann es auch zur Bildung und Freisetzung von Schadstoffen sowie deren räumlicher Verteilung kommen. Im Wesentlichen können Schadstoffe eine Gefährdung von Mensch und Umwelt und ein erhöhtes Korrosionsrisiko bedingen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polycyclischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Aufgabenstellung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "05.10.2026",
+       " wurde unser Büro durch ",
+       "die Muster Hausverwaltung GmbH",
+       " beauftragt, Art und Ausmaß der Schadstoffbelastung ",
+       "an den Gebäudeoberflächen",
+       " festzustellen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "3. Ortsbesichtigung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "14.10.2026",
+       " fand eine Besichtigung der Schadenstelle mit Probenahme statt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Ortstermin war ",
+       "Herr Messer",
+       " (Sachverständigenbüro Dr. Heinz Schiffers & Partner) anwesend."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Probenahme",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der PAK-Belastung wurden zwei Wischproben entnommen und auf die 16 Einzelkomponenten nach EPA (Environmental Protection Agency) untersucht; zusätzlich wird der Summenwert angegeben.",
+       " ",
+       "Die Analysenergebnisse sind dem Prüfbericht ",
+       "Nr. AR-999-2026-000201-01",
+       " zu entnehmen (Anlage 1)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Entnahmestellen sind in der Bilddokumentation (Anlage 2) und im Probenplan (Anlage 3) dargestellt."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "5. Befund",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Befund ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "6. Schlussfolgerungen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Schlussfolgerungen ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "7. Arbeitsschutzmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei Sanierungsarbeiten in den untersuchten Bereichen sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, dem Gefahrenbereich 0 (GB 0) zuzuordnen."
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   }
+  ],
+  "versicherungsfall": false,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000201-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ],
+   [
+    "Anlage 2: ",
+    "Bilddokumentation"
+   ],
+   [
+    "Anlage 3: ",
+    "Probenplan"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000201-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 2:",
+    "zeilen": [
+     [
+      "Bilddokumentation"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 3:",
+    "zeilen": [
+     [
+      "Probenplan"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000201-01.pdf",
+   "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf",
+   "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000201-01.pdf"
+    ]
+   },
+   {
+    "nr": 2,
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ]
+   },
+   {
+    "nr": 3,
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000201-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000201-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": 2,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": 3,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   }
+  ],
+  "proben": [],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [],
+  "hinweisAktionen": {},
+  "sperren": [
+   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+  ],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": null,
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   }
+  ],
+  "brand": {
+   "titel": "Untersuchungsbericht",
+   "objektartVorgabe": "in dem Bürogebäude",
+   "nutzung": "Büro",
+   "schadenereignis": "Brand im Erdgeschoss (Küche)",
+   "brandgut": "Küche/Lebensmittel",
+   "schadendatum": "unbekannt",
+   "ortstermin": "14.10.2026",
+   "probenahme": [
+    "14.10.2026"
+   ],
+   "zahlen": {
+    "chlorid": 0,
+    "pak": 2,
+    "pakMaterial": 0,
+    "kmf": 0,
+    "asbest": 0,
+    "brandgeruch": 0,
+    "chloridAndere": 0,
+    "sonstige": 0
+   }
+  },
+  "luecken": [
+   "[Befund ergänzen]",
+   "[Schlussfolgerungen ergänzen]"
+  ]
+ },
+ "BR3_Luecken": {
+  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "deckblatt": {
+   "titel": "Sanierungsvorschlag vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9002",
+   "betreff": [
+    "Schaden vom:",
+    "\t",
+    {
+     "gap": "[Schadendatum]"
+    }
+   ],
+   "felder": [
+    [
+     "VN:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Risiko:",
+     [
+      {
+       "gap": "[Risiko]"
+      }
+     ]
+    ],
+    [
+     "Versicherer:",
+     [
+      "Beispiel Versicherung AG"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      {
+       "gap": "[Schaden-Nr.]"
+      }
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Sanierungsvorschlag vom 27.10.2026",
+   [
+    "Brandschaden vom ",
+    {
+     "gap": "[Schadendatum]"
+    }
+   ],
+   [
+    "VN: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Risiko: ",
+    {
+     "gap": "[Objekt]"
+    }
+   ]
+  ],
+  "kennzeilen": [
+   {
+    "art": "entwurf",
+    "text": "ENTWURF – nicht versenden"
+   }
+  ],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       {
+        "gap": "[Schadendatum]"
+       },
+       " kam es in dem Objekt ",
+       {
+        "gap": "[Objekt]"
+       },
+       " zu einem Brandschaden."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schadenbedingt kann es auch zur Bildung und Freisetzung von Schadstoffen sowie deren räumlicher Verteilung kommen. Im Wesentlichen können Schadstoffe eine Gefährdung von Mensch und Umwelt und ein erhöhtes Korrosionsrisiko bedingen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polycyclischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Ein Korrosionsrisiko besteht für metallische Bauteile und mineralische Bausubstanz, insbesondere für Stahlbeton."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Aus halogenorganischen Materialien (meist PVC) wird beim Abbrand Halogenwasserstoffsäure freigesetzt. Auch beim Verschmoren von PVC wird bei Temperaturen oberhalb 200 °C bereits in merklichem Umfang Chlorwasserstoff abgespalten. Somit wird als Leitmessgröße für ein erhöhtes Korrosionsrisiko die Konzentration an Chloriden herangezogen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Aufgabenstellung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       {
+        "gap": "[Auftragsdatum]"
+       },
+       " wurde unser Büro durch ",
+       "die Beispiel Versicherung AG",
+       " beauftragt, Art und Ausmaß der Schadstoffbelastung ",
+       {
+        "gap": "[Umfang wählen]"
+       },
+       " festzustellen.",
+       " Aus den getroffenen Feststellungen ist ein Sanierungskonzept abzuleiten."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "3. Ortsbesichtigung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       {
+        "gap": "[Ortstermin]"
+       },
+       " fand eine Besichtigung der Schadenstelle mit Probenahme statt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Ortstermin waren ",
+       {
+        "gap": "[Anwesende eintragen]"
+       },
+       " sowie ",
+       "Herr Messer",
+       " (Sachverständigenbüro Dr. Heinz Schiffers & Partner) anwesend."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Probenahme",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der Chloridbelastung wurde eine Wischprobe entnommen. ",
+       "Die Probe wurde der ",
+       {
+        "gap": "[Labor]"
+       },
+       " zur Untersuchung auf Chlorid übergeben.",
+       " ",
+       "Die Analysenergebnisse sind dem Prüfbericht ",
+       "Nr. AR-999-2026-000301-01",
+       " zu entnehmen (Anlage 1)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der PAK-Belastung wurden drei Wischproben entnommen und auf die 16 Einzelkomponenten nach EPA (Environmental Protection Agency) untersucht; zusätzlich wird der Summenwert angegeben.",
+       " ",
+       "Die Analysenergebnisse sind den Prüfberichten ",
+       "Nr. AR-999-2026-000302-01 und Nr. AR-999-2026-000303-01",
+       " zu entnehmen (Anlagen 2 und 3)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zusätzlich wurde eine Materialprobe entnommen und am ",
+       {
+        "gap": "[Prüfdatum Brandgeruch]"
+       },
+       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ",
+       {
+        "gap": "[Anlage-Nr. Brandgeruch]"
+       },
+       " dargestellt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Entnahmestellen sind in der Bilddokumentation (Anlage 4) dargestellt."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "5. Befund",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Befund ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "6. Sanierungsmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Sanierungsmaßnahmen ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "7. Arbeitsschutzmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
+       {
+        "gap": "[Gefahrenbereich wählen]"
+       },
+       " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "8. Zusammenfassung Sanierungsmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   }
+  ],
+  "versicherungsfall": true,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000301-01",
+    " ",
+    "(",
+    {
+     "gap": "[Labor]"
+    },
+    ")"
+   ],
+   [
+    "Anlage 2: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000302-01",
+    " ",
+    "(",
+    {
+     "gap": "[Labor]"
+    },
+    ")"
+   ],
+   [
+    "Anlage 3: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000303-01",
+    " ",
+    "(",
+    {
+     "gap": "[Labor]"
+    },
+    ")"
+   ],
+   [
+    "Anlage 4: ",
+    "Bilddokumentation"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000301-01"
+     ],
+     [
+      "(",
+      {
+       "gap": "[Labor]"
+      },
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 2:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000302-01"
+     ],
+     [
+      "(",
+      {
+       "gap": "[Labor]"
+      },
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 3:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000303-01"
+     ],
+     [
+      "(",
+      {
+       "gap": "[Labor]"
+      },
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 4:",
+    "zeilen": [
+     [
+      "Bilddokumentation"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000301-01.pdf",
+   "Laborergebnisse/AR-999-2026-000302-01.pdf",
+   "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000301-01.pdf"
+    ]
+   },
+   {
+    "nr": 2,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000302-01.pdf"
+    ]
+   },
+   {
+    "nr": 3,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": []
+   },
+   {
+    "nr": 4,
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000301-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000301-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000302-01",
+    "nr": 2,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000302-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000303-01",
+    "nr": 3,
+    "an": true,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "PDF nicht in „Laborergebnisse“"
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": 4,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in PlanKit erstellen",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   },
+   {
+    "art": "brandgeruch",
+    "titel": "Sensorische Prüfung auf Brandgeruch",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [],
+    "zustand": "fehlt",
+    "grund": "nicht gefunden – in Projektzentrale erstellen",
+    "app": {
+     "titel": "Sensorische Prüfung auf Brandgeruch",
+     "app": "Projektzentrale",
+     "link": "../Projektzentrale/",
+     "ziel": "projektzentrale"
+    }
+   }
+  ],
+  "proben": [],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [
+   "Nutzung fehlt in der Projektzentrale – in 1. steht „in dem Objekt“. Nutzung eintragen oder unter „Brandbericht“ den Brandort im Satz angeben.",
+   "Bilddokumentation trägt „Anlage 3“, im Bericht ist sie Anlage 4 – in FotoKit die Anlagen-Nr. ändern und die PDF neu erstellen.",
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.",
+   "Sensorische Prüfung auf Brandgeruch nicht gefunden – nicht im Bericht. In Projektzentrale erstellen.",
+   "Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für die Anlage in LabelKit „Ergebnisse aufdecken“ und speichern.",
+   "Prüfbericht AR-999-2026-000303-01: PDF nicht in „Laborergebnisse“ – für die Anlage bitte ablegen."
+  ],
+  "hinweisAktionen": {
+   "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.": {
+    "app": "PlanKit",
+    "link": "../Probenplan/",
+    "ziel": "plankit",
+    "was": "erstellen"
+   },
+   "Sensorische Prüfung auf Brandgeruch nicht gefunden – nicht im Bericht. In Projektzentrale erstellen.": {
+    "app": "Projektzentrale",
+    "link": "../Projektzentrale/",
+    "ziel": "projektzentrale",
+    "was": "erstellen"
+   }
+  },
+  "sperren": [
+   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+  ],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": {
+   "angenommen": true,
+   "wert": "Beispiel Versicherung AG",
+   "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale)."
+  },
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   },
+   {
+    "id": "versicherer",
+    "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
+    "wert": "Beispiel Versicherung AG"
+   }
+  ],
+  "brand": {
+   "titel": "Sanierungsvorschlag",
+   "objektartVorgabe": "in dem Objekt",
+   "nutzung": "",
+   "schadenereignis": "Brand im Erdgeschoss (Küche)",
+   "brandgut": "Küche/Lebensmittel",
+   "schadendatum": "leer",
+   "ortstermin": "",
+   "probenahme": [],
+   "zahlen": {
+    "chlorid": 1,
+    "pak": 3,
+    "pakMaterial": 0,
+    "kmf": 0,
+    "asbest": 0,
+    "brandgeruch": 1,
+    "chloridAndere": 0,
+    "sonstige": 0
+   }
+  },
+  "luecken": [
+   "[Schadendatum]",
+   "[Risiko]",
+   "[Schaden-Nr.]",
+   "[Objekt]",
+   "[Auftragsdatum]",
+   "[Umfang wählen]",
+   "[Ortstermin]",
+   "[Anwesende eintragen]",
+   "[Labor]",
+   "[Prüfdatum Brandgeruch]",
+   "[Anlage-Nr. Brandgeruch]",
+   "[Befund ergänzen]",
+   "[Sanierungsmaßnahmen ergänzen]",
+   "[Gefahrenbereich wählen]",
+   "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+  ]
+ },
+ "BR4_Gewerbe_Teilnehmerliste_ENTWURF": {
+  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "deckblatt": {
+   "titel": "Sanierungsvorschlag vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9002",
+   "betreff": [
+    "Schaden vom:",
+    "\t",
+    "12.10.2026"
+   ],
+   "felder": [
+    [
+     "VN:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Risiko:",
+     [
+      "Industriestraße 3",
+      "54321 Beispielstadt"
+     ]
+    ],
+    [
+     "Versicherer:",
+     [
+      "Andere Versicherung AG"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      "BV-2026-0815"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Sanierungsvorschlag vom 27.10.2026",
+   [
+    "Brandschaden vom ",
+    "12.10.2026"
+   ],
+   [
+    "VN: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Risiko: ",
+    "Industriestraße 3, 54321 Beispielstadt"
+   ]
+  ],
+  "kennzeilen": [
+   {
+    "art": "entwurf",
+    "text": "ENTWURF – nicht versenden"
+   },
+   {
+    "art": "vorlaeufig",
+    "text": "Vorläufig – beruht auf einem vorläufigen Prüfbericht"
+   }
+  ],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "12.10.2026",
+       " kam es in einer Lagerhalle der Muster Logistik GmbH, ",
+       "Industriestraße 3, 54321 Beispielstadt",
+       " zu einem Brandschaden."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schadenbedingt kann es auch zur Bildung und Freisetzung von Schadstoffen sowie deren räumlicher Verteilung kommen. Im Wesentlichen können Schadstoffe eine Gefährdung von Mensch und Umwelt und ein erhöhtes Korrosionsrisiko bedingen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polycyclischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Ein Korrosionsrisiko besteht für metallische Bauteile und mineralische Bausubstanz, insbesondere für Stahlbeton."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Aus halogenorganischen Materialien (meist PVC) wird beim Abbrand Halogenwasserstoffsäure freigesetzt. Auch beim Verschmoren von PVC wird bei Temperaturen oberhalb 200 °C bereits in merklichem Umfang Chlorwasserstoff abgespalten. Somit wird als Leitmessgröße für ein erhöhtes Korrosionsrisiko die Konzentration an Chloriden herangezogen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Aufgabenstellung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "05.10.2026",
+       " wurde unser Büro durch ",
+       "die Beispiel Versicherung AG",
+       " beauftragt, Art und Ausmaß der Schadstoffbelastung ",
+       "an den Gebäudeoberflächen, an der technischen Einrichtung und an den Warenvorräten",
+       " festzustellen.",
+       " Aus den getroffenen Feststellungen ist ein Sanierungskonzept abzuleiten."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "3. Ortsbesichtigung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "14.10.2026",
+       " fand eine Besichtigung der Schadenstelle mit Probenahme statt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die bei dem Ortstermin anwesenden Personen sind der vor Ort erstellten Teilnehmerliste zu entnehmen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Probenahme",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der Chloridbelastung wurde eine Wischprobe entnommen. ",
+       "Die Probe wurde der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Chlorid übergeben."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der PAK-Belastung wurde eine Wischprobe entnommen und auf die 16 Einzelkomponenten nach EPA (Environmental Protection Agency) untersucht; zusätzlich wird der Summenwert angegeben.",
+       " ",
+       "Die Analysenergebnisse sind dem Prüfbericht ",
+       "Nr. AR-999-2026-000401-01",
+       " zu entnehmen (Anlage 1)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zusätzlich wurde eine Materialprobe entnommen und am ",
+       "20.10.2026",
+       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ",
+       {
+        "gap": "[Anlage-Nr. Brandgeruch]"
+       },
+       " dargestellt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Entnahmestellen sind in der Bilddokumentation (Anlage 2) und im Probenplan (Anlage 3) dargestellt."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "5. Befund",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Befund ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "6. Sanierungsmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Sanierungsmaßnahmen ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "7. Arbeitsschutzmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei Durchführung der oben angegebenen Sanierungsmaßnahmen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
+       "1 (GB 1)",
+       " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "8. Zusammenfassung Sanierungsmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   }
+  ],
+  "versicherungsfall": true,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000401-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ],
+   [
+    "Anlage 2: ",
+    "Bilddokumentation"
+   ],
+   [
+    "Anlage 3: ",
+    "Probenplan"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000401-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 2:",
+    "zeilen": [
+     [
+      "Bilddokumentation"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 3:",
+    "zeilen": [
+     [
+      "Probenplan"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000401-01.pdf",
+   "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf",
+   "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000401-01.pdf"
+    ]
+   },
+   {
+    "nr": 2,
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ]
+   },
+   {
+    "nr": 3,
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000401-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000401-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": 2,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": 3,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   },
+   {
+    "art": "brandgeruch",
+    "titel": "Sensorische Prüfung auf Brandgeruch",
+    "nr": null,
+    "an": false,
+    "fest": true,
+    "dateien": [
+     "Mitteilungen/99-9002_Anlage-7_Brandgeruch_2026-10-21.docx"
+    ],
+    "t": 1792576800000,
+    "key": "Mitteilungen/99-9002_Anlage-7_Brandgeruch_2026-10-21.docx@1792576800000#veraltet",
+    "details": "",
+    "zustand": "veraltet",
+    "grund": "LabelKit-Daten nach dem Erstellen geändert",
+    "app": {
+     "titel": "Sensorische Prüfung auf Brandgeruch",
+     "app": "Projektzentrale",
+     "link": "../Projektzentrale/",
+     "ziel": "projektzentrale"
+    }
+   }
+  ],
+  "proben": [],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [
+   "Probenahmedatum in LabelKit (15.10.2026) weicht vom Ortstermin der Projektzentrale (14.10.2026) ab – bitte prüfen.",
+   "Sensorische Prüfung auf Brandgeruch veraltet – nicht im Bericht. In Projektzentrale neu erstellen oder trotzdem anhaken.",
+   "Prüfbericht AR-999-2026-000401-01 ist vorläufig – der Bericht bekommt die Kopfzeile „Vorläufig“."
+  ],
+  "hinweisAktionen": {
+   "Sensorische Prüfung auf Brandgeruch veraltet – nicht im Bericht. In Projektzentrale neu erstellen oder trotzdem anhaken.": {
+    "app": "Projektzentrale",
+    "link": "../Projektzentrale/",
+    "ziel": "projektzentrale",
+    "was": "öffnen"
+   }
+  },
+  "sperren": [
+   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+  ],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": null,
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   }
+  ],
+  "brand": {
+   "titel": "Sanierungsvorschlag",
+   "objektartVorgabe": "in dem Gewerbeobjekt",
+   "nutzung": "Gewerbe/Industrie",
+   "schadenereignis": "Brand im Erdgeschoss (Küche)",
+   "brandgut": "Küche/Lebensmittel",
+   "schadendatum": "datum",
+   "ortstermin": "14.10.2026",
+   "probenahme": [
+    "15.10.2026"
+   ],
+   "zahlen": {
+    "chlorid": 1,
+    "pak": 1,
+    "pakMaterial": 0,
+    "kmf": 0,
+    "asbest": 0,
+    "brandgeruch": 1,
+    "chloridAndere": 0,
+    "sonstige": 0
+   }
+  },
+  "luecken": [
+   "[Anlage-Nr. Brandgeruch]",
+   "[Befund ergänzen]",
+   "[Sanierungsmaßnahmen ergänzen]",
+   "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+  ]
+ }
+}

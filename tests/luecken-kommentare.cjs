@@ -7,6 +7,7 @@
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), zlib = require('node:zlib');
 const ROOT = path.join(__dirname, '..');
 const T = require('../bericht-text.js'), W = require('../bericht-docx.js'), BL = require('../bericht-luecken.js'), B = require('./daten/beispiel.cjs'), { faelle } = require('./daten/faelle.cjs');
+const BD = require('./daten/brand.cjs'), BRAND = Object.entries(BD.faelle).map(([name, f]) => [name, { ...f, entwurf: true }]);   // Brand: noch gesperrt → Entwurf
 const D = vm.runInThisContext('(function(){' + fs.readFileSync(path.join(ROOT, 'vendor/docx.iife.js'), 'utf8') + '\n;return docx;})()');
 const PZ = path.join(ROOT, '..', 'projektzentrale', 'word-luecken.js');
 const WL = fs.existsSync(PZ) ? require(PZ) : null;
@@ -58,7 +59,7 @@ const bilder = { logoSvg: fs.readFileSync(path.join(ROOT, 'assets/logo-schiffers
 const wordVon = async (m, optionen) => { const buf = await D.Packer.toBuffer(W.erstellen(D, m, bilder, optionen)); return { buf, tt: teile(buf) }; };
 /** Nummern, die sich durch die zusätzliche Datei comments.xml verschieben (Beziehungen, Zeichnungs-Ids), angleichen */
 const angleichen = xml => xml.replace(/rId\d+/g, 'rId').replace(/docPr id="\d+"/g, 'docPr id=""');
-const modellVon = (f, cfg = B.cfg) => { const m0 = T.bericht({ ...f, cfg, mitarbeiter: B.mitarbeiter }); return f.entwurf ? T.alsEntwurf(m0) : m0; };
+const modellVon = (f, cfg = B.cfg) => { const m0 = T.bericht({ cfg, ...f, mitarbeiter: B.mitarbeiter }); return f.entwurf ? T.alsEntwurf(m0) : m0; };
 
 /** Prüft eine Word-Datei: genau ein Kommentar je gelber Lücke außerhalb der Kopfzeilen, Text „Noch ausfüllen: …“, Autor
     BerichtKit/BK; Kopfzeilen ohne Kommentar, jede Kopf-Lücke hat einen Kommentar auf dem Deckblatt oder im Text → Kommentare */
@@ -132,6 +133,21 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
     assert.deepEqual([...new Set(BL.offene(m, ['z.jpg']))].sort(), [...inWord].sort());
   });
 
+  await fall('Brandbericht: ein Kommentar je Lücke (Deckblatt „Schaden vom:“, Text, Lücken-Abschnitte 5/6/8), Kopf-Lücken kommentiert', async () => {
+    for (const [name, f] of BRAND) {
+      const m = modellVon(f), { tt } = await wordVon(m);
+      const ks = kommentareGenau(tt, name);
+      assert.deepEqual(ks.map(k => k.text), modellLuecken(m).map(g => 'Noch ausfüllen: ' + g.slice(1, -1)), `${name}: Reihenfolge wie im Modell`);
+      const inWord = new Set([...gelbeTexte(tt, false), ...gelbeTexte(tt, true)]);
+      assert.deepEqual([...new Set(BL.offene(m))].sort(), [...inWord].sort(), `${name}: Zähler = Lücken in Word`);
+    }
+    // „Schaden vom:⇥[Schadendatum]“ auf dem Deckblatt mit Tab wie die Projektnummer; im Kopf „Brandschaden vom [Schadendatum]“ ohne Kommentar
+    const { tt } = await wordVon(modellVon(BRAND.find(([n]) => n === 'BR3_Luecken')[1]));
+    const zeile = tt['word/document.xml'].match(/<w:p>(?:(?!<\/w:p>)[\s\S])*Schaden vom:(?:(?!<\/w:p>)[\s\S])*<\/w:p>/)[0];
+    assert.match(zeile, /<w:tab w:val="left" w:pos="3960"\/>/); assert.match(zeile, /<w:tab\/>/); assert.match(zeile, /<w:commentRangeStart w:id="0"\/>/);
+    assert.deepEqual(gelbeTexte(tt, true).filter(g => g === '[Schadendatum]').length, 2, 'Kopf (zwei Kopfdateien): gelb ohne Kommentar');
+  });
+
   await fall('Ohne Lücken: keine Kommentare', async () => {
     const { tt } = await wordVon(modellVon(faelle.D_ENTWURF_vorlaeufig));
     assert.equal(kommentare(tt['word/comments.xml']).length, 0); assert.equal(gelbeLaeufe(tt), 0);
@@ -150,7 +166,7 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
   });
 
   await fall('Gelber Text und Klammern unverändert – ohne Kommentar-Markup Wort für Wort gleich wie ohne Kommentare (Stand 1.10.0)', async () => {
-    for (const [name, f] of [...Object.entries(faelle), ['VIELE', VIELE]]) {
+    for (const [name, f] of [...Object.entries(faelle), ['VIELE', VIELE], ...BRAND]) {
       const m = modellVon(f, name === 'VIELE' ? { ...B.cfg, labor: '' } : B.cfg);
       const { tt } = await wordVon(m), { tt: vorher } = await wordVon(m, { kommentare: false });
       assert.equal(vorher['word/comments.xml'], undefined, `${name}: ohne Kommentare keine comments.xml`);
@@ -186,9 +202,30 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
     assert.equal(k, 2 * 3 * 2 * 2 * 2 * 3 * 2 * 2);
   });
 
+  await fall('Brandbericht – Kopf-Lücken: jede steht mit gleichem Namen auch auf dem Deckblatt oder im Text – für alle Kombinationen', () => {
+    // Kopf: Titel, „Brandschaden vom [Schadendatum]“ / „Brandschaden“, VN bzw. AG, Risiko bzw. Schadenort ([Objekt] → Satz 1 in 1.)
+    const werte = { vn: ['', 'Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt'], ag: ['', 'Beispiel Versicherung AG', 'VN'],
+      objekt: ['', 'Brandweg 7, 54321 Beispielstadt'], versicherer: ['', 'Andere Versicherung AG'], deckblatt: ['', 'versicherung', 'direkt'],
+      projektnummer: ['', '99.9002'], schadendatum: ['', 'unbekannt', '2026-10-12'], titel: ['Sanierungsvorschlag', 'Untersuchungsbericht'], brandort: ['', 'in der Wohnung'] };
+    let k = 0;
+    const kombis = Object.entries(werte).reduce((acc, [schl, ws]) => acc.flatMap(a => ws.map(w => ({ ...a, [schl]: w }))), [{}]);
+    const f0 = BD.faelle.BR1_voll_Versicherung;
+    for (const c of kombis) {
+      const pj = BD.pj({ versicherungsnehmer: c.vn, auftraggeber: c.ag === 'VN' ? c.vn : c.ag, objekt: c.objekt, versicherer: c.versicherer, projektnummer: c.projektnummer, schadendatum: c.schadendatum });
+      const m = T.bericht({ ...f0, pj, cfg: B.cfg, mitarbeiter: B.mitarbeiter, form: { ...f0.form, deckblatt: c.deckblatt, brand: { ...f0.form.brand, titel: c.titel, brandort: c.brandort } } });
+      const kopf = [], lauf = (x, out) => { if (Array.isArray(x)) x.forEach(y => lauf(y, out)); else if (x && typeof x === 'object') { if (x.gap) out.push(x.gap); else Object.values(x).forEach(y => lauf(y, out)); } };
+      lauf(m.kopf, kopf);
+      const rest = new Set(modellLuecken(m));
+      for (const g of kopf) assert.ok(rest.has(g), `${JSON.stringify(c)}: Kopf-Lücke ${g} hat keinen Kommentar woanders`);
+      assert.deepEqual([...new Set(BL.offene(m))].sort(), [...new Set([...rest, ...kopf])].sort(), `${JSON.stringify(c)}: Zähler = Lücken in Word`);
+      k++;
+    }
+    assert.equal(k, 2 * 3 * 2 * 2 * 3 * 2 * 3 * 2 * 2);
+  });
+
   if (WL) await fall('Projektzentrale word-luecken.js: dieselben Lücken wie ohne Kommentare; jede hat einen Kommentar', async () => {
     let geprueft = 0;
-    for (const [name, f] of [...Object.entries(faelle), ['VIELE', VIELE]]) {
+    for (const [name, f] of [...Object.entries(faelle), ['VIELE', VIELE], ...BRAND]) {
       const { buf, tt } = await wordVon(modellVon(f, name === 'VIELE' ? { ...B.cfg, labor: '' } : B.cfg));
       const befund = await WL.pruefen(buf);
       // gleiche Funde wie in der Datei ohne Kommentar-Markup (= Stand 1.10.0, lokal byte-gleich geprüft)
@@ -206,12 +243,17 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
     // C_zugestellt_luecken: Ergebnis wie mit BerichtKit 1.10.0 (vor den Kommentaren)
     const { buf } = await wordVon(modellVon(faelle.C_zugestellt_luecken));
     assert.deepEqual((await WL.pruefen(buf)).luecken, [{ text: '[Eingangsdatum]', anzahl: 4 }, { text: '[Sachverständige(r)]', anzahl: 1 }]);
-    assert.ok(geprueft >= 5);
+    assert.ok(geprueft >= 9);
   });
 
   console.log(`Lücken-Kommentare: ${n} Fälle ok` + (WL ? ' (mit word-luecken.js der Projektzentrale)' : ' – ../projektzentrale fehlt, word-luecken.js nicht geprüft'));
   if (process.argv.includes('--beispiel')) {
     const ziel = process.argv[process.argv.indexOf('--beispiel') + 1] || 'luecken-beispiel.docx';
     fs.writeFileSync(ziel, (await wordVon(modellVon(VIELE, { ...B.cfg, labor: '' }))).buf); console.log('Beispiel geschrieben:', ziel);
+  }
+  if (process.argv.includes('--brand')) {   // Brand-Beispiele zum Ansehen (z. B. in LibreOffice): <Ordner>/<Fall>.docx
+    const ordner = process.argv[process.argv.indexOf('--brand') + 1] || 'brand-beispiele'; fs.mkdirSync(ordner, { recursive: true });
+    for (const [name, f] of BRAND) fs.writeFileSync(path.join(ordner, name + '.docx'), (await wordVon(modellVon(f))).buf);
+    console.log('Brand-Beispiele geschrieben:', ordner);
   }
 })().catch(e => { console.error(e); process.exit(1); });

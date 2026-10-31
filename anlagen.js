@@ -4,7 +4,9 @@
    Hausreihenfolge (Basti, 30.10.2026): Anlage 1 = Prüfbericht(e) (mehrere zählen hoch), dann Bilddokumentation, dann Probenplan.
    Ergebniskarte, Raumbuch, Wandansichten und die Word-„Anlage Probenahme“ aus PlanKit sind optional: gefunden und angeboten,
    aber nicht vorgehakt; angehakt bekommen sie die Nummern danach. Eine Anlage aus mehreren Dateien (Bilddoku in Teilen,
-   Probenplan je Geschoss) ist eine Anlage. Veraltete Anlagen: Hinweis und nicht vorgehakt. */
+   Probenplan je Geschoss) ist eine Anlage. Veraltete Anlagen: Hinweis und nicht vorgehakt.
+   Brandbericht (Profil „brand“, ab 1.12.0): nach dem Probenplan die Anlage „Sensorische Prüfung auf Brandgeruch“ aus der
+   Projektzentrale (Anlage PN 98 / Brandgeruch in „Mitteilungen“) – fest nur, wenn LabelKit Brandgeruch-Proben hat. */
 (function (root) {
 'use strict';
 
@@ -21,16 +23,20 @@ const ARTEN = Object.freeze({
   raumbuch:      { titel: 'Raumbuch', app: 'PlanKit', link: '../Probenplan/', ziel: 'plankit' },
   wandansichten: { titel: 'Wandansichten (Bohrkerne)', app: 'PlanKit', link: '../Probenplan/', ziel: 'plankit' },
   probenahme:    { titel: 'Probenahme und Laborergebnisse (PlanKit)', app: 'PlanKit', link: '../Probenplan/', ziel: 'plankit' },
+  brandgeruch:   { titel: 'Sensorische Prüfung auf Brandgeruch', app: 'Projektzentrale', link: '../Projektzentrale/', ziel: 'projektzentrale' },
   sonstiges:     { titel: 'Anlage' },
 });
 /** fest: in dieser Reihenfolge nach den Prüfberichten, vorgehakt wenn gefunden und aktuell; optional: danach, nie vorgehakt */
 const PROFILE = Object.freeze({
   asbest: { fest: ['bilddoku', 'probenplan'], optional: ['ergebniskarte', 'raumbuch', 'wandansichten', 'probenahme'] },
+  // Brandbericht: Prüfberichte (Chlorid, PAK, Asbest/KMF – Reihenfolge gibt der Bericht vor), Bilddokumentation, Probenplan, Brandgeruch
+  brand: { fest: ['bilddoku', 'probenplan', 'brandgeruch'], optional: ['ergebniskarte', 'raumbuch', 'wandansichten', 'probenahme'] },
 });
 
 /* ---------- Erkennen ----------
    eingabe = { ordnerName, fotos:[{name,t}] (Fotos/), plaene:[{name,t}] (Pläne/), mitteilungen:[{name,t}] (Mitteilungen/),
-               protokoll: Text von _Anlagen-Protokoll.txt | null, fk: _Bildumbenenner.json | null, plan: {name,t,sha} | null (.probenplan) }
+               protokoll: Text von _Anlagen-Protokoll.txt | null, fk: _Bildumbenenner.json | null, plan: {name,t,sha} | null (.probenplan),
+               labelkit: {name,t,sha} | null (LabelKit-Datei des Berichts – Stand der Brandgeruch-Anlage) }
    Ergebnis: { <art>: { art, dateien:['Fotos/…'], t, key, veraltet:true|false|null, grund, unvollstaendig, nrImDokument, nrQuelle, details } } */
 const TEIL = /[_ -]+Teil[_ ](\d+)[_ ]von[_ ](\d+)(?=\.pdf$)/i;
 const KOPIE = / \((\d+)\)(?=\.[a-z]+$)/i;
@@ -133,26 +139,53 @@ function wordFinden(art, mitteilungen, protokoll, plan) {
   return k;
 }
 
+/** Anlage „Sensorische Prüfung auf Brandgeruch“ aus der Projektzentrale (Anlage PN 98 / Brandgeruch, ANLAGE.dateiname):
+    Mitteilungen/<Projektnr>_<Titel>_<Art>_<JJJJ-MM-TT>[_n].docx mit <Art> = Brandgeruch oder PN98-Brandgeruch (nur PN 98 zählt
+    hier nicht), neueste zuerst – erkannt wie in der Projektzentrale (/_PN98|_Brandgeruch/i). Anlagen-Nr.: aus dem Titel, wenn dort
+    eine Nummer steht („Anlage 4“ → „…_Anlage_4_Brandgeruch_…“). Stand: Das Anlagen-Protokoll vermerkt die Prüfsumme der
+    LabelKit-Datei beim Erstellen – weicht die heutige ab (oder ist die LabelKit-Datei neuer als die Anlage), gilt sie als veraltet. */
+const BRANDGERUCH = /_(?:PN98-)?Brandgeruch_\d{4}-\d{2}-\d{2}(?:_\d+)?\.docx$/i;
+function brandgeruchFinden(mitteilungen, protokoll, labelkit) {
+  const kand = (mitteilungen || []).filter(f => BRANDGERUCH.test(nfc(f.name)) && !/^~\$/.test(nfc(f.name)))
+    .sort((a, b) => (+b.t || 0) - (+a.t || 0) || nfc(b.name).localeCompare(nfc(a.name), 'de', { numeric: true }));
+  if (!kand.length) return null;
+  const f = kand[0], name = nfc(f.name), dateien = ['Mitteilungen/' + name];
+  const k = { art: 'brandgeruch', dateien, t: +f.t || 0, key: schluessel(dateien, f.t), veraltet: null, grund: '', unvollstaendig: false, nrImDokument: null, nrQuelle: '', details: '' };
+  const titel = /^[^_]*_(.*)_(?:PN98-)?Brandgeruch_/i.exec(name);
+  const nr = titel && /(?:^|_)Anlage[_-]?(\d+)(?:_|$)/i.exec(titel[1]);
+  if (nr) { k.nrImDokument = +nr[1]; k.nrQuelle = `Anlage ${nr[1]}`; }
+  const z = protokollLesen(protokoll).filter(x => x.datei.toLowerCase() === name.toLowerCase()).pop();
+  if (z && /^[0-9a-f]{64}$/i.test(z.quellSha) && labelkit && /^[0-9a-f]{64}$/i.test(s(labelkit.sha))) {
+    k.veraltet = z.quellSha.toLowerCase() !== labelkit.sha.toLowerCase();
+    if (k.veraltet) k.grund = 'LabelKit-Daten nach dem Erstellen geändert';
+  } else if (labelkit && labelkit.t) {
+    k.veraltet = labelkit.t > k.t + TOLERANZ; if (k.veraltet) k.grund = 'älter als die LabelKit-Daten';
+  } else k.grund = 'LabelKit-Datei nicht gefunden – Stand nicht prüfbar';
+  return k;
+}
+
 function erkennen(e) {
   e = e || {};
   const out = {};
   const b = bilddokuFinden(e.fotos, e.fk); if (b) out.bilddoku = b;
   for (const art of ['probenplan', 'ergebniskarte']) { const k = planFinden(art, e.plaene, e.plan, e.ordnerName); if (k) out[art] = k; }
   for (const art of Object.keys(WORD)) { const k = wordFinden(art, e.mitteilungen, e.protokoll, e.plan); if (k) out[art] = k; }
+  const bg = brandgeruchFinden(e.mitteilungen, e.protokoll, e.labelkit); if (bg) out.brandgeruch = bg;
   return out;
 }
 
 /* ---------- Zusammenstellen und nummerieren ----------
    pruefberichte: [{ nr, pdf }] (pdf: Pfad oder ''), labor, gefunden: erkennen(), wahl: form.anlagen { <art>: { an, key } }
    (eigene Wahl gilt nur, solange dieselben Dateien im selben Stand gefunden werden), extra: form.anlagenExtra [{ pfad, bezeichnung, fehlt }],
-   ohneEigeneProbenahme: zugestellte Probe – fehlende feste Anlagen nicht als „nicht gefunden“ anzeigen.
+   ohneEigeneProbenahme: zugestellte Probe – fehlende feste Anlagen nicht als „nicht gefunden“ anzeigen;
+   ohne: feste Anlagen, die dieser Bericht nicht braucht (Brandbericht ohne Brandgeruch-Proben: ['brandgeruch']) – weder Zeile noch Hinweis.
    Ergebnis: { liste:[{ nr, art, titel, zeilen, dateien }], zeilen:[für die Oberfläche], nr:{ <art>: n }, hinweise:[],
                aktionen:{ <Hinweistext>: { art, was:'erstellen'|'öffnen' } } (Sprung in die App, die die Anlage erzeugt) }
    Feste Anlagen bekommen immer einen Hinweis, wenn sie nicht (oder nicht so) im Bericht sind: fehlt, veraltet, unvollständig –
    ob nach der Regel abgewählt oder angehakt trotz Mangel. Nichts fällt still aus dem Bericht. */
 function zusammenstellen(o) {
   o = o || {};
-  const profil = PROFILE[o.profil || 'asbest'], gefunden = o.gefunden || {}, wahl = o.wahl || {}, hinweise = [], aktionen = {};
+  const profil = PROFILE[o.profil || 'asbest'], gefunden = o.gefunden || {}, wahl = o.wahl || {}, hinweise = [], aktionen = {}, ohne = new Set(o.ohne || []);
   const hinweis = (text, art, was) => { hinweise.push(text); if (art && ARTEN[art] && ARTEN[art].link) aktionen[text] = { art, was }; };
   const liste = [], zeilen = [], nr = {};
   const prb = (o.pruefberichte && o.pruefberichte.length ? o.pruefberichte : [{ nr: '', pdf: '' }]);
@@ -189,11 +222,14 @@ function zusammenstellen(o) {
       if (k.nrImDokument == null) hinweise.push(`Bilddokumentation: keine Anlagen-Nr. in FotoKit eingetragen – im Bericht ist sie Anlage ${n}.`);
       else if (k.nrImDokument !== n) hinweise.push(`Bilddokumentation trägt „${k.nrQuelle}“, im Bericht ist sie Anlage ${n} – in FotoKit die Anlagen-Nr. ändern und die PDF neu erstellen.`);
     }
+    // Brandgeruch: Die Nummer steht nur im Titel, wenn sie beim Erstellen eingetragen wurde („Anlage 4“) – dann muss sie passen
+    if (art === 'brandgeruch' && an && k.nrImDokument != null && k.nrImDokument !== n)
+      hinweis(`Brandgeruch-Anlage trägt „${k.nrQuelle}“, im Bericht ist sie Anlage ${n} – in der Projektzentrale mit „Anlage ${n}“ neu erstellen.`, art, 'öffnen');
     const mangel = k.unvollstaendig ? 'unvollständig' : k.veraltet ? 'veraltet' : '';
     if (mangel && an) hinweis(`${A.titel} ist angehakt, aber ${k.unvollstaendig ? `unvollständig (${k.grund})` : k.grund} – in ${A.app} neu erstellen.`, art, 'öffnen');
     else if (mangel && fest) hinweis(`${A.titel} ${mangel}${k.unvollstaendig ? ` (${k.grund})` : ''} – nicht im Bericht. In ${A.app} neu erstellen oder trotzdem anhaken.`, art, 'öffnen');
   };
-  profil.fest.forEach(a => zeile(a, true));
+  profil.fest.filter(a => !ohne.has(a)).forEach(a => zeile(a, true));
   profil.optional.forEach(a => zeile(a, false));
   (o.extra || []).forEach((x, i) => {
     if (!x || !s(x.pfad)) return;
@@ -214,7 +250,7 @@ function verweisSatz(nr, eine) {
   return '';
 }
 
-const API = { VERSION: 1, ARTEN, PROFILE, erkennen, zusammenstellen, verweisSatz, protokollLesen, bilddokuFinden, planFinden, wordFinden };
+const API = { VERSION: 1, ARTEN, PROFILE, erkennen, zusammenstellen, verweisSatz, protokollLesen, bilddokuFinden, planFinden, wordFinden, brandgeruchFinden };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtAnlagen = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

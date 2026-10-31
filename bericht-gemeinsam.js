@@ -1,6 +1,6 @@
 /* BerichtKit – gemeinsame Bausteine aller Berichtsarten (ohne Browserteile, in Node testbar).
    Helfer, Personen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund, Projektsicht, Deckblatt mit/ohne Versicherung,
-   Auftraggeber mit Artikel, Kopfzeilen, Unterschriften, Anlagen, Lücken. Die Berichtsarten (bericht-asbest.js, später
+   Auftraggeber mit Artikel, Kopfzeilen, Unterschriften, Anlagen, Lücken. Die Berichtsarten (bericht-asbest.js,
    bericht-brand.js) setzen daraus ihr Modell zusammen; bericht-text.js wählt die Berichtsart.
    Regeln: Laborwerte und Probenbezeichnungen kommen unverändert aus ResultKit (_Ergebnisse.json) und LabelKit –
    hier wird nichts umgerechnet oder umformuliert. Fehlende Angaben werden als [Lücke] markiert (gelb im Bericht),
@@ -144,6 +144,13 @@ function svVorschlag(cfg, mitarbeiter, zustaendig) {
   return { kuerzel: s(erste.ordnerKuerzel), angenommen: true,
     grund: zp ? `zuständig laut Ordner ist ${zp.name}, ${zp.geschlecht === 'w' ? 'Messtechnikerin' : 'Messtechniker'}` : 'kein Zuständiger im Projekt' };
 }
+/** Person im Nominativ für „Bei dem Ortstermin war … anwesend“: „Herr Dr. Kasper“, „Frau Dr. Pütt“ – ohne Frau/Herr der Name.
+    Ein eigener Satz aus den Einstellungen („Herrn Dr. S. Kasper“) gilt auch hier, „Herrn“ wird zu „Herr“. */
+function nominativ(p) {
+  if (!p) return '';
+  if (/^Herrn\s/.test(s(p.satz)) || /^Frau\s/.test(s(p.satz))) return s(p.satz).replace(/^Herrn\s/, 'Herr ');
+  return p.geschlecht === 'w' || p.geschlecht === 'm' ? s(p.satz).replace(/^Herrn\s/, 'Herr ') : p.name;
+}
 function rollentext(p) {
   if (p.rolle === 'mt') return p.geschlecht === 'w' ? 'Die Messtechnikerin' : 'Der Messtechniker';
   return p.geschlecht === 'w' ? 'Die Sachverständige' : p.geschlecht === 'm' ? 'Der Sachverständige' : 'Sachverständige(r)';
@@ -250,7 +257,9 @@ function projektSicht(pj, ordner) {
   const auto = versicherungsfallAuto(vn, ag, s(pj.versicherer));
   return { nr: s(pj.projektnummer) || s(ordner && ordner.nr), versicherungsfall: auto.ja, versicherungsfallGrund: auto.grund, vn, ag, objekt, versicherer: s(pj.versicherer),
     schadennummer: s(pj.schadennummer), auftragsdatum: s(pj.auftragsdatum), zustaendig: s(pj.zustaendig && pj.zustaendig.kuerzel) || s(ordner && ordner.kuerzel),
-    sachverstaendiger: s(pj.sachverstaendiger) };
+    sachverstaendiger: s(pj.sachverstaendiger),
+    // Brandbericht (Projektzentrale PJ_FIELDS): schadendatum JJJJ-MM-TT oder „unbekannt“, ortstermin, nutzung, schadenereignis, brandgut
+    schadendatum: s(pj.schadendatum), ortstermin: s(pj.ortstermin), nutzung: s(pj.nutzung), schadenereignis: s(pj.schadenereignis), brandgut: s(pj.brandgut) };
 }
 
 /* ---------- Bausteine, die jede Berichtsart braucht ----------
@@ -395,7 +404,7 @@ const API = { VERSION: 1, ABGLEICH_SPERRT,
   tidy, beschreibungKey, beschreibungWeichtAb, asbestBefund, kmfWerte, IST_KMF, matrixMaterial, RAUM_KUERZEL, raumAusschreiben,
   istStorniert, labelkitAsbest, probenSammeln,
   // Personen
-  namensteile, anredeStandard, person, rolleFestgelegt, svVorschlag, rollentext, pnQuelle,
+  namensteile, anredeStandard, person, nominativ, rolleFestgelegt, svVorschlag, rollentext, pnQuelle,
   // Projekt, Deckblatt, Kopf, Auftraggeber
   istVersicherer, versicherungsfallAuto, projektNummer, gleichesProjekt, projektSicht, mitArtikel, objektImSatz,
   labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
