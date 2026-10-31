@@ -120,6 +120,7 @@ Foto `fig`, Tabelle `tab` mit `spalten` (Breiten in twips, zusammen 9070; ohne A
 node tests/text.cjs              # alle Berichtsvarianten (Textbausteine)
 node tests/anlagen.cjs           # Anlagen: erkennen, Hausreihenfolge, veraltet, mehrteilig
 node tests/berichtsart.cjs       # Berichtsart wählen, Bausteine, Word: Spaltenbreiten je Tabelle, Unterüberschrift
+node tests/asbest-golden.cjs     # Asbestbericht festgeschrieben (Beispielberichte); gewollte Änderung: --neu, Diff ansehen
 node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich wie LabelKit (falls ../labelkit daneben)
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)
 node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei (Playwright)

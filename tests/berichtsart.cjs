@@ -70,9 +70,20 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     assert.ok(h2, 'Unterüberschrift im Dokument');
     assert.match(h2, /<w:outlineLvl w:val="1"\/>/); assert.match(h2, /<w:keepNext\/>/); assert.match(h2, /<w:i\/>/);
     assert.doesNotMatch(h2, /<w:u /); assert.match(h2, /w:highlight w:val="yellow"/);   // Lücke bleibt gelb
-    // Labor-Nr. (Tabelle 1, Spalte 2) mit geschütztem Bindestrich, „1-2“ in Tabelle 2 ohne (kein ohneUmbruch)
-    assert.ok(xml.includes('<w:noBreakHyphen/>'));
-    assert.match(xml, />1-2<\/w:t>/);
+    // Labor-Nr. (Tabelle 1, Spalte 2) mit geschütztem Bindestrich, sonst nirgends; „1-2“ in Tabelle 2 bleibt normaler Text
+    const tabellen = xml.match(/<w:tbl>[\s\S]*?<\/w:tbl>/g), zellen = tab => tab.split('<w:tr>')[2].split('<w:tc>').slice(1);
+    const z1 = zellen(tabellen[0]);
+    assert.ok(z1[1].includes('<w:noBreakHyphen/>'), 'Labor-Nr. ohne Umbruch'); assert.ok(!z1.filter((_, i) => i !== 1).some(z => z.includes('noBreakHyphen')));
+    assert.equal(xml.split('<w:noBreakHyphen/>').length - 1, 2, 'nur die Bindestriche der Labor-Nr. 999-2026-0000101');
+    assert.match(zellen(tabellen[1])[0], />1-2<\/w:t>/);
+  });
+
+  await fall('Word: falsche Spaltenangaben fallen auf statt einer verschobenen Tabelle', async () => {
+    const mit = tab => { const m = T.bericht(eingabe(form())); m.abschnitte[2].inhalt = [tab]; return m; };
+    const tab = { t: 'tab', caption: 'Tabelle X', kopf: ['A', 'B'], zeilen: [['a', 'b']] };
+    await assert.rejects(async () => wordXml(mit({ ...tab, spalten: [4000, 4000] })), /Tabelle X: spalten müssen 2 Breiten mit zusammen 9070/);
+    await assert.rejects(async () => wordXml(mit({ ...tab, spalten: [9070] })), /spalten müssen 2 Breiten/);
+    await assert.rejects(async () => wordXml(mit({ ...tab, zeilen: [['a', 'b', 'c']] })), /Zeile mit anderer Spaltenzahl/);
   });
 
   console.log(`${n} Fälle bestanden.`);

@@ -6,6 +6,7 @@
 const lade = (name, datei) => root[name] || (typeof require === 'function' ? require(datei) : null);
 const G = lade('BerichtGemeinsam', './bericht-gemeinsam.js');
 const ARTEN = { asbest: lade('BerichtAsbest', './bericht-asbest.js') };
+if (!G || !ARTEN.asbest) throw new Error('BerichtKit: bericht-gemeinsam.js/bericht-asbest.js nicht geladen (Reihenfolge der Skripte in index.html).');
 
 /** Alle Berichtsarten, die es geben soll (Reihenfolge = Auswahl); bereit sind die mit eigenem Modul (ARTEN). */
 const BERICHTSARTEN = [

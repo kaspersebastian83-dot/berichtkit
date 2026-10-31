@@ -88,11 +88,15 @@ function erstellen(D, m, bilder) {
   /* Unterüberschrift („5.1 Chlorid“): kursiv, nicht unterstrichen; der Block davor bringt die Leerzeile mit, darunter eine */
   const unterueberschrift = (r, nach = LEER) => new Paragraph({ children: runs(r, { italics: true }), spacing: { ...LINE15, before: 0, after: nach },
     keepNext: true, outlineLevel: 1 });
-  /* Spaltenbreiten je Tabelle (tab.spalten); ohne Angabe gleich breit, der Rest auf die letzte Spalte */
+  /* Spaltenbreiten je Tabelle (tab.spalten, zusammen B); ohne Angabe gleich breit, der Rest auf die letzte Spalte.
+     Falsche Angaben im Modell sind ein Programmfehler – lieber laut als eine verschobene Tabelle im Bericht. */
   const spaltenVon = x => {
     const n = x.kopf.length;
-    if (Array.isArray(x.spalten) && x.spalten.length === n) return x.spalten;
-    const w = Math.floor(B / n); return x.kopf.map((_, i) => (i === n - 1 ? B - w * (n - 1) : w));
+    if (x.zeilen.some(z => z.length !== n)) throw new Error(`${x.caption}: Zeile mit anderer Spaltenzahl als der Kopf (${n}).`);
+    if (x.spalten == null) { const w = Math.floor(B / n); return x.kopf.map((_, i) => (i === n - 1 ? B - w * (n - 1) : w)); }
+    if (!Array.isArray(x.spalten) || x.spalten.length !== n || x.spalten.reduce((a, b) => a + b, 0) !== B)
+      throw new Error(`${x.caption}: spalten müssen ${n} Breiten mit zusammen ${B} twips sein.`);
+    return x.spalten;
   };
   /* Spalten in tab.ohneUmbruch (z. B. Labor-Nr.): geschützte Bindestriche, damit Word die Nummer nicht am Bindestrich umbricht */
   const ohneUmbruch = (text, o) => [new TextRun({ font: FONT, ...o, children: String(text).split('-').flatMap((x, i) => (i ? [new NoBreakHyphen(), x] : [x])).filter(x => x !== '') })];

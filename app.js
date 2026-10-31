@@ -70,7 +70,7 @@ function artAusAdresse() {
   return T.BERICHTSARTEN.find(a => a.art === art) || { art, name: '', bereit: false, unbekannt: true };
 }
 
-const S = { art: 'asbest', archiv: null, archivOk: false, dir: null, ordner: null, pj: null, lk: null, erg: null, fk: null, fotosDir: null, feldbogen: null,
+const S = { art: 'asbest', bald: '', archiv: null, archivOk: false, dir: null, ordner: null, pj: null, lk: null, erg: null, fk: null, fotosDir: null, feldbogen: null,
   mitarbeiter: [], cfg: { personen: {} }, cfgText: null, cfgOrt: 'archiv', sig: {}, form: {}, fotoListe: {}, quellen: [], thumbs: {}, logo: null, laedt: false,
   // Formular = Vorgaben (bei jedem Öffnen neu berechnet) + eigene Angaben (nur die stehen in _BerichtKit.json) – siehe bericht-vorgaben.js
   vorgabe: {}, eigen: {}, naechste: 1,
@@ -101,10 +101,10 @@ async function start() {
   $('version').title = CHANGELOG.map(c => `${c[0]} (${c[1]}): ${c[2]}`).join('\n');
   document.title = `BerichtKit ${APP_VERSION} · Spektron`;
   if (!('showDirectoryPicker' in window)) { zeigeStart('BerichtKit braucht Edge oder Chrome (Zugriff auf Ordner).', false); $('btnWaehlen').disabled = true; return; }
+  S.archiv = await SUITE.get('archiv').catch(() => null) || null;   // vor der Berichtsart: auch aus „kommt bald“ heraus wird ein Projekt gewählt
   const art = artAusAdresse();
   if (!art.bereit) { zeigeBald(art); return; }
-  S.art = art.art;
-  S.archiv = await SUITE.get('archiv').catch(() => null) || null;
+  S.art = art.art; S.bald = '';
   const name = PROJEKT_URL.lesen();
   if (name && S.archiv) {
     if (await erlaubt(S.archiv, false)) return projektAusArchiv(name);
@@ -122,6 +122,7 @@ function zeigeStart(text, zugriff) {
 }
 /** Berichtsart aus der Adresse gibt es (noch) nicht: „kommt bald“ und ein Knopf zum Asbestbericht – nie ein Bericht der falschen Art */
 function zeigeBald(a) {
+  S.bald = a.art;
   zeigeStart(a.unbekannt ? `Die Berichtsart „${a.art}“ kennt BerichtKit nicht – bisher gibt es den Asbestbericht.`
     : `Der ${a.name} kommt bald. Bisher erstellt BerichtKit den Asbestbericht.`, false);
   $('startTitel').textContent = a.unbekannt ? 'Bericht' : a.name;
@@ -129,7 +130,7 @@ function zeigeBald(a) {
 }
 /** „Asbestbericht öffnen“: Angabe aus der Adresse nehmen; ein schon offenes Projekt wieder zeigen, sonst wie beim Start öffnen */
 function zumAsbestbericht() {
-  ART_URL.setzen(''); S.art = 'asbest';
+  ART_URL.setzen(''); S.art = 'asbest'; S.bald = '';
   const name = PROJEKT_URL.lesen();
   if (S.dir && (!name || name === S.dir.name)) { $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; return; }
   start();
@@ -150,7 +151,7 @@ async function waehlen() {
     else if (await dir.isSameEntry(S.archiv)) { alert('Das ist der Archivordner – bitte einen Projektordner darin wählen.'); return; }
   }
   PROJEKT_URL.setzen(dir.name);
-  if (!artAusAdresse().bereit) { ART_URL.setzen(''); S.art = 'asbest'; }   // selbst gewählt aus „kommt bald“: Asbestbericht
+  if (!artAusAdresse().bereit) { ART_URL.setzen(''); S.art = 'asbest'; S.bald = ''; }   // selbst gewählt aus „kommt bald“: Asbestbericht
   await oeffnen(dir);
 }
 
@@ -401,7 +402,7 @@ async function naechsteMitteilung() {
 function vorgabenBerechnen() {
   const P = T.projektSicht(S.pj, S.ordner);
   const pn = (S.feldbogen && S.feldbogen.kuerzel) || P.zustaendig;
-  // Unterschrift: Zuständiger, wenn Sachverständige(r) – sonst erste(r) SV der Liste, als Annahme sichtbar (bericht-text.js svVorschlag)
+  // Unterschrift: Zuständiger, wenn Sachverständige(r) – sonst erste(r) SV der Liste, als Annahme sichtbar (bericht-gemeinsam.js svVorschlag)
   const svV = T.svVorschlag(S.cfg, S.mitarbeiter, P.zustaendig);
   return { art: S.art, datum: heute(), mitteilung: S.naechste, variante: 'eigen', eingangsdatum: '', auftragsdatum: P.auftragsdatum,
     agSatz: T.mitArtikel(T.zeilen(P.ag)[0] || '').text, probenehmer: pn, sv: svV.kuerzel, svVorschlag: svV, mt: pn && rolle(pn) === 'mt' ? pn : '', labor: S.cfg.labor || '', einbau: 'unbekannt',
@@ -569,7 +570,7 @@ function render() {
     $('qVers').textContent = f.versicherer ? 'eigene Angabe (Deckblatt)' : pjVers ? 'aus der Projektzentrale' : agIstVn ? 'Auftraggeber ist der VN selbst – Versicherer unbekannt'
       : vq ? (vq.angenommen ? 'angenommen – bitte prüfen' : vq.text) : 'in der Projektzentrale nicht eingetragen';
     $('qVers').classList.toggle('annahme', !!(vq && vq.angenommen)); $('btnVersOk').hidden = !(vq && vq.angenommen); }
-  // Deckblatt mit/ohne Versicherung: ohne Wahl nach den Projektdaten (bericht-text.js versicherungsfallAuto), sonst die eigene Wahl
+  // Deckblatt mit/ohne Versicherung: ohne Wahl nach den Projektdaten (bericht-gemeinsam.js versicherungsfallAuto), sonst die eigene Wahl
   document.querySelectorAll('input[name=deckblatt]').forEach(r => { r.checked = r.value === (m.versicherungsfall ? 'versicherung' : 'direkt'); });
   $('qDeckblatt').textContent = f.deckblatt ? 'selbst gewählt' : `automatisch: ${P.versicherungsfallGrund}`;
   $('btnDeckblattAuto').hidden = !f.deckblatt;
@@ -680,6 +681,7 @@ function vorschau(m) {
     teile.push(`<h3>${esc(a.titel)}</h3>`);
     for (const x of a.inhalt) {
       if (x.t === 'p') teile.push(`<p>${runsHtml(x.runs)}</p>`);
+      else if (x.t === 'h2') teile.push(`<p><i>${runsHtml(x.runs)}</i></p>`);
       else if (x.t === 'fig') teile.push(`<figure>${S.thumbs[x.datei] ? `<img src="${S.thumbs[x.datei]}" alt="">` : `<span class="ersatz" data-thumb="${esc(x.datei)}">${esc(x.datei)}</span>`}<figcaption>${esc(x.caption)}</figcaption></figure>`);
       else if (x.t === 'tab') teile.push(`<div class="tabtitel">${esc(x.caption)}</div><table><tr>${x.kopf.map((k, i) => `<th${(x.ausrichtung || [])[i] === 'center' ? ' style="text-align:center"' : ''}>${esc(k)}</th>`).join('')}</tr>${x.zeilen.map(z => `<tr>${z.map((c, i) => `<td${(x.ausrichtung || [])[i] === 'center' ? ' style="text-align:center"' : ''}>${esc(c || '–')}</td>`).join('')}</tr>`).join('')}</table>`);
     }
@@ -968,7 +970,9 @@ function verbinden() {
   $('btnMeldungenWeg').onclick = () => { S.meldungen = []; meldungenZeigen(); };
   window.addEventListener('hashchange', () => {
     const n = PROJEKT_URL.lesen(), a = artAusAdresse();
-    if ((n && (!S.dir || n !== S.dir.name)) || !a.bereit || (S.dir && a.art !== S.art)) start();
+    // Von „kommt bald“ zurück zu einer bereiten Berichtsart (Link aus der Projektzentrale, Zurück im Browser): Bericht wieder zeigen
+    if (S.bald && a.bereit && S.dir && (!n || n === S.dir.name) && a.art === S.art) { S.bald = ''; $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; return; }
+    if ((n && (!S.dir || n !== S.dir.name)) || !a.bereit || S.bald || (S.dir && a.art !== S.art)) start();
   });
 }
 verbinden();

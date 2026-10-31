@@ -384,14 +384,26 @@ const daten = {
     await startZeigt('Brandbericht', /Der Brandbericht kommt bald\. Bisher erstellt BerichtKit den Asbestbericht\./);
     await page.click('#btnAsbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.doesNotMatch(page.url(), /art=/); assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom/);
+    // Projekt offen: wieder art=brand, dann zurück (Zurück-Knopf) und per Link art=asbest → der Bericht ist wieder da
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await startZeigt('Brandbericht', /kommt bald/);
+    await page.goBack(); await page.waitForSelector('#app:not([hidden]) .blatt');
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await startZeigt('Brandbericht', /kommt bald/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await page.reload();   // frisch geöffnet
     await startZeigt('Brandbericht', /kommt bald/);
+    // Archiv ist auch hier bekannt – „Projekt wählen“ im Kopf öffnet dann mit Mitarbeitern, Unterschriften, Einstellungen aus dem Archiv
+    assert.ok(await page.evaluate(() => !!S.archiv), 'Archiv geladen');
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest');
     await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.ok(await page.isHidden('#start')); assert.match(await page.textContent('#vorschau'), /Untersuchung auf Asbest/);
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await page.reload();
     await startZeigt('Bericht', /Die Berichtsart „pak“ kennt BerichtKit nicht/);
     await page.click('#btnAsbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
+    // Die Berichtsart ist eine Vorgabe – nach einer eigenen Änderung steht sie nicht in _BerichtKit.json
+    await page.fill('#fLabor', 'Labor nach Berichtsart-Wechsel'); await page.dispatchEvent('#fLabor', 'change');
+    let nachArt = null;
+    for (let i = 0; i < 40 && !(nachArt && nachArt.form.labor === 'Labor nach Berichtsart-Wechsel'); i++) { await page.waitForTimeout(150); nachArt = JSON.parse(await projektDatei(bkPfad)); }
+    assert.equal(nachArt.form.labor, 'Labor nach Berichtsart-Wechsel'); assert.ok(!('art' in nachArt.form), 'art nicht in den eigenen Angaben');
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('ok – BerichtKit im Browser: öffnen, Vorschau, Einstellungen, Word-Datei in „Mitteilungen“, Angaben im Projektordner, Spektron-Leiste');
   } catch (e) {
