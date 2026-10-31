@@ -1,7 +1,11 @@
 /* BerichtKit – Word-Datei aus dem Berichtsmodell (bericht-text.js, jede Berichtsart) mit docx (MIT, vendor/docx.iife.js).
    Format wie die Berichte des Büros (Spezifikation „bericht-format-spec“): A4, Arial 12, Zeilenabstand 1,5, Blocksatz,
    Deckblatt mit großem Logo und Adressblock, Folgeseiten mit kleinem Logo, „Seite X von Y“ und vier Kopfzeilen (9 pt),
-   Überschriften nummeriert und unterstrichen, Bildunterschrift „Abb. n“ (11 pt kursiv), Lücken gelb markiert.
+   Überschriften nummeriert und unterstrichen, Bildunterschrift „Abb. n“ (11 pt kursiv), Lücken gelb markiert – und je Lücke ein
+   Word-Kommentar am Rand („Noch ausfüllen: …“, Autor „BerichtKit“), an jeder Stelle im Deckblatt, Text, in Tabellen, Unterschriften
+   und Anlagen (nicht in der Kopfzeile der Folgeseiten – siehe dort). In Word geht
+   man mit Überprüfen › Nächster Kommentar von Lücke zu Lücke. Text und Markierung der Lücke bleiben wie vorher, damit die
+   Projektzentrale (word-luecken.js: gelb oder [Großbuchstabe …]) jede Lücke weiterhin findet.
    Alle Texte kommen aus dem Modell – auch der Titel (deckblatt.titel, kopf[0]); hier steht nur das Layout.
    Blöcke in abschnitte[].inhalt: { t:'p', runs } Absatz · { t:'h2', runs } Unterüberschrift (kursiv, nicht unterstrichen, z. B. „5.1 …“)
    · { t:'fig', label, datei, caption } Foto · { t:'tab', caption, kopf[], zeilen[][], ausrichtung[], spalten[] } Tabelle
@@ -14,15 +18,27 @@
 function erstellen(D, m, bilder) {
   const { Document, Paragraph, TextRun, ImageRun, Header, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType,
     TabStopType, PageNumber, ShadingType, HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType,
-    SectionType, VerticalAlign, UnderlineType, NoBreakHyphen } = D;
+    SectionType, VerticalAlign, UnderlineType, NoBreakHyphen, CommentRangeStart, CommentRangeEnd, CommentReference } = D;
   const FONT = 'Arial';
   const cmPx = cm => cm / 2.54 * 96, cmEmu = cm => Math.round(cm * 360000);
   const LINE15 = { line: 360, lineRule: 'auto' }, LINE1 = { line: 240, lineRule: 'auto' };
   const B = 9070;                                   // Textbreite in twips (21 cm − 2 × 2,5 cm)
 
-  /* Runs: Text oder { gap } (gelb) */
-  const runs = (xs, o = {}) => (Array.isArray(xs) ? xs : [xs]).filter(x => x !== '' && x != null).map(x =>
-    x && typeof x === 'object' ? new TextRun({ text: x.gap, font: FONT, highlight: 'yellow', ...o }) : new TextRun({ text: String(x), font: FONT, ...o }));
+  /* Lücke: gelber Text „[…]“ zwischen Kommentaranfang und -ende, dahinter der Verweis auf den Kommentar (eigener Lauf ohne
+     Text – trennt zwei gelbe Läufe nicht, word-luecken.js zählt nur Text). Jede Stelle bekommt ihren eigenen Kommentar. */
+  const kommentare = [], jetzt = new Date();
+  const KOMMENTAR = { author: 'BerichtKit', initials: 'BK' };
+  const luecke = (text, o = {}, mitKommentar = true) => {
+    if (!mitKommentar) return [new TextRun({ text, font: FONT, highlight: 'yellow', ...o })];
+    const id = kommentare.length;
+    kommentare.push({ id, ...KOMMENTAR, date: jetzt,
+      children: [new Paragraph({ children: [new TextRun({ text: 'Noch ausfüllen: ' + String(text).replace(/^\[\s*|\s*\]$/g, '') })] })] });
+    return [new CommentRangeStart(id), new TextRun({ text, font: FONT, highlight: 'yellow', ...o }), new CommentRangeEnd(id),
+      new TextRun({ font: FONT, children: [new CommentReference(id)] })];
+  };
+  /* Runs: Text oder { gap } (gelb + Kommentar; mitKommentar = false nur für die Kopfzeilen) */
+  const runs = (xs, o = {}, mitKommentar = true) => (Array.isArray(xs) ? xs : [xs]).filter(x => x !== '' && x != null).flatMap(x =>
+    x && typeof x === 'object' ? luecke(x.gap, o, mitKommentar) : [new TextRun({ text: String(x), font: FONT, ...o })]);
   const t = (text, o = {}) => new TextRun({ text, font: FONT, ...o });
   const einfach = (children, o = {}) => new Paragraph({ children, spacing: { ...LINE1, after: 0 }, ...o });
 
@@ -52,8 +68,10 @@ function erstellen(D, m, bilder) {
   const kennRuns = (o = {}) => (m.kennzeilen || []).flatMap((k, i) => [...(i ? [t('  ·  ', o)] : []),
     t(k.text, { bold: true, ...(k.art === 'entwurf' ? { color: 'C00000' } : {}), ...o })]);
 
-  /* Kopf Folgeseiten */
-  const k9 = r => einfach(runs(r, { size: 18 }));
+  /* Kopf Folgeseiten – Lücken hier ohne Kommentar: Einen Kommentar-Verweis in der Kopfzeile kann LibreOffice nicht laden
+     („source file could not be loaded“), und Word bietet Kommentare im Kopf gar nicht an. Jede Lücke des Kopfes (Titel, Betreff,
+     VN/AG, Risiko/Schadenort) steht auch auf dem Deckblatt bzw. im Text und hat dort ihren Kommentar; gelb bleibt sie trotzdem. */
+  const k9 = r => einfach(runs(r, { size: 18 }, false));
   const kopfFolge = new Header({ children: [
     new Paragraph({ children: [logo(3.97, -0.26, -0.44), t('\t'), new TextRun({ font: FONT, children: ['Seite ', PageNumber.CURRENT, ' von ', PageNumber.TOTAL_PAGES] })],
       tabStops: [{ type: TabStopType.RIGHT, position: B }], spacing: { ...LINE1, after: 0 } }),
@@ -120,7 +138,7 @@ function erstellen(D, m, bilder) {
           const w = b.w >= b.h ? 10 : 6.5, h = w * b.h / b.w;
           kinder.push(new Paragraph({ children: [new ImageRun({ type: 'jpg', data: b.data, transformation: { width: cmPx(w), height: cmPx(h) },
             altText: { title: x.caption, description: x.caption, name: x.label } })], alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 120, after: 60 } }));
-        } else kinder.push(new Paragraph({ children: [t(`[Foto fehlt: ${x.datei}]`, { highlight: 'yellow' })], alignment: AlignmentType.CENTER, keepNext: true }));
+        } else kinder.push(new Paragraph({ children: luecke(`[Foto fehlt: ${x.datei}]`), alignment: AlignmentType.CENTER, keepNext: true }));
         kinder.push(new Paragraph({ children: [t(x.caption, { italics: true, size: 22 })], alignment: AlignmentType.CENTER, spacing: { ...LINE15, after: nach } }));
       } else if (x.t === 'tab') {
         kinder.push(new Paragraph({ children: [t(x.caption, { italics: true, size: 22 })], keepNext: true, spacing: { ...LINE1, after: 120 } }));
@@ -166,6 +184,7 @@ function erstellen(D, m, bilder) {
 
   const seite = top => ({ size: { width: 11906, height: 16838 }, margin: { top, right: 1418, bottom: 1134, left: 1418, header: 720, footer: 720 } });
   return new Document({
+    comments: { children: kommentare },   // erst hier vollständig: Kopfzeilen, Deckblatt und Text haben ihre Lücken angemeldet
     creator: 'Dr. Schiffers & Partner · BerichtKit', title: `${d.titel} (${d.mitteilung}) ${d.projektnummer || ''}`.trim(),
     styles: { default: { document: { run: { font: FONT, size: 24 }, paragraph: { spacing: { after: 0 } } } } },
     sections: [

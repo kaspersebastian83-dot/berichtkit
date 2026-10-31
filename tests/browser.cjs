@@ -119,7 +119,16 @@ const daten = {
     assert.doesNotMatch(await page.textContent('#hinweise'), /Gesperrt/);
     assert.ok(await page.isEnabled('#btnErstellen'), 'Speichern nicht gesperrt');
     // Labor fehlt noch → Lücke; Probenehmer ohne Frau/Herr → Hinweis
-    assert.match(await page.textContent('#hinweise'), /Lücke im Bericht: \[Labor\]/);
+    assert.match(await page.textContent('#hinweise'), /Lücke im Bericht: \[Labor\] – Personen › Labor/);
+    // Offene Stellen: Zähler oben, leeres Pflichtfeld gelb umrandet, Klick springt zum Feld (Zuordnung aus bericht-luecken.js)
+    assert.equal(await page.textContent('#lueckenZaehler'), '1 Stelle noch offen');
+    assert.ok(await page.isEnabled('#lueckenZaehler'));
+    assert.match(await page.getAttribute('#lueckenZaehler', 'title'), /\[Labor\] – Personen › Labor/);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.offen-feld')].map(el => el.id)), ['fLabor']);
+    await page.click('#lueckenZaehler');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'fLabor', 'Sprung zum Feld, das die Lücke füllt');
+    await page.click('#lueckenZaehler');   // nur eine Stelle → wieder dieselbe
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'fLabor');
     // Versicherer nur angenommen (Auftraggeber): eine Meldung in den Hinweisen, am Feld nur „angenommen“; „✓ stimmt“ bestätigt
     const hw = () => page.textContent('#hinweise');
     assert.equal((await hw()).match(/Versicherer angenommen/g).length, 1, 'nicht doppelt');
@@ -223,6 +232,8 @@ const daten = {
     assert.match(v, /Der Dämmstoff wurde vor 1996 eingebaut/);
     assert.match(v, /Die Sachverständige.*Dr\. Tanja Test/s); assert.match(v, /Der Messtechniker.*Max Messer/s);
     assert.doesNotMatch(await page.textContent('#hinweise'), /Lücke im Bericht/);
+    assert.equal(await page.textContent('#lueckenZaehler'), '✓ Keine offenen Stellen im Bericht'); assert.ok(await page.isDisabled('#lueckenZaehler'));
+    assert.equal(await page.locator('.offen-feld').count(), 0, 'keine gelbe Umrandung ohne Lücke');
     // „als …“ je Unterschrift: folgt den Einstellungen, für diesen Bericht änderbar; Messtechniker darf allein unterschreiben
     const vs = () => page.textContent('#vorschau');
     assert.equal(await page.inputValue('#fR1'), 'sv'); assert.equal(await page.inputValue('#fR2'), 'mt');
@@ -404,6 +415,23 @@ const daten = {
     let nachArt = null;
     for (let i = 0; i < 40 && !(nachArt && nachArt.form.labor === 'Labor nach Berichtsart-Wechsel'); i++) { await page.waitForTimeout(150); nachArt = JSON.parse(await projektDatei(bkPfad)); }
     assert.equal(nachArt.form.labor, 'Labor nach Berichtsart-Wechsel'); assert.ok(!('art' in nachArt.form), 'art nicht in den eigenen Angaben');
+    // Mehrere offene Stellen: Zähler zählt je Lücke einmal, jeder Klick springt zur nächsten (Reihenfolge wie im Bericht), auch in
+    // die Probenliste (KI-Wert); ist das Feld gefüllt, verschwindet Umrandung und Stelle
+    await page.selectOption('#fPn', '');
+    await page.check('#probenListe input[data-art="kmf"][data-l="P1"]');   // Fliesenkleber als KMF → KI-Wert fehlt
+    assert.equal(await page.textContent('#lueckenZaehler'), '2 Stellen noch offen');
+    assert.deepEqual(await page.evaluate(() => S.luecken.map(x => x.luecke)), ['[Probenehmer]', '[KI-Wert]']);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.offen-feld')].map(el => el.id || el.dataset.art + ':' + el.dataset.l).sort()), ['fPn', 'ki:P1']);
+    const fokus = () => page.evaluate(() => { const el = document.activeElement; return el.id || el.dataset.art + ':' + el.dataset.l; });
+    await page.click('#lueckenZaehler'); assert.equal(await fokus(), 'fPn');
+    if (process.env.BERICHT_AUSGABE) { await page.setViewportSize({ width: 1440, height: 1000 }); await page.waitForTimeout(600); await page.screenshot({ path: path.join(process.env.BERICHT_AUSGABE, 'luecken.png') }); }
+    await page.click('#lueckenZaehler'); assert.equal(await fokus(), 'ki:P1');
+    await page.click('#lueckenZaehler'); assert.equal(await fokus(), 'fPn', 'nach der letzten wieder die erste');
+    await page.fill('#probenListe input[data-art="ki"][data-l="P1"]', '30'); await page.dispatchEvent('#probenListe input[data-art="ki"][data-l="P1"]', 'change');
+    assert.equal(await page.textContent('#lueckenZaehler'), '1 Stelle noch offen');
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.offen-feld')].map(el => el.id)), ['fPn']);
+    await page.click('#lueckenZaehler'); assert.equal(await fokus(), 'fPn', 'neue Lückenliste → wieder bei der ersten');
+    assert.match(await page.textContent('#vorschau'), /\[Probenehmer\]/);
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('ok – BerichtKit im Browser: öffnen, Vorschau, Einstellungen, Word-Datei in „Mitteilungen“, Angaben im Projektordner, Spektron-Leiste');
   } catch (e) {

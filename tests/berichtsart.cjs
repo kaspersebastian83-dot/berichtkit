@@ -86,5 +86,26 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     await assert.rejects(async () => wordXml(mit({ ...tab, zeilen: [['a', 'b', 'c']] })), /Zeile mit anderer Spaltenzahl/);
   });
 
+  await fall('Lücke → Feld (bericht-luecken.js): jede Lücke, die der Asbestbericht schreiben kann, steht in der Tabelle', () => {
+    const L = require('../bericht-luecken.js'), F = require('./daten/faelle.cjs').faelle;
+    // aus dem Quelltext: { gap: '[…]' }, L(…, '…'), Deckblatt-Felder „[VN]“ usw. – Brandbericht kommt mit eigener Tabelle
+    const quelle = ['bericht-gemeinsam.js', 'bericht-asbest.js', 'anlagen.js', 'bericht-docx.js'].map(d => fs.readFileSync(path.join(ROOT, d), 'utf8')).join('\n');
+    const namen = new Set([...quelle.matchAll(/gap: '(\[[^'$]+\])'/g)].map(x => x[1]));
+    for (const x of quelle.matchAll(/\bL\([^;]*?, '([^']+)'\)/g)) namen.add(`[${x[1]}]`);
+    for (const k of ['VN', 'Risiko', 'Versicherer', 'Auftraggeber', 'Schadenort']) namen.add(`[${k}]`);   // deckblattFelder: [${k}]
+    namen.add('[Foto fehlt: x.jpg]');
+    assert.ok(namen.size >= 15, `Lücken gefunden (${namen.size})`);
+    for (const g of namen) assert.ok(L.eintrag(g, 'asbest'), `Lücke ${g} fehlt in bericht-luecken.js`);
+    // … und in den Beispielberichten
+    for (const [name, f] of Object.entries(F)) for (const g of T.bericht({ ...f, cfg: B.cfg, mitarbeiter: B.mitarbeiter }).luecken) assert.ok(L.eintrag(g, 'asbest'), `${name}: ${g}`);
+    const z = L.zuordnen(['[Labor]', '[KI-Wert]', '[Objekt]', '[Etwas Neues]'], 'asbest');
+    assert.deepEqual(z.map(x => [x.feld, x.bekannt]), [['#fLabor', true], ['#probenListe input[data-art="ki"]', true], ['', true], ['', false]]);
+    assert.equal(z[2].wo, 'in der Projektzentrale eintragen'); assert.equal(z[3].wo, 'in Word ausfüllen');
+    assert.deepEqual([0, 1, 2, 13].map(L.zaehlerText), ['', '1 Stelle noch offen', '2 Stellen noch offen', '13 Stellen noch offen']);
+    // Felder der Tabelle gibt es im Formular (ids aus index.html)
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    for (const e of L.FELDER.asbest) for (const id of `${e.feld || ''} ${e.ziel || ''}`.match(/#[\w-]+/g) || []) assert.ok(html.includes(`id="${id.slice(1)}"`), `${id} in index.html`);
+  });
+
   console.log(`${n} Fälle bestanden.`);
 })().catch(e => { console.error(e); process.exit(1); });
