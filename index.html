@@ -207,6 +207,9 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
         <label><input type="radio" name="brAnw" value="teilnehmer"> Teilnehmerliste vor Ort</label></div></div>
       <div class="feld" id="zeileAnwesende"><label for="fbAnwesende">Weitere Anwesende</label><input type="text" id="fbAnwesende" placeholder="z. B. Herr Müller (VN), Herr Schmidt (Sanierungsfirma XY)"><span class="quelle">„Bei dem Ortstermin waren <b>…</b> sowie Herr … (Sachverständigenbüro …) anwesend.“</span></div>
       <div class="feld" id="zeilePerson2"><label for="fbPerson2">Zweite Person vor Ort</label><select id="fbPerson2"></select><span class="quelle">aus unserem Büro, zusätzlich zu „Probenahme durch“</span></div>
+      <div class="feld" id="zeileTabellen"><span class="lbl">Befund</span><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="fbTabellen"> Ergebnistabellen Chlorid/PAK in 5.</label><span class="quelle">aus = nur Verweis auf den Prüfbericht; Asbest-Tabelle steht immer da</span></div>
+      <div class="feld" id="zeileReferenz"><label for="fbReferenz">Hintergrundreferenz PAK</label><select id="fbReferenz"><option value="">– bitte wählen –</option><option value="10">ca. 10 µg/m² (Wohn-/Bürobereiche)</option><option value="100">ca. 100 µg/m² (Gewerbe/Industrie)</option></select><span class="quelle" id="qbReferenz"></span></div>
+      <div class="feld" id="zeileReferenzGrund"><label for="fbReferenzGrund">Begründung Referenz</label><input type="text" id="fbReferenzGrund" placeholder="optional, ganzer Satz – z. B. „Aufgrund der Nutzung als Lebensmittelverkaufsstätte …“"><span class="quelle">steht in 5. direkt hinter „Für das vorliegende Objekt wird die Hintergrundreferenz … herangezogen.“</span></div>
       <div class="feld"><label for="fbGb">Gefahrenbereich</label><select id="fbGb"><option value="">– bitte wählen –</option><option value="0">GB 0</option><option value="1">GB 1</option><option value="2">GB 2</option><option value="3">GB 3</option></select><span class="quelle">7. Arbeitsschutzmaßnahmen nach VdS 2357</span></div>
       <div class="feld" id="zeileUebrige"><span class="lbl"></span><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="fbUebrige"> <span id="lbUebrige">Satz „übrige Wohnungen“ in 7.</span></label></div>
       <p class="klein" id="qbProjekt" style="margin:6px 0 0"></p>
@@ -280,6 +283,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 <script src="bericht-vorgaben.js"></script>
 <script src="bericht-gemeinsam.js"></script>
 <script src="bericht-asbest.js"></script>
+<script src="bericht-bewertung.js"></script>
 <script src="bericht-brand.js"></script>
 <script src="bericht-text.js"></script>
 <script src="bericht-docx.js"></script>

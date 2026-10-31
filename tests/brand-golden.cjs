@@ -1,7 +1,7 @@
 // Brandbericht festgeschrieben (node tests/brand-golden.cjs): Die Modelle der erfundenen Brand-Beispielberichte
 // (tests/daten/brand.cjs) müssen genau dem gespeicherten Stand entsprechen – Texte, Reihenfolge der Hinweise, Lücken, Anlagen.
-// Gespeichert aus 1.12.0 (Schritt 3, Gerüst – mit der Sperre „noch im Aufbau“). Ändert sich der Brandbericht gewollt
-// (Schritt 4/5): node tests/brand-golden.cjs --neu und die Änderung in tests/daten/brand-golden.json im Diff ansehen.
+// Gespeichert aus 1.13.0 (Schritt 4, 5. Befund – weiter mit der Sperre „noch im Aufbau“; 1.12.0: Gerüst). Ändert sich der
+// Brandbericht gewollt (Schritt 5): node tests/brand-golden.cjs --neu und die Änderung in tests/daten/brand-golden.json im Diff ansehen.
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
 const T = require('../bericht-text.js'), B = require('./daten/beispiel.cjs'), { faelle } = require('./daten/brand.cjs');
 const DATEI = path.join(__dirname, 'daten', 'brand-golden.json');

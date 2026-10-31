@@ -410,6 +410,10 @@ const daten = {
     assert.match(page.url(), /art=brand/); assert.match(page.url(), /vorschau=1/);
     assert.ok(await page.isVisible('#karteBrand')); assert.ok(await page.isHidden('#zeileVariante'));
     assert.match(await page.textContent('#vorschau'), /Sanierungsvorschlag vom/); assert.match(await page.textContent('#vorschau'), /7\. Arbeitsschutzmaßnahmen/);
+    // 5. Befund (ab 1.13.0): 5.1 als Lücke, Asbest-Abschnitt mit Methode und Tabelle; ohne Chlorid/PAK keine Felder für Tabellen/Referenz
+    assert.match(await page.textContent('#vorschau'), /5\.1 Brandlast und Schadenbild[\s\S]*\[Brandlast und Schadenbild beschreiben\][\s\S]*5\.\d Asbest[\s\S]*VDI 3866 Blatt 5/);
+    assert.ok(await page.isHidden('#zeileTabellen')); assert.ok(await page.isHidden('#zeileReferenz')); assert.ok(await page.isHidden('#zeileReferenzGrund'));
+    assert.ok(await page.evaluate(() => BerichtBewertung.chloridStufe({ r: '60', u: 'mg/m²' }) === 1), 'bericht-bewertung.js geladen');
     assert.ok(await page.isDisabled('#btnErstellen')); assert.equal(await page.textContent('#btnLaden'), 'Entwurf herunterladen');
     assert.match(await page.textContent('#hinweise'), /Gesperrt: Der Brandbericht ist noch im Aufbau/);
     assert.ok(await page.evaluate(() => S.luecken.some(x => x.luecke === '[Gefahrenbereich wählen]')));

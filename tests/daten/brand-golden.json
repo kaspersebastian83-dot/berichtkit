@@ -212,11 +212,325 @@
     "titel": "5. Befund",
     "inhalt": [
      {
+      "t": "h2",
+      "runs": [
+       "5.1 Brandlast und Schadenbild"
+      ]
+     },
+     {
       "t": "p",
       "runs": [
        {
-        "gap": "[Befund ergänzen]"
+        "gap": "[Brandlast und Schadenbild beschreiben]"
        }
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.2 Korrosionsschäden"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Abhängig von Material und Umgebungsbedingungen ist ab Chloridflächenbelastungen in der Größenordnung von 5 bis 10 µg/cm² (korrosionschemisch relevante Größenordnung nach VdS 2357) davon auszugehen, dass beschleunigte Korrosionsvorgänge einsetzen und fortschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die ermittelten Chloridflächenbelastungen liegen zwischen 4,1 und 12,3 µg/cm². Von den zwei Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1) und eine darunter. Die höchste Belastung wurde mit 12,3 µg/cm² in Probe 1 (EG Küche Brandraum Decke) festgestellt. Die Referenzprobe (Probe 3) ergab < 0,5 µg/cm². Die Ergebnisse sind in Tabelle 1 zusammengefasst."
+      ]
+     },
+     {
+      "t": "tab",
+      "caption": "Tabelle 1: Chlorid-Wischproben",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Chlorid [µg/cm²]",
+       "Einordnung"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "center",
+       "left"
+      ],
+      "spalten": [
+       1600,
+       2080,
+       2040,
+       1700,
+       1650
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "1",
+        "999-2026-0001101",
+        "EG Küche Brandraum Decke",
+        "12,3",
+        "oberhalb"
+       ],
+       [
+        "2",
+        "999-2026-0001102",
+        "EG Flur Wand",
+        "4,1",
+        "unterhalb"
+       ],
+       [
+        "3 (Referenz)",
+        "999-2026-0001103",
+        "OG Wohnzimmer REF Wand",
+        "< 0,5",
+        "unterhalb"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Nach fachgerechter Durchführung der unter 6. angegebenen Sanierungsmaßnahmen ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.3 Organische Schadstoffe"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polycyclische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, ist die Größenordnung der Hintergrundbelastung bei brandgasbeaufschlagten Oberflächen als Sanierungszielwert anzustreben bzw. zu unterschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Erfahrungsgemäß liegt die Hintergrundbelastung in Wohn- und Bürobereichen, die einer turnusgemäßen Reinigung unterzogen werden, in einer Größenordnung von ca. 10 µg/m² für die Summe der 16 PAK nach EPA; in Gewerbe- und Industriebereichen können auch höhere Werte von ca. 100 µg/m² vorliegen. ",
+       "Für das vorliegende Objekt wird die Hintergrundreferenz von ca. 10 µg/m² herangezogen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 85 und 2300 µg/m². Beide PAK-Wischproben erreichen oder überschreiten die Hintergrundreferenz von ca. 10 µg/m². Der höchste Summenwert wurde mit 2300 µg/m² in Probe 4 (EG Küche Brandraum Decke) festgestellt. Die Referenzprobe (Probe 6) ergab 9 µg/m². Die Freimessung (Probe 7) ergab 7 µg/m². Die Ergebnisse sind in Tabelle 2 zusammengefasst."
+      ]
+     },
+     {
+      "t": "tab",
+      "caption": "Tabelle 2: PAK-Wischproben",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Σ 16 EPA-PAK [µg/m²]",
+       "Einordnung"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "center",
+       "left"
+      ],
+      "spalten": [
+       1600,
+       2080,
+       2040,
+       1700,
+       1650
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "4",
+        "999-2026-0001104",
+        "EG Küche Brandraum Decke",
+        "2300",
+        "Referenz erreicht/​überschritten"
+       ],
+       [
+        "5",
+        "999-2026-0001105",
+        "EG Flur Wand",
+        "85",
+        "Referenz erreicht/​überschritten"
+       ],
+       [
+        "6 (Referenz)",
+        "999-2026-0001106",
+        "OG Wohnzimmer REF Wand",
+        "9",
+        "unter Referenz"
+       ],
+       [
+        "7 (Freimessung)",
+        "999-2026-0001107",
+        "F-EG Küche Wand",
+        "7",
+        "unter Referenz"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zusätzlich wurde an der Materialprobe (Probe 8, EG Küche Dämmung) ein Summenwert (16 EPA-PAK) von 14 mg/kg ermittelt.",
+       " ",
+       {
+        "gap": "[Bewertung der PAK-Materialproben ergänzen]"
+       }
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die beim Brand gebildeten organischen Schadstoffe sind adsorptiv sehr stark an den Ruß gebunden. Mit Entfernung der schadensbedingten Verunreinigungen werden somit auch zwangsläufig die gebildeten Schadstoffe entfernt, so dass nach ordnungsgemäßer Durchführung der angegebenen Sanierungsmaßnahmen keine Gesundheitsgefährdung durch Brandkondensate gegeben ist."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.4 Künstliche Mineralfaserwolle"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In der Dämmstoffprobe 11 (EG Küche Decke) wurden WHO-Fasern (lungengängige Fasern) nachgewiesen. ",
+       "Der Prüfbericht weist einen Kanzerogenitätsindex von KI = ",
+       "26",
+       " aus."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Nach der seit 05.06.2026 geltenden Fassung der TRGS 905 werden WHO-Fasern nicht mehr über den Kanzerogenitätsindex, ",
+       "sondern nach den Kategorien für krebserzeugende Stoffe in Anhang I der CLP-Verordnung bewertet. Der KI-Wert wird daher nur ergänzend angegeben."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.5 Asbest"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht, bei Probe 10 unter Anwendung des Verfahrens nach Anhang B.",
+       " Die Ergebnisse sind in Tabelle 3 zusammengefasst."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In Probe 9 (Material: ",
+       "„",
+       "Fliesenkleber",
+       "“",
+       ") wurde Asbest nachgewiesen: Chrysotil, 5 - 20 %."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "In den übrigen Proben wurde kein Asbest nachgewiesen."
+      ]
+     },
+     {
+      "t": "tab",
+      "caption": "Tabelle 3: Materialproben und Ergebnisse (Asbest)",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Material",
+       "Ergebnis"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "left",
+       "left"
+      ],
+      "spalten": [
+       950,
+       2080,
+       2240,
+       1850,
+       1950
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "9",
+        "999-2026-0001109",
+        "EG Küche Boden",
+        "Fliesenkleber",
+        "Chrysotil, 5 - 20 %"
+       ],
+       [
+        "10",
+        "999-2026-0001110",
+        "EG Küche Wand",
+        "Putz",
+        "Kein Asbest nachgewiesen"
+       ],
+       [
+        "11",
+        "999-2026-0001111",
+        "EG Küche Decke",
+        "Dämmstoff Mineralwolle",
+        "Kein Asbest nachgewiesen"
+       ]
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.6 Sensorische Prüfung auf Brandgeruch"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die zwei Materialproben wurden in einem geschlossenen Luftraum auf 50 °C konditioniert und anschließend durch fünf Prüfpersonen unabhängig voneinander sensorisch auf Brandgeruch geprüft. Bewertet wurde in den Stufen stark (++), mittel (+), schwach ((+)) und ohne Brandgeruch (–)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei Probe 1 (Sofa Wohnzimmer, Stoffbezug) wurde von vier Prüfpersonen ein mittelstarker und von einer Prüfperson ein starker Brandgeruch festgestellt. Bei Probe 2 (Teppich Flur, Wolle) wurde von drei Prüfpersonen ein schwacher und von zwei Prüfpersonen kein Brandgeruch festgestellt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Einzelbewertungen der Prüfpersonen sind in Anlage ",
+       "5",
+       " dargestellt."
       ]
      }
     ]
@@ -558,7 +872,8 @@
     "ki": "",
     "kiQuelle": "",
     "whoNachgewiesen": false,
-    "foto": ""
+    "foto": "",
+    "stelleBericht": "EG Küche Boden"
    },
    {
     "label": "P10",
@@ -592,7 +907,8 @@
     "ki": "",
     "kiQuelle": "",
     "whoNachgewiesen": false,
-    "foto": ""
+    "foto": "",
+    "stelleBericht": "EG Küche Wand"
    },
    {
     "label": "P11",
@@ -626,7 +942,8 @@
     "ki": "26",
     "kiQuelle": "labor",
     "whoNachgewiesen": true,
-    "foto": ""
+    "foto": "",
+    "stelleBericht": "EG Küche Decke"
    }
   ],
   "offen": [],
@@ -634,7 +951,7 @@
   "hinweise": [],
   "hinweisAktionen": {},
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -676,11 +993,16 @@
     "asbest": 3,
     "brandgeruch": 2,
     "chloridAndere": 0,
+    "bohrmehl": 0,
     "sonstige": 0
-   }
+   },
+   "mitWischErgebnis": true,
+   "mitPakWisch": true,
+   "referenzVorgabe": "10"
   },
   "luecken": [
-   "[Befund ergänzen]",
+   "[Brandlast und Schadenbild beschreiben]",
+   "[Bewertung der PAK-Materialproben ergänzen]",
    "[Sanierungsmaßnahmen ergänzen]",
    "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
   ]
@@ -823,11 +1145,54 @@
     "titel": "5. Befund",
     "inhalt": [
      {
+      "t": "h2",
+      "runs": [
+       "5.1 Brandlast und Schadenbild"
+      ]
+     },
+     {
       "t": "p",
       "runs": [
        {
-        "gap": "[Befund ergänzen]"
+        "gap": "[Brandlast und Schadenbild beschreiben]"
        }
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.2 Organische Schadstoffe"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polycyclische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, ist die Größenordnung der Hintergrundbelastung bei brandgasbeaufschlagten Oberflächen als Sanierungszielwert anzustreben bzw. zu unterschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Erfahrungsgemäß liegt die Hintergrundbelastung in Wohn- und Bürobereichen, die einer turnusgemäßen Reinigung unterzogen werden, in einer Größenordnung von ca. 10 µg/m² für die Summe der 16 PAK nach EPA; in Gewerbe- und Industriebereichen können auch höhere Werte von ca. 100 µg/m² vorliegen. ",
+       "Für das vorliegende Objekt wird die Hintergrundreferenz von ca. 10 µg/m² herangezogen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 8 und 16 µg/m². Von den zwei PAK-Wischproben erreicht oder überschreitet eine die Hintergrundreferenz von ca. 10 µg/m² (Probe 1); eine liegt darunter. Der höchste Summenwert wurde mit 16 µg/m² in Probe 1 (EG Büro Decke) festgestellt. Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die beim Brand gebildeten organischen Schadstoffe sind adsorptiv sehr stark an den Ruß gebunden. Mit Entfernung der schadensbedingten Verunreinigungen werden somit auch zwangsläufig die gebildeten Schadstoffe entfernt, so dass nach ordnungsgemäßer Durchführung von Sanierungsarbeiten keine Gesundheitsgefährdung durch Brandkondensate gegeben ist."
       ]
      }
     ]
@@ -1010,7 +1375,7 @@
   "hinweise": [],
   "hinweisAktionen": {},
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -1043,11 +1408,15 @@
     "asbest": 0,
     "brandgeruch": 0,
     "chloridAndere": 0,
+    "bohrmehl": 0,
     "sonstige": 0
-   }
+   },
+   "mitWischErgebnis": true,
+   "mitPakWisch": true,
+   "referenzVorgabe": "10"
   },
   "luecken": [
-   "[Befund ergänzen]",
+   "[Brandlast und Schadenbild beschreiben]",
    "[Schlussfolgerungen ergänzen]"
   ]
  },
@@ -1269,11 +1638,114 @@
     "titel": "5. Befund",
     "inhalt": [
      {
+      "t": "h2",
+      "runs": [
+       "5.1 Brandlast und Schadenbild"
+      ]
+     },
+     {
       "t": "p",
       "runs": [
        {
-        "gap": "[Befund ergänzen]"
+        "gap": "[Brandlast und Schadenbild beschreiben]"
        }
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.2 Korrosionsschäden"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Abhängig von Material und Umgebungsbedingungen ist ab Chloridflächenbelastungen in der Größenordnung von 5 bis 10 µg/cm² (korrosionschemisch relevante Größenordnung nach VdS 2357) davon auszugehen, dass beschleunigte Korrosionsvorgänge einsetzen und fortschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Chlorid-Wischprobe (Probe 1, EG Küche Decke) ergab 6,2 µg/cm² und liegt damit im Bereich der korrosionschemisch relevanten Größenordnung. Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Nach fachgerechter Durchführung der unter 6. angegebenen Sanierungsmaßnahmen ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.3 Organische Schadstoffe"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polycyclische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, ist die Größenordnung der Hintergrundbelastung bei brandgasbeaufschlagten Oberflächen als Sanierungszielwert anzustreben bzw. zu unterschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Erfahrungsgemäß liegt die Hintergrundbelastung in Wohn- und Bürobereichen, die einer turnusgemäßen Reinigung unterzogen werden, in einer Größenordnung von ca. 10 µg/m² für die Summe der 16 PAK nach EPA; in Gewerbe- und Industriebereichen können auch höhere Werte von ca. 100 µg/m² vorliegen. ",
+       {
+        "gap": "[Hintergrundreferenz 10 oder 100 µg/m²]"
+       }
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 12 und 140 µg/m². ",
+       {
+        "gap": "[Hintergrundreferenz 10 oder 100 µg/m²]"
+       },
+       " Der höchste Summenwert wurde mit 140 µg/m² in Probe 2 (EG Küche Decke) festgestellt. Die Einzelergebnisse sind den Prüfberichten (Anlagen 2 und 3) zu entnehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die beim Brand gebildeten organischen Schadstoffe sind adsorptiv sehr stark an den Ruß gebunden. Mit Entfernung der schadensbedingten Verunreinigungen werden somit auch zwangsläufig die gebildeten Schadstoffe entfernt, so dass nach ordnungsgemäßer Durchführung der angegebenen Sanierungsmaßnahmen keine Gesundheitsgefährdung durch Brandkondensate gegeben ist."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.4 Sensorische Prüfung auf Brandgeruch"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Materialprobe wurde in einem geschlossenen Luftraum auf 50 °C konditioniert und anschließend durch fünf Prüfpersonen unabhängig voneinander sensorisch auf Brandgeruch geprüft. Bewertet wurde in den Stufen stark (++), mittel (+), schwach ((+)) und ohne Brandgeruch (–)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Ergebnis der Brandgeruchprüfung ergänzen]"
+       }
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Einzelbewertungen der Prüfpersonen sind in Anlage ",
+       {
+        "gap": "[Anlage-Nr. Brandgeruch]"
+       },
+       " dargestellt."
       ]
      }
     ]
@@ -1561,6 +2033,7 @@
    "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.",
    "Sensorische Prüfung auf Brandgeruch nicht gefunden – nicht im Bericht. In Projektzentrale erstellen.",
    "Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für die Anlage in LabelKit „Ergebnisse aufdecken“ und speichern.",
+   "Hintergrundreferenz PAK fehlt (Nutzung in der Projektzentrale nicht eingetragen) – unter „Brandbericht“ 10 oder 100 µg/m² wählen.",
    "Prüfbericht AR-999-2026-000303-01: PDF nicht in „Laborergebnisse“ – für die Anlage bitte ablegen."
   ],
   "hinweisAktionen": {
@@ -1578,7 +2051,7 @@
    }
   },
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -1618,8 +2091,12 @@
     "asbest": 0,
     "brandgeruch": 1,
     "chloridAndere": 0,
+    "bohrmehl": 0,
     "sonstige": 0
-   }
+   },
+   "mitWischErgebnis": true,
+   "mitPakWisch": true,
+   "referenzVorgabe": ""
   },
   "luecken": [
    "[Schadendatum]",
@@ -1633,7 +2110,9 @@
    "[Labor]",
    "[Prüfdatum Brandgeruch]",
    "[Anlage-Nr. Brandgeruch]",
-   "[Befund ergänzen]",
+   "[Brandlast und Schadenbild beschreiben]",
+   "[Hintergrundreferenz 10 oder 100 µg/m²]",
+   "[Ergebnis der Brandgeruchprüfung ergänzen]",
    "[Sanierungsmaßnahmen ergänzen]",
    "[Gefahrenbereich wählen]",
    "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
@@ -1819,7 +2298,19 @@
      {
       "t": "p",
       "runs": [
-       "Die Entnahmestellen sind in der Bilddokumentation (Anlage 2) und im Probenplan (Anlage 3) dargestellt."
+       "Zusätzlich wurde eine weitere Probe entnommen und auf ",
+       "Schwermetalle",
+       " untersucht.",
+       " ",
+       "Die Analysenergebnisse sind dem Prüfbericht ",
+       "Nr. AR-999-2026-000402-01",
+       " zu entnehmen (Anlage 2)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt."
       ]
      }
     ]
@@ -1828,10 +2319,123 @@
     "titel": "5. Befund",
     "inhalt": [
      {
+      "t": "h2",
+      "runs": [
+       "5.1 Brandlast und Schadenbild"
+      ]
+     },
+     {
       "t": "p",
       "runs": [
        {
-        "gap": "[Befund ergänzen]"
+        "gap": "[Brandlast und Schadenbild beschreiben]"
+       }
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.2 Korrosionsschäden"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Abhängig von Material und Umgebungsbedingungen ist ab Chloridflächenbelastungen in der Größenordnung von 5 bis 10 µg/cm² (korrosionschemisch relevante Größenordnung nach VdS 2357) davon auszugehen, dass beschleunigte Korrosionsvorgänge einsetzen und fortschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Chlorid-Wischprobe (Probe 1, Halle Regal 3) ergab 22 µg/cm² und liegt damit oberhalb der korrosionschemisch relevanten Größenordnung. Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Nach fachgerechter Durchführung der unter 6. angegebenen Sanierungsmaßnahmen ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.3 Organische Schadstoffe"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polycyclische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, ist die Größenordnung der Hintergrundbelastung bei brandgasbeaufschlagten Oberflächen als Sanierungszielwert anzustreben bzw. zu unterschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Erfahrungsgemäß liegt die Hintergrundbelastung in Wohn- und Bürobereichen, die einer turnusgemäßen Reinigung unterzogen werden, in einer Größenordnung von ca. 10 µg/m² für die Summe der 16 PAK nach EPA; in Gewerbe- und Industriebereichen können auch höhere Werte von ca. 100 µg/m² vorliegen. ",
+       "Für das vorliegende Objekt wird die Hintergrundreferenz von ca. 100 µg/m² herangezogen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die PAK-Wischprobe (Probe 2, Halle Regal 3) ergab einen Summenwert von 410 µg/m² und erreicht oder überschreitet damit die Hintergrundreferenz von ca. 100 µg/m². Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die beim Brand gebildeten organischen Schadstoffe sind adsorptiv sehr stark an den Ruß gebunden. Mit Entfernung der schadensbedingten Verunreinigungen werden somit auch zwangsläufig die gebildeten Schadstoffe entfernt, so dass nach ordnungsgemäßer Durchführung der angegebenen Sanierungsmaßnahmen keine Gesundheitsgefährdung durch Brandkondensate gegeben ist."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.4 Sensorische Prüfung auf Brandgeruch"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Materialprobe wurde in einem geschlossenen Luftraum auf 50 °C konditioniert und anschließend durch fünf Prüfpersonen unabhängig voneinander sensorisch auf Brandgeruch geprüft. Bewertet wurde in den Stufen stark (++), mittel (+), schwach ((+)) und ohne Brandgeruch (–)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei Probe 1 (Karton, Regal 3) wurde von vier Prüfpersonen ein mittelstarker und von einer Prüfperson ein starker Brandgeruch festgestellt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Einzelbewertungen der Prüfpersonen sind in Anlage ",
+       {
+        "gap": "[Anlage-Nr. Brandgeruch]"
+       },
+       " dargestellt."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.5 Weitere Untersuchungen"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Ergebnisse der weiteren Probe (Probe 3; Schwermetalle) sind ",
+       "dem Prüfbericht ",
+       "Nr. AR-999-2026-000402-01",
+       " zu entnehmen (Anlage 2). ",
+       {
+        "gap": "[Bewertung der weiteren Untersuchungen ergänzen]"
        }
       ]
      }
@@ -1898,10 +2502,19 @@
    ],
    [
     "Anlage 2: ",
-    "Bilddokumentation"
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000402-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
    ],
    [
     "Anlage 3: ",
+    "Bilddokumentation"
+   ],
+   [
+    "Anlage 4: ",
     "Probenplan"
    ]
   ],
@@ -1924,12 +2537,26 @@
     "label": "Anlage 2:",
     "zeilen": [
      [
-      "Bilddokumentation"
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000402-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
      ]
     ]
    },
    {
     "label": "Anlage 3:",
+    "zeilen": [
+     [
+      "Bilddokumentation"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 4:",
     "zeilen": [
      [
       "Probenplan"
@@ -1939,6 +2566,7 @@
   ],
   "anlagenDateien": [
    "Laborergebnisse/AR-999-2026-000401-01.pdf",
+   "Laborergebnisse/AR-999-2026-000402-01.pdf",
    "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf",
    "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
   ],
@@ -1953,6 +2581,14 @@
    },
    {
     "nr": 2,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000402-01.pdf"
+    ]
+   },
+   {
+    "nr": 3,
     "art": "bilddoku",
     "titel": "Bilddokumentation",
     "dateien": [
@@ -1960,7 +2596,7 @@
     ]
    },
    {
-    "nr": 3,
+    "nr": 4,
     "art": "probenplan",
     "titel": "Probenplan",
     "dateien": [
@@ -1982,9 +2618,21 @@
     "grund": ""
    },
    {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000402-01",
+    "nr": 2,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000402-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
     "art": "bilddoku",
     "titel": "Bilddokumentation",
-    "nr": 2,
+    "nr": 3,
     "an": true,
     "fest": true,
     "dateien": [
@@ -2005,7 +2653,7 @@
    {
     "art": "probenplan",
     "titel": "Probenplan",
-    "nr": 3,
+    "nr": 4,
     "an": true,
     "fest": true,
     "dateien": [
@@ -2062,7 +2710,7 @@
    }
   },
   "sperren": [
-   "Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
   ],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -2095,14 +2743,705 @@
     "asbest": 0,
     "brandgeruch": 1,
     "chloridAndere": 0,
-    "sonstige": 0
-   }
+    "bohrmehl": 0,
+    "sonstige": 1
+   },
+   "mitWischErgebnis": true,
+   "mitPakWisch": true,
+   "referenzVorgabe": "100"
   },
   "luecken": [
    "[Anlage-Nr. Brandgeruch]",
-   "[Befund ergänzen]",
+   "[Brandlast und Schadenbild beschreiben]",
+   "[Bewertung der weiteren Untersuchungen ergänzen]",
    "[Sanierungsmaßnahmen ergänzen]",
    "[Zusammenfassung der Sanierungsmaßnahmen ergänzen]"
+  ]
+ },
+ "BR5_Gewerbe_Bohrmehl_Tabellen": {
+  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "deckblatt": {
+   "titel": "Untersuchungsbericht vom 27.10.2026",
+   "mitteilung": "1. Mitteilung",
+   "projektnummer": "99.9002",
+   "betreff": [
+    "Schaden vom:",
+    "\t",
+    "09.10.2026"
+   ],
+   "felder": [
+    [
+     "VN:",
+     [
+      "Muster Hausverwaltung GmbH",
+      "Hauptstr. 5",
+      "12345 Musterstadt"
+     ]
+    ],
+    [
+     "Risiko:",
+     [
+      "Marktplatz 1",
+      "54321 Beispielstadt"
+     ]
+    ],
+    [
+     "Versicherer:",
+     [
+      "Beispiel Versicherung AG"
+     ]
+    ],
+    [
+     "Schaden-Nr.:",
+     [
+      "BV-2026-0815"
+     ]
+    ]
+   ]
+  },
+  "kopf": [
+   "Untersuchungsbericht vom 27.10.2026",
+   [
+    "Brandschaden vom ",
+    "09.10.2026"
+   ],
+   [
+    "VN: ",
+    "Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt"
+   ],
+   [
+    "Risiko: ",
+    "Marktplatz 1, 54321 Beispielstadt"
+   ]
+  ],
+  "kennzeilen": [
+   {
+    "art": "entwurf",
+    "text": "ENTWURF – nicht versenden"
+   }
+  ],
+  "abschnitte": [
+   {
+    "titel": "1. Veranlassung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "09.10.2026",
+       " kam es in dem Gewerbeobjekt ",
+       "Marktplatz 1, 54321 Beispielstadt",
+       " zu einem Brandschaden."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schadenbedingt kann es auch zur Bildung und Freisetzung von Schadstoffen sowie deren räumlicher Verteilung kommen. Im Wesentlichen können Schadstoffe eine Gefährdung von Mensch und Umwelt und ein erhöhtes Korrosionsrisiko bedingen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polycyclischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Ein Korrosionsrisiko besteht für metallische Bauteile und mineralische Bausubstanz, insbesondere für Stahlbeton."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Aus halogenorganischen Materialien (meist PVC) wird beim Abbrand Halogenwasserstoffsäure freigesetzt. Auch beim Verschmoren von PVC wird bei Temperaturen oberhalb 200 °C bereits in merklichem Umfang Chlorwasserstoff abgespalten. Somit wird als Leitmessgröße für ein erhöhtes Korrosionsrisiko die Konzentration an Chloriden herangezogen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "2. Aufgabenstellung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "05.10.2026",
+       " wurde unser Büro durch ",
+       "die Beispiel Versicherung AG",
+       " beauftragt, Art und Ausmaß der Schadstoffbelastung ",
+       "an den Gebäudeoberflächen",
+       " festzustellen."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "3. Ortsbesichtigung",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Am ",
+       "14.10.2026",
+       " fand eine Besichtigung der Schadenstelle mit Probenahme statt."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Bei dem Ortstermin war ",
+       "Herr Messer",
+       " (Sachverständigenbüro Dr. Heinz Schiffers & Partner) anwesend."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "4. Probenahme",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der Chloridbelastung wurden fünf Wischproben entnommen. ",
+       "Zusätzlich wurden eine Materialprobe und zwei Bohrmehlproben entnommen. ",
+       "Die Proben wurden der ",
+       "Eurofins Beispiel-Labor GmbH",
+       " zur Untersuchung auf Chlorid übergeben.",
+       " ",
+       "Die Analysenergebnisse sind den Prüfberichten ",
+       "Nr. AR-999-2026-000501-01 und Nr. AR-999-2026-000502-01",
+       " zu entnehmen (Anlagen 1 und 2)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zur Messung der PAK-Belastung wurden fünf Wischproben entnommen und auf die 16 Einzelkomponenten nach EPA (Environmental Protection Agency) untersucht; zusätzlich wird der Summenwert angegeben.",
+       " ",
+       "Die Analysenergebnisse sind dem Prüfbericht ",
+       "Nr. AR-999-2026-000502-01",
+       " zu entnehmen (Anlage 2)."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "5. Befund",
+    "inhalt": [
+     {
+      "t": "h2",
+      "runs": [
+       "5.1 Brandlast und Schadenbild"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Brandlast und Schadenbild beschreiben]"
+       }
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.2 Korrosionsschäden"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Abhängig von Material und Umgebungsbedingungen ist ab Chloridflächenbelastungen in der Größenordnung von 5 bis 10 µg/cm² (korrosionschemisch relevante Größenordnung nach VdS 2357) davon auszugehen, dass beschleunigte Korrosionsvorgänge einsetzen und fortschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 20 und 150 mg/m². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 150 mg/m² in Probe 1 (Verkaufsraum Regal 1) festgestellt. Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst."
+      ]
+     },
+     {
+      "t": "tab",
+      "caption": "Tabelle 1: Chlorid-Wischproben",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Chlorid [mg/m²]",
+       "Einordnung"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "center",
+       "left"
+      ],
+      "spalten": [
+       1600,
+       2080,
+       2040,
+       1700,
+       1650
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "1",
+        "999-2026-0001101",
+        "Verkaufsraum Regal 1",
+        "150",
+        "oberhalb"
+       ],
+       [
+        "2",
+        "999-2026-0001102",
+        "Verkaufsraum Regal 2",
+        "70",
+        "im Bereich"
+       ],
+       [
+        "3",
+        "999-2026-0001103",
+        "Verkaufsraum Regal 3",
+        "60",
+        "im Bereich"
+       ],
+       [
+        "4",
+        "999-2026-0001104",
+        "Lager Wand",
+        "20",
+        "unterhalb"
+       ],
+       [
+        "5",
+        "999-2026-0001105",
+        "Büro Wand",
+        "< 5",
+        "unterhalb"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zusätzlich wurde an der Materialprobe (Probe 6, Verkaufsraum Kassenband) ein Chloridgehalt von 0,02 M.-% ermittelt.",
+       " ",
+       {
+        "gap": "[Bewertung der Chlorid-Materialproben ergänzen]"
+       }
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Zusätzlich wurden an den Bohrmehlproben folgende Chloridgehalte ermittelt: 1.200 mg/kg (Probe 12, Verkaufsraum Stütze, Tiefe 0 – 2 mm) und 450 mg/kg (Probe 13, Verkaufsraum Stütze, Tiefe 2 – 5 mm).",
+       " ",
+       {
+        "gap": "[Bewertung der Chlorid-Bohrmehlproben ergänzen]"
+       }
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Nach fachgerechter Durchführung von Sanierungsarbeiten ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden."
+      ]
+     },
+     {
+      "t": "h2",
+      "runs": [
+       "5.3 Organische Schadstoffe"
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polycyclische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, ist die Größenordnung der Hintergrundbelastung bei brandgasbeaufschlagten Oberflächen als Sanierungszielwert anzustreben bzw. zu unterschreiten."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Erfahrungsgemäß liegt die Hintergrundbelastung in Wohn- und Bürobereichen, die einer turnusgemäßen Reinigung unterzogen werden, in einer Größenordnung von ca. 10 µg/m² für die Summe der 16 PAK nach EPA; in Gewerbe- und Industriebereichen können auch höhere Werte von ca. 100 µg/m² vorliegen. ",
+       "Für das vorliegende Objekt wird die Hintergrundreferenz von ca. 10 µg/m² herangezogen.",
+       " Aufgrund der Nutzung als Lebensmittelverkaufsstätte wird die für Wohn- und Bürobereiche übliche Hintergrundbelastung herangezogen."
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die oberhalb der Bestimmungsgrenze ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 4 und 31 µg/m². Von den vier PAK-Wischproben erreichen oder überschreiten zwei die Hintergrundreferenz von ca. 10 µg/m² (Proben 7 und 10); zwei liegen darunter. Der höchste Summenwert wurde mit 31 µg/m² in Probe 10 (Lager Wand) festgestellt. Bei Probe 8 war keine der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar. Die Referenzprobe (Probe 11) ergab 3 µg/m². Die Ergebnisse sind in Tabelle 2 zusammengefasst."
+      ]
+     },
+     {
+      "t": "tab",
+      "caption": "Tabelle 2: PAK-Wischproben",
+      "kopf": [
+       "Probe",
+       "Labor-Nr.",
+       "Entnahmestelle",
+       "Σ 16 EPA-PAK [µg/m²]",
+       "Einordnung"
+      ],
+      "ausrichtung": [
+       "center",
+       "center",
+       "left",
+       "center",
+       "left"
+      ],
+      "spalten": [
+       1600,
+       2080,
+       2040,
+       1700,
+       1650
+      ],
+      "ohneUmbruch": [
+       1
+      ],
+      "zeilen": [
+       [
+        "7",
+        "999-2026-0001107",
+        "Verkaufsraum Regal 1",
+        "25",
+        "Referenz erreicht/​überschritten"
+       ],
+       [
+        "8",
+        "999-2026-0001108",
+        "Verkaufsraum Regal 2",
+        "n. n.",
+        "unter Referenz"
+       ],
+       [
+        "9",
+        "999-2026-0001109",
+        "Verkaufsraum Regal 3",
+        "4",
+        "unter Referenz"
+       ],
+       [
+        "10",
+        "999-2026-0001110",
+        "Lager Wand",
+        "31",
+        "Referenz erreicht/​überschritten"
+       ],
+       [
+        "11 (Referenz)",
+        "999-2026-0001111",
+        "Büro REF Wand",
+        "3",
+        "unter Referenz"
+       ]
+      ]
+     },
+     {
+      "t": "p",
+      "runs": [
+       "Die beim Brand gebildeten organischen Schadstoffe sind adsorptiv sehr stark an den Ruß gebunden. Mit Entfernung der schadensbedingten Verunreinigungen werden somit auch zwangsläufig die gebildeten Schadstoffe entfernt, so dass nach ordnungsgemäßer Durchführung von Sanierungsarbeiten keine Gesundheitsgefährdung durch Brandkondensate gegeben ist."
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "6. Schlussfolgerungen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       {
+        "gap": "[Schlussfolgerungen ergänzen]"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "titel": "7. Arbeitsschutzmaßnahmen",
+    "inhalt": [
+     {
+      "t": "p",
+      "runs": [
+       "Bei Sanierungsarbeiten in den untersuchten Bereichen sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ",
+       "1 (GB 1)",
+       " gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, vorzunehmen."
+      ]
+     }
+    ]
+   }
+  ],
+  "ortDatum": "Würselen, 27.10.2026",
+  "unterschriften": [
+   {
+    "kuerzel": "Tst",
+    "rolle": "Die Sachverständige",
+    "name": "Dr. Tanja Test"
+   }
+  ],
+  "versicherungsfall": true,
+  "anlagen": [
+   [
+    "Anlage 1: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000501-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ],
+   [
+    "Anlage 2: ",
+    "Prüfbericht Nr. ",
+    "AR-999-2026-000502-01",
+    " ",
+    "(",
+    "Eurofins Beispiel-Labor GmbH",
+    ")"
+   ],
+   [
+    "Anlage 3: ",
+    "Bilddokumentation"
+   ],
+   [
+    "Anlage 4: ",
+    "Probenplan"
+   ]
+  ],
+  "anlagenTeile": [
+   {
+    "label": "Anlage 1:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000501-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 2:",
+    "zeilen": [
+     [
+      "Prüfbericht Nr. ",
+      "AR-999-2026-000502-01"
+     ],
+     [
+      "(",
+      "Eurofins Beispiel-Labor GmbH",
+      ")"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 3:",
+    "zeilen": [
+     [
+      "Bilddokumentation"
+     ]
+    ]
+   },
+   {
+    "label": "Anlage 4:",
+    "zeilen": [
+     [
+      "Probenplan"
+     ]
+    ]
+   }
+  ],
+  "anlagenDateien": [
+   "Laborergebnisse/AR-999-2026-000501-01.pdf",
+   "Laborergebnisse/AR-999-2026-000502-01.pdf",
+   "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf",
+   "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+  ],
+  "anlagenListe": [
+   {
+    "nr": 1,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000501-01.pdf"
+    ]
+   },
+   {
+    "nr": 2,
+    "art": "pruefbericht",
+    "titel": "Prüfbericht",
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000502-01.pdf"
+    ]
+   },
+   {
+    "nr": 3,
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ]
+   },
+   {
+    "nr": 4,
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ]
+   }
+  ],
+  "anlagenZeilen": [
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000501-01",
+    "nr": 1,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000501-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "pruefbericht",
+    "titel": "Prüfbericht AR-999-2026-000502-01",
+    "nr": 2,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Laborergebnisse/AR-999-2026-000502-01.pdf"
+    ],
+    "zustand": "ok",
+    "grund": ""
+   },
+   {
+    "art": "bilddoku",
+    "titel": "Bilddokumentation",
+    "nr": 3,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Bilddokumentation",
+     "app": "FotoKit",
+     "link": "../Bildumbenenner/",
+     "ziel": "bildumbenenner"
+    }
+   },
+   {
+    "art": "probenplan",
+    "titel": "Probenplan",
+    "nr": 4,
+    "an": true,
+    "fest": true,
+    "dateien": [
+     "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
+    ],
+    "t": 1792576800000,
+    "key": "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf@1792576800000",
+    "details": "",
+    "zustand": "ok",
+    "grund": "",
+    "app": {
+     "titel": "Probenplan",
+     "app": "PlanKit",
+     "link": "../Probenplan/",
+     "ziel": "plankit"
+    }
+   }
+  ],
+  "proben": [],
+  "offen": [],
+  "storniert": [],
+  "hinweise": [],
+  "hinweisAktionen": {},
+  "sperren": [
+   "Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
+  ],
+  "probenehmerQuelle": {
+   "angenommen": true,
+   "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+  },
+  "versichererQuelle": {
+   "angenommen": true,
+   "wert": "Beispiel Versicherung AG",
+   "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale)."
+  },
+  "svQuelle": null,
+  "annahmen": [
+   {
+    "id": "probenehmer",
+    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
+   },
+   {
+    "id": "versicherer",
+    "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
+    "wert": "Beispiel Versicherung AG"
+   }
+  ],
+  "brand": {
+   "titel": "Untersuchungsbericht",
+   "objektartVorgabe": "in dem Gewerbeobjekt",
+   "nutzung": "Gewerbe/Industrie",
+   "schadenereignis": "Brand im Erdgeschoss (Küche)",
+   "brandgut": "Küche/Lebensmittel",
+   "schadendatum": "datum",
+   "ortstermin": "14.10.2026",
+   "probenahme": [
+    "14.10.2026"
+   ],
+   "zahlen": {
+    "chlorid": 5,
+    "pak": 5,
+    "pakMaterial": 0,
+    "kmf": 0,
+    "asbest": 0,
+    "brandgeruch": 0,
+    "chloridAndere": 1,
+    "bohrmehl": 2,
+    "sonstige": 0
+   },
+   "mitWischErgebnis": true,
+   "mitPakWisch": true,
+   "referenzVorgabe": "100"
+  },
+  "luecken": [
+   "[Brandlast und Schadenbild beschreiben]",
+   "[Bewertung der Chlorid-Materialproben ergänzen]",
+   "[Bewertung der Chlorid-Bohrmehlproben ergänzen]",
+   "[Schlussfolgerungen ergänzen]"
   ]
  }
 }

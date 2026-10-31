@@ -16,7 +16,7 @@ const BERICHTSARTEN = [
   { art: 'asbest', name: 'Asbestbericht' },
   { art: 'brand', name: 'Brandbericht' },
 ].map(a => ({ ...a, bereit: !!ARTEN[a.art] && !!BEREIT[a.art], modul: !!ARTEN[a.art] }));
-const IM_AUFBAU = { brand: 'Der Brandbericht ist noch im Aufbau (5. Befund, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern.' };
+const IM_AUFBAU = { brand: 'Der Brandbericht ist noch im Aufbau (5.1, 6. und 8. folgen) – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern.' };
 /** form.art → Berichtsart; leer oder fehlend = 'asbest' (alle Berichte bis 1.9.0). Unbekannte Werte bleiben unbekannt. */
 const berichtsart = form => G.s(form && form.art).toLowerCase() || 'asbest';
 
