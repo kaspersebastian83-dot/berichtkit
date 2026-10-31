@@ -1,7 +1,12 @@
-/* BerichtKit – Word-Datei aus dem Berichtsmodell (bericht-text.js) mit docx (MIT, vendor/docx.iife.js).
+/* BerichtKit – Word-Datei aus dem Berichtsmodell (bericht-text.js, jede Berichtsart) mit docx (MIT, vendor/docx.iife.js).
    Format wie die Berichte des Büros (Spezifikation „bericht-format-spec“): A4, Arial 12, Zeilenabstand 1,5, Blocksatz,
    Deckblatt mit großem Logo und Adressblock, Folgeseiten mit kleinem Logo, „Seite X von Y“ und vier Kopfzeilen (9 pt),
    Überschriften nummeriert und unterstrichen, Bildunterschrift „Abb. n“ (11 pt kursiv), Lücken gelb markiert.
+   Alle Texte kommen aus dem Modell – auch der Titel (deckblatt.titel, kopf[0]); hier steht nur das Layout.
+   Blöcke in abschnitte[].inhalt: { t:'p', runs } Absatz · { t:'h2', runs } Unterüberschrift (kursiv, nicht unterstrichen, z. B. „5.1 …“)
+   · { t:'fig', label, datei, caption } Foto · { t:'tab', caption, kopf[], zeilen[][], ausrichtung[], spalten[] } Tabelle
+   (spalten = Breiten in twips, zusammen 9070; fehlen sie, gleich breit; ohneUmbruch = Spalten, deren Text nicht am Bindestrich
+   umbrechen darf, z. B. die Labor-Nr.).
    bilder = { logoSvg:Uint8Array, logoPng:Uint8Array, sig:{<Kürzel>:{data,w,h}}, fotos:{<Label>:{data,w,h}} } */
 (function (root) {
 'use strict';
@@ -80,8 +85,16 @@ function erstellen(D, m, bilder) {
   const ueberschrift = (text, erste) => new Paragraph({ children: [t(text, { underline: { type: UnderlineType.SINGLE } })],
     spacing: { ...LINE15, before: erste ? 0 : 2 * LEER, after: LEER }, keepNext: true, outlineLevel: 0 });
   const absatz = (r, nach = LEER) => new Paragraph({ children: runs(r), alignment: AlignmentType.JUSTIFIED, spacing: { ...LINE15, after: nach } });
-  const SPALTEN = [950, 2080, 2240, 1850, 1950];     // Labor-Nr. breit genug für „777-2026-00445679“ in einer Zeile
-  /* Labor-Nr.: geschützte Bindestriche, damit Word die Nummer nicht am Bindestrich umbricht */
+  /* Unterüberschrift („5.1 Chlorid“): kursiv, nicht unterstrichen; der Block davor bringt die Leerzeile mit, darunter eine */
+  const unterueberschrift = (r, nach = LEER) => new Paragraph({ children: runs(r, { italics: true }), spacing: { ...LINE15, before: 0, after: nach },
+    keepNext: true, outlineLevel: 1 });
+  /* Spaltenbreiten je Tabelle (tab.spalten); ohne Angabe gleich breit, der Rest auf die letzte Spalte */
+  const spaltenVon = x => {
+    const n = x.kopf.length;
+    if (Array.isArray(x.spalten) && x.spalten.length === n) return x.spalten;
+    const w = Math.floor(B / n); return x.kopf.map((_, i) => (i === n - 1 ? B - w * (n - 1) : w));
+  };
+  /* Spalten in tab.ohneUmbruch (z. B. Labor-Nr.): geschützte Bindestriche, damit Word die Nummer nicht am Bindestrich umbricht */
   const ohneUmbruch = (text, o) => [new TextRun({ font: FONT, ...o, children: String(text).split('-').flatMap((x, i) => (i ? [new NoBreakHyphen(), x] : [x])).filter(x => x !== '') })];
   const zelle = (inhalt, w, kopf, fest, ausr) => new TableCell({
     width: { size: w, type: WidthType.DXA }, borders: { top: duenn, bottom: duenn, left: duenn, right: duenn },
@@ -96,6 +109,7 @@ function erstellen(D, m, bilder) {
     a.inhalt.forEach((x, xi) => {
       const nach = xi === a.inhalt.length - 1 && ai < m.abschnitte.length - 1 ? 0 : LEER;   // vor der nächsten Überschrift
       if (x.t === 'p') kinder.push(absatz(x.runs, nach));
+      else if (x.t === 'h2') kinder.push(unterueberschrift(x.runs, nach));
       else if (x.t === 'fig') {
         const b = bilder.fotos && bilder.fotos[x.label];
         if (b) {
@@ -106,9 +120,10 @@ function erstellen(D, m, bilder) {
         kinder.push(new Paragraph({ children: [t(x.caption, { italics: true, size: 22 })], alignment: AlignmentType.CENTER, spacing: { ...LINE15, after: nach } }));
       } else if (x.t === 'tab') {
         kinder.push(new Paragraph({ children: [t(x.caption, { italics: true, size: 22 })], keepNext: true, spacing: { ...LINE1, after: 120 } }));
-        kinder.push(new Table({ width: { size: B, type: WidthType.DXA }, columnWidths: SPALTEN,
-          rows: [new TableRow({ tableHeader: true, children: x.kopf.map((k, i) => zelle(k, SPALTEN[i], true, false, (x.ausrichtung || [])[i])) }),
-            ...x.zeilen.map(z => new TableRow({ cantSplit: true, children: z.map((c, i) => zelle(c, SPALTEN[i], false, i === 1, (x.ausrichtung || [])[i])) }))] }));
+        const sp = spaltenVon(x);
+        kinder.push(new Table({ width: { size: B, type: WidthType.DXA }, columnWidths: sp,
+          rows: [new TableRow({ tableHeader: true, children: x.kopf.map((k, i) => zelle(k, sp[i], true, false, (x.ausrichtung || [])[i])) }),
+            ...x.zeilen.map(z => new TableRow({ cantSplit: true, children: z.map((c, i) => zelle(c, sp[i], false, (x.ohneUmbruch || []).includes(i), (x.ausrichtung || [])[i])) }))] }));
         kinder.push(new Paragraph({ children: [], spacing: { ...LINE1, after: nach } }));
       }
     });

@@ -34,6 +34,8 @@ jobs:
         run: node tests/text.cjs
       - name: Anlagen (erkennen, Hausreihenfolge, veraltet)
         run: node tests/anlagen.cjs
+      - name: Berichtsart, gemeinsame Bausteine, Word-Tabellen und Unterüberschriften
+        run: node tests/berichtsart.cjs
       - name: LabelKit daneben holen (Spektron-Leiste byte-gleich prüfen)
         env:
           ZWEIG: ${{ github.head_ref }}

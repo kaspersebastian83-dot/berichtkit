@@ -374,6 +374,24 @@ const daten = {
     for (let i = 0; i < 40 && !(neuGeschrieben && neuGeschrieben.nurEigene); i++) { await page.waitForTimeout(150); neuGeschrieben = JSON.parse(await projektDatei(bkPfad)); }
     // Vorgaben und Leeres fallen weg; was von der heutigen Vorgabe abweicht (Probenehmer, zweite Unterschrift), bleibt als eigene Angabe
     assert.deepEqual(neuGeschrieben.form, { einbau: 'vor1996', probenehmer: 'Mes', mt: 'Mes' }, 'nur noch eigene Angaben in der Datei');
+    // Berichtsart aus der Projektzentrale (#…&art=): den Brandbericht gibt es noch nicht → „kommt bald“, kein Bericht der falschen Art
+    const startZeigt = async (titel, text) => {
+      await page.waitForSelector('#start:not([hidden])');
+      assert.equal(await page.textContent('#startTitel'), titel); assert.match(await page.textContent('#startText'), text);
+      assert.ok(await page.isHidden('#app')); assert.ok(await page.isHidden('#btnWaehlen')); assert.ok(await page.isVisible('#btnAsbest'));
+    };
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand');   // nur die Adresse ändert sich, Projekt offen
+    await startZeigt('Brandbericht', /Der Brandbericht kommt bald\. Bisher erstellt BerichtKit den Asbestbericht\./);
+    await page.click('#btnAsbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
+    assert.doesNotMatch(page.url(), /art=/); assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await page.reload();   // frisch geöffnet
+    await startZeigt('Brandbericht', /kommt bald/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest');
+    await page.waitForSelector('#app:not([hidden]) .blatt');
+    assert.ok(await page.isHidden('#start')); assert.match(await page.textContent('#vorschau'), /Untersuchung auf Asbest/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await page.reload();
+    await startZeigt('Bericht', /Die Berichtsart „pak“ kennt BerichtKit nicht/);
+    await page.click('#btnAsbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('ok – BerichtKit im Browser: öffnen, Vorschau, Einstellungen, Word-Datei in „Mitteilungen“, Angaben im Projektordner, Spektron-Leiste');
   } catch (e) {

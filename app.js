@@ -1,11 +1,12 @@
-/* BerichtKit – Asbest-Untersuchungsbericht (Word) aus den Spektron-Projektdaten.
+/* BerichtKit – Untersuchungsbericht (Word) aus den Spektron-Projektdaten; Berichtsart über #…&art= (bisher: Asbest).
    Liest nur: _Projekt.json (Projektzentrale), *_Daten.json (LabelKit), _Ergebnisse.json (ResultKit), _Bildumbenenner.json + Fotos (FotoKit).
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.10.0';
 const APP_DATE = '31.10.2026';
 const CHANGELOG = [
+  ['1.10.0', '31.10.2026', 'Vorbereitung Brandbericht (Schritt 1, am Asbestbericht ändert sich nichts): Die Berichtstexte sind aufgeteilt in gemeinsame Bausteine (bericht-gemeinsam.js: Deckblatt mit/ohne Versicherung, Kopfzeilen, Personen, Unterschriften, Anlagen, Proben und Asbest-Befund) und den Asbestbericht (bericht-asbest.js); bericht-text.js wählt die Berichtsart. Die Projektzentrale kann die Berichtsart mitgeben (#…&art=asbest|brand) – „Brandbericht“ zeigt vorerst „kommt bald“ mit Knopf zum Asbestbericht. Word-Ausgabe: Spaltenbreiten je Tabelle und Unterüberschriften (kursiv) für spätere Berichtsarten. Geprüft: alle Beispielberichte als Modell und Word-Datei vorher/nachher gleich.'],
   ['1.9.0', '31.10.2026', 'Stornierte Proben (Folge zu LabelKit 4.49.0 „Proben stornieren“): Eine in LabelKit stornierte Asbestprobe ist keine Probe mehr – sie fehlt in Tabelle 1, im Text (Probenzahl, Aufzählungen, Sätze je Probe), in der Probenliste und im Abgleich der Entnahmestelle und sperrt das Speichern nie („… noch kein Ergebnis in ResultKit“ kommt für sie nicht mehr). Die übrigen Proben behalten ihre LabelKit-Nummer, es wird nicht neu durchnummeriert (z. B. 1, 2, 4). Steht im Prüfbericht trotzdem ein Wert für die stornierte Probe, kommt er nicht in den Bericht; ein Hinweis sagt es („P3 ist in LabelKit storniert – der Laborwert (Prüfbericht …) kommt nicht in den Bericht.“). Sind alle Asbestproben storniert, gibt es keinen Bericht ohne Proben: Speichern in „Mitteilungen“ ist dann gesperrt (nur Entwurf).'],
   ['1.8.0', '30.10.2026', 'Anlagen fallen nicht mehr still aus dem Bericht: Fehlt die Bilddokumentation oder der Probenplan, ist eine davon veraltet oder unvollständig, steht immer ein Hinweis da („… veraltet – nicht im Bericht. In FotoKit neu erstellen oder trotzdem anhaken.“) – mit Sprung in FotoKit bzw. PlanKit. Annahmen bestätigen: „Versicherer angenommen“ steht nur noch einmal in den Hinweisen, mit „✓ stimmt“ wie beim Probenehmer; ändert sich der Auftraggeber, fragt BerichtKit wieder. Ist der Zuständige Messtechniker (oder fehlt), schlägt BerichtKit für die Unterschrift die erste Sachverständige der Liste vor – jetzt sichtbar als „angenommen – bitte prüfen“ mit „✓ stimmt“. Einstellungen: Die Rolle „Sachverständige(r)“ wird jetzt ausdrücklich gespeichert („nicht festgelegt“ ist eine eigene Wahl) – der Hinweis „… hat die Proben genommen … Rolle nicht festgelegt“ ist nach einmaligem Festlegen weg und hat einen Knopf „Einstellungen öffnen“.'],
   ['1.7.0', '30.10.2026', 'Berichtsdatum und Mitteilung-Nr. bleiben nicht mehr stehen: Vorgaben (heutiges Datum, nächste freie Mitteilung, Auftragsdatum, Auftraggeber, Probenehmer, Labor) werden bei jedem Öffnen neu berechnet; in „_BerichtKit.json“ stehen nur noch Felder, die jemand selbst geändert hat. Gibt es die gespeicherte Mitteilung schon, schlägt BerichtKit die nächste freie vor (außer jemand hat die Nummer bewusst zurückgestellt und noch nicht gespeichert); ein Datum, das zu einer schon gespeicherten Mitteilung gehört, weicht dem heutigen – beides mit Hinweis. Ältere Angaben (bis 1.6.1) werden beim Öffnen einmal bereinigt; was davon bleibt und von den Projektdaten abweicht, nennt ein Hinweis. „Datei gibt es schon“: eigener Dialog mit „Ersetzen“, „Daneben als (2) speichern“ und „Abbrechen“ (Standard, auch Esc) – ist die Mitteilung schon beim Büro, gibt es kein „Ersetzen“, sondern „Als nächste Mitteilung speichern“. Projektdaten, LabelKit und ResultKit werden beim Zurückkommen ins Fenster und vor dem Speichern/Herunterladen neu gelesen, wenn sie sich geändert haben – mit bleibendem Hinweis „Daten neu gelesen“; vor dem Speichern hält BerichtKit dann an, damit du die neue Vorschau erst ansehen kannst.'],
@@ -49,8 +50,27 @@ const PROJEKT_URL = {
     if (url.href !== location.href) try { history.replaceState(history.state, '', url); } catch (e) { /* file:// */ }
   },
 };
+/* ---------- Berichtsart: #…&art=asbest|brand (Projektzentrale) ----------
+   Ohne Angabe: Asbestbericht. Eine Berichtsart, die es noch nicht gibt (T.BERICHTSARTEN, bereit:false), zeigt „kommt bald“
+   statt eines Berichts der falschen Art. Die Berichtsart steht als Vorgabe im Formular (form.art), nie in den eigenen Angaben. */
+const ART_URL = {
+  lesen: () => String(new URLSearchParams(location.hash.slice(1)).get('art') ?? new URLSearchParams(location.search).get('art') ?? '').trim().toLowerCase(),
+  /** art='' entfernt die Angabe */
+  setzen(art) {
+    const url = new URL(location.href);
+    const teile = url.hash.slice(1).split('&').filter(t => t && !new URLSearchParams(t).has('art'));
+    if (art) teile.push('art=' + encodeURIComponent(art));
+    url.searchParams.delete('art'); url.hash = teile.join('&');
+    if (url.href !== location.href) try { history.replaceState(history.state, '', url); } catch (e) { /* file:// */ }
+  },
+};
+/** Berichtsart laut Adresse → { art, name, bereit } oder { art, unbekannt: true } */
+function artAusAdresse() {
+  const art = ART_URL.lesen() || 'asbest';
+  return T.BERICHTSARTEN.find(a => a.art === art) || { art, name: '', bereit: false, unbekannt: true };
+}
 
-const S = { archiv: null, archivOk: false, dir: null, ordner: null, pj: null, lk: null, erg: null, fk: null, fotosDir: null, feldbogen: null,
+const S = { art: 'asbest', archiv: null, archivOk: false, dir: null, ordner: null, pj: null, lk: null, erg: null, fk: null, fotosDir: null, feldbogen: null,
   mitarbeiter: [], cfg: { personen: {} }, cfgText: null, cfgOrt: 'archiv', sig: {}, form: {}, fotoListe: {}, quellen: [], thumbs: {}, logo: null, laedt: false,
   // Formular = Vorgaben (bei jedem Öffnen neu berechnet) + eigene Angaben (nur die stehen in _BerichtKit.json) – siehe bericht-vorgaben.js
   vorgabe: {}, eigen: {}, naechste: 1,
@@ -81,6 +101,9 @@ async function start() {
   $('version').title = CHANGELOG.map(c => `${c[0]} (${c[1]}): ${c[2]}`).join('\n');
   document.title = `BerichtKit ${APP_VERSION} · Spektron`;
   if (!('showDirectoryPicker' in window)) { zeigeStart('BerichtKit braucht Edge oder Chrome (Zugriff auf Ordner).', false); $('btnWaehlen').disabled = true; return; }
+  const art = artAusAdresse();
+  if (!art.bereit) { zeigeBald(art); return; }
+  S.art = art.art;
   S.archiv = await SUITE.get('archiv').catch(() => null) || null;
   const name = PROJEKT_URL.lesen();
   if (name && S.archiv) {
@@ -91,10 +114,25 @@ async function start() {
   }
   zeigeStart(name ? 'Archivordner unbekannt – bitte einmal die Projektzentrale öffnen oder den Projektordner wählen.' : null, false);
 }
+const START = { titel: $('startTitel').textContent, text: $('startText').textContent };
 function zeigeStart(text, zugriff) {
   $('start').hidden = false; $('app').hidden = true; $('leiste').hidden = true;
-  if (text) $('startText').textContent = text;
-  $('btnZugriff').hidden = !zugriff;
+  $('startTitel').textContent = START.titel; $('startText').textContent = text || START.text;
+  $('btnZugriff').hidden = !zugriff; $('btnWaehlen').hidden = false; $('btnAsbest').hidden = true;
+}
+/** Berichtsart aus der Adresse gibt es (noch) nicht: „kommt bald“ und ein Knopf zum Asbestbericht – nie ein Bericht der falschen Art */
+function zeigeBald(a) {
+  zeigeStart(a.unbekannt ? `Die Berichtsart „${a.art}“ kennt BerichtKit nicht – bisher gibt es den Asbestbericht.`
+    : `Der ${a.name} kommt bald. Bisher erstellt BerichtKit den Asbestbericht.`, false);
+  $('startTitel').textContent = a.unbekannt ? 'Bericht' : a.name;
+  $('btnWaehlen').hidden = true; $('btnAsbest').hidden = false;
+}
+/** „Asbestbericht öffnen“: Angabe aus der Adresse nehmen; ein schon offenes Projekt wieder zeigen, sonst wie beim Start öffnen */
+function zumAsbestbericht() {
+  ART_URL.setzen(''); S.art = 'asbest';
+  const name = PROJEKT_URL.lesen();
+  if (S.dir && (!name || name === S.dir.name)) { $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; return; }
+  start();
 }
 async function projektAusArchiv(name) {
   let dir = null;
@@ -112,6 +150,7 @@ async function waehlen() {
     else if (await dir.isSameEntry(S.archiv)) { alert('Das ist der Archivordner – bitte einen Projektordner darin wählen.'); return; }
   }
   PROJEKT_URL.setzen(dir.name);
+  if (!artAusAdresse().bereit) { ART_URL.setzen(''); S.art = 'asbest'; }   // selbst gewählt aus „kommt bald“: Asbestbericht
   await oeffnen(dir);
 }
 
@@ -364,7 +403,7 @@ function vorgabenBerechnen() {
   const pn = (S.feldbogen && S.feldbogen.kuerzel) || P.zustaendig;
   // Unterschrift: Zuständiger, wenn Sachverständige(r) – sonst erste(r) SV der Liste, als Annahme sichtbar (bericht-text.js svVorschlag)
   const svV = T.svVorschlag(S.cfg, S.mitarbeiter, P.zustaendig);
-  return { datum: heute(), mitteilung: S.naechste, variante: 'eigen', eingangsdatum: '', auftragsdatum: P.auftragsdatum,
+  return { art: S.art, datum: heute(), mitteilung: S.naechste, variante: 'eigen', eingangsdatum: '', auftragsdatum: P.auftragsdatum,
     agSatz: T.mitArtikel(T.zeilen(P.ag)[0] || '').text, probenehmer: pn, sv: svV.kuerzel, svVorschlag: svV, mt: pn && rolle(pn) === 'mt' ? pn : '', labor: S.cfg.labor || '', einbau: 'unbekannt',
     aus: {}, kmf: {}, who: {}, ki: {}, foto: {} };
 }
@@ -869,7 +908,7 @@ async function einstellungenSpeichern() {
 /* ---------- Eingaben ---------- */
 function setze(k, v) { S.form[k] = v; formMerken(k); render(); }
 function verbinden() {
-  $('btnWaehlen').onclick = waehlen; $('btnOrdner').onclick = waehlen;
+  $('btnWaehlen').onclick = waehlen; $('btnOrdner').onclick = waehlen; $('btnAsbest').onclick = zumAsbestbericht;
   $('btnEinstellungen').onclick = einstellungenOeffnen;
   $('eAbbrechen').onclick = () => $('dlgEinstellungen').close(); $('eSpeichern').onclick = einstellungenSpeichern;
   $('btnErstellen').onclick = speichern; $('btnLaden').onclick = herunterladen;
@@ -927,7 +966,10 @@ function verbinden() {
     S.fokusLauf = Promise.all([quellenAuffrischen('fokus'), anlagenLesen()]).then(([g]) => { if (g.length || anl() !== vorher) render(); }).catch(() => {});
   });
   $('btnMeldungenWeg').onclick = () => { S.meldungen = []; meldungenZeigen(); };
-  window.addEventListener('hashchange', () => { const n = PROJEKT_URL.lesen(); if (n && (!S.dir || n !== S.dir.name)) start(); });
+  window.addEventListener('hashchange', () => {
+    const n = PROJEKT_URL.lesen(), a = artAusAdresse();
+    if ((n && (!S.dir || n !== S.dir.name)) || !a.bereit || (S.dir && a.art !== S.art)) start();
+  });
 }
 verbinden();
 start();

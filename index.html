@@ -143,10 +143,11 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 
 <div id="start" class="start" hidden>
   <div class="karte">
-    <h2 style="font-size:18px;text-transform:none;color:var(--text)">Asbest-Untersuchungsbericht</h2>
+    <h2 id="startTitel" style="font-size:18px;text-transform:none;color:var(--text)">Asbest-Untersuchungsbericht</h2>
     <p id="startText">Projekt in der Projektzentrale öffnen und dort „Bericht“ wählen – oder hier den Projektordner wählen.</p>
     <p><button class="primary" id="btnZugriff" hidden>Zugriff auf den Archivordner erlauben</button>
-       <button class="primary" id="btnWaehlen">Projektordner wählen</button></p>
+       <button class="primary" id="btnWaehlen">Projektordner wählen</button>
+       <button class="primary" id="btnAsbest" hidden>Asbestbericht öffnen</button></p>
   </div>
 </div>
 
@@ -241,6 +242,8 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 <script src="spektron-ordner.js"></script>
 <script src="anlagen.js"></script>
 <script src="bericht-vorgaben.js"></script>
+<script src="bericht-gemeinsam.js"></script>
+<script src="bericht-asbest.js"></script>
 <script src="bericht-text.js"></script>
 <script src="bericht-docx.js"></script>
 <script src="mosaik-leiste.js"></script>
