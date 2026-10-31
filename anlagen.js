@@ -192,6 +192,8 @@ function erkennen(e) {
    pruefberichte: [{ nr, pdf }] (pdf: Pfad oder ''), labor, gefunden: erkennen(), wahl: form.anlagen { <art>: { an, key } }
    (eigene Wahl gilt nur, solange dieselben Dateien im selben Stand gefunden werden), extra: form.anlagenExtra [{ pfad, bezeichnung, fehlt }],
    ohneEigeneProbenahme: zugestellte Probe – fehlende feste Anlagen nicht als „nicht gefunden“ anzeigen;
+   ohnePruefbericht: keine Laborproben im Bericht (Brandbericht nur mit Brandgeruch oder ohne Proben) – keine Platzhalter-Anlage
+   „Prüfbericht Nr. [Prüfbericht-Nr.]“; sonst steht bei leerer Liste der Platzhalter als Anlage 1 (Prüfbericht folgt);
    ohne: feste Anlagen, die dieser Bericht nicht braucht (Brandbericht ohne Brandgeruch-Proben: ['brandgeruch']) – weder Zeile noch Hinweis.
    Ergebnis: { liste:[{ nr, art, titel, zeilen, dateien }], zeilen:[für die Oberfläche], nr:{ <art>: n }, hinweise:[],
                aktionen:{ <Hinweistext>: { art, was:'erstellen'|'öffnen' } } (Sprung in die App, die die Anlage erzeugt) }
@@ -202,7 +204,7 @@ function zusammenstellen(o) {
   const profil = PROFILE[o.profil || 'asbest'], gefunden = o.gefunden || {}, wahl = o.wahl || {}, hinweise = [], aktionen = {}, ohne = new Set(o.ohne || []);
   const hinweis = (text, art, was) => { hinweise.push(text); if (art && ARTEN[art] && ARTEN[art].link) aktionen[text] = { art, was }; };
   const liste = [], zeilen = [], nr = {};
-  const prb = (o.pruefberichte && o.pruefberichte.length ? o.pruefberichte : [{ nr: '', pdf: '' }]);
+  const prb = o.pruefberichte && o.pruefberichte.length ? o.pruefberichte : o.ohnePruefbericht ? [] : [{ nr: '', pdf: '' }];
   prb.forEach(p => {
     const n = liste.length + 1;
     liste.push({ nr: n, art: 'pruefbericht', titel: 'Prüfbericht', dateien: p.pdf ? [p.pdf] : [],
@@ -210,7 +212,7 @@ function zusammenstellen(o) {
     zeilen.push({ art: 'pruefbericht', titel: 'Prüfbericht' + (p.nr ? ' ' + p.nr : ''), nr: n, an: true, fest: true, dateien: p.pdf ? [p.pdf] : [], zustand: p.pdf ? 'ok' : 'fehlt',
       grund: p.pdf ? '' : 'PDF nicht in „Laborergebnisse“' });
   });
-  nr.pruefbericht = 1;
+  if (prb.length) nr.pruefbericht = 1;
   // Eigene Wahl gilt nur für denselben Stand: andere Dateien oder inzwischen veraltet → wieder nach der Regel
   const wahlKey = k => k.key + (k.veraltet ? '#veraltet' : '');
   const anHaken = (art, k, fest) => {

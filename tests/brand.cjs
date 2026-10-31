@@ -246,4 +246,20 @@ fall('Brandgeruch-Anlage: Nummer auch mitten im Titel, gekürzter Name (64 Zeich
   assert.equal(k.veraltet, null); assert.match(k.grund, /aus einer anderen LabelKit-Datei erstellt \(neu_Daten\.json\)/);
 });
 
+fall('Ohne Laborproben (nur Brandgeruch / gar keine Proben): keine Platzhalter-Anlage „Prüfbericht“, Nummern ab 1 (Codex, PR #14)', () => {
+  const f = F.BR1_voll_Versicherung;
+  const nurBg = modell({ ...f, lk: D.lk({ brandgeruch: [[1, 'Sofa', 'Stoff', '+', '+', '+', '+', '+']], bgDatum: '2026-10-20', bgBlind: false }), erg: D.erg([]) });
+  assert.deepEqual(nurBg.anlagenListe.map(a => [a.nr, a.art]), [[1, 'bilddoku'], [2, 'probenplan'], [3, 'brandgeruch']]);
+  assert.ok(!nurBg.luecken.includes('[Prüfbericht-Nr.]')); assert.ok(!nurBg.luecken.includes('[Labor]'));
+  assert.equal(text(nurBg, 4), 'Es wurde eine Materialprobe entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage 3 dargestellt.\nDie Entnahmestelle ist in der Bilddokumentation (Anlage 1) und im Probenplan (Anlage 2) dargestellt.');
+  const keine = modell({ ...f, lk: D.lk({}), erg: D.erg([]) });
+  assert.deepEqual(keine.anlagenListe.map(a => a.art), ['bilddoku', 'probenplan']);
+  // Laborproben ohne Prüfbericht: Platzhalter bleibt (Prüfbericht folgt), wie im Asbestbericht
+  const ohneBericht = modell({ ...f, lk: D.lk({ pak: [[1, '2026-10-14', 'A', 'Wischprobe']] }), erg: D.erg([]) });
+  assert.equal(T.text(ohneBericht.anlagenTeile[0].zeilen[0]), 'Prüfbericht Nr. [Prüfbericht-Nr.]');
+  // Asbestbericht ohne Ergebnisse: Platzhalter wie bisher
+  assert.equal(A.zusammenstellen({ profil: 'asbest', pruefberichte: [] }).liste[0].art, 'pruefbericht');
+  assert.deepEqual(A.zusammenstellen({ profil: 'brand', pruefberichte: [], ohnePruefbericht: true }).nr, {});
+});
+
 console.log(`Brandbericht: ${n} Fälle bestanden.`);

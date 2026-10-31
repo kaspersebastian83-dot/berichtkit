@@ -193,7 +193,9 @@ function bericht(eingabe) {
   for (const nr of [...rk.cl, ...rk.pak, ...asbNr, ...kmfNr]) if (!prb.includes(nr)) prb.push(nr);
   const pdfVon = nr => pruefberichtPdf(e.erg, nr);
   const A = ANL.zusammenstellen({ profil: 'brand', pruefberichte: prb.map(nr => ({ nr, pdf: pdfVon(nr) })), labor, gefunden: e.anlagen || {},
-    wahl: f.anlagen, extra: f.anlagenExtra, ohne: lk.brandgeruch.length ? [] : ['brandgeruch'] });
+    wahl: f.anlagen, extra: f.anlagenExtra, ohne: lk.brandgeruch.length ? [] : ['brandgeruch'],
+    // Nur Brandgeruch (oder gar keine Proben): kein Laborbericht zu erwarten – keine Platzhalter-Anlage „Prüfbericht Nr. […]“ (Codex, PR #14)
+    ohnePruefbericht: !(lk.clWisch.length + lk.clAndere.length + lk.pakWisch.length + lk.pakMaterial.length + asb.length + kmf.length + offen.filter(o => !o.aus).length) });
   anlagenUebernehmen(A, hinweise, hinweisAktionen);
   const anlNr = nrs => anlagenVerweis(nrs.map(nr => prb.indexOf(nr) + 1).filter(n => n > 0));
   const nrListe = nrs => liste(nrs.map(x => 'Nr. ' + x));
