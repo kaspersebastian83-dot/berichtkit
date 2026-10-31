@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.12.0';
+const APP_VERSION = '1.13.0';
 const APP_DATE = '31.10.2026';
 const CHANGELOG = [
+  ['1.13.0', '31.10.2026', 'Brandbericht Schritt 4 – 5. Befund, weiter als Vorschau (am Asbestbericht ändert sich nichts): Unter „5. Befund“ steht 5.1 „Brandlast und Schadenbild“ noch als gelbe Lücke (Freitext folgt), danach – nur, wozu es Ergebnisse gibt, fortlaufend nummeriert – 5.2 Korrosionsschäden (Chlorid), 5.3 Organische Schadstoffe (PAK), 5.4 Künstliche Mineralfaserwolle, 5.5 Asbest, 5.6 Sensorische Prüfung auf Brandgeruch und 5.7 Weitere Untersuchungen. Chlorid und PAK: fester Text, Spanne der Werte, Zähl-Absatz (wie viele Wischproben oberhalb/im Bereich/unterhalb von 5–10 µg/cm² bzw. über/unter der Hintergrundreferenz), höchster Wert mit Probe und Entnahmestelle, Proben ohne Nachweis über der Bestimmungsgrenze, Referenzproben („REF“/„Referenz“) und Freimessungen („F-…“) in eigenen Sätzen. Laborwerte stehen wie im Prüfbericht; eingeordnet wird mit denselben Grenzen wie in ResultKit (Chlorid in mg/m² umgerechnet). Neu unter „Brandbericht“: Haken „Ergebnistabellen“ (Chlorid/PAK als Tabelle, sonst Verweis auf den Prüfbericht; Asbest-Tabelle immer), Hintergrundreferenz PAK 10/100 µg/m² (Vorbelegung aus der Nutzung) mit optionaler Begründung. Asbest mit Methode nach VDI 3866 Blatt 5 (Anhang B aus der Nachweisgrenze des Prüfberichts), KMF wie im Asbestbericht, Brandgeruch mit Ergebnis-Satz je Probe aus den fünf Bewertungen (verdeckt/unvollständig → Lücke). Chlorid-Materialproben, Chlorid-Bohrmehl und weitere Proben aus LabelKit „Sonstige“ stehen jetzt in 4. und 5. (Werte im Satz, Bewertung als Lücke); Prüfberichte der weiteren Proben werden Anlage.'],
   ['1.12.0', '31.10.2026', 'Brandbericht Schritt 3 – Gerüst, als Vorschau (am Asbestbericht ändert sich nichts): Aus der „kommt bald“-Karte oder mit #…&art=brand&vorschau=1 öffnet BerichtKit den Brandbericht mit eigener Formularkarte „Brandbericht“ – Titel (Sanierungsvorschlag / Untersuchungsbericht), Umfang (Gebäude, technische Einrichtung, Warenvorräte), Brandort im Satz (Vorbelegung nach der Nutzung), Anwesende (eintragen / nur unser Büro / Teilnehmerliste), zweite Person vor Ort, Gefahrenbereich GB 0–3, Satz zu den übrigen Wohnungen/Bereichen. Der Bericht: Deckblatt mit „Schaden vom:“ bzw. „Brandschaden“ (Datum unbekannt) statt Betreff, Schaden-Nr. mehrzeilig; Kopfzeile „Brandschaden vom …“; 1. Veranlassung (Korrosionsabsätze nur mit Chlorid-Proben), 2. Aufgabenstellung, 3. Ortsbesichtigung (Ortstermin aus der Projektzentrale, sonst Probenahmedatum aus LabelKit), 4. Probenahme (Chlorid, PAK, Asbest mit Materialien, KMF, Brandgeruch; Zahlwort bis zwölf; gemeinsamer Prüfbericht Chlorid/PAK), 7. Arbeitsschutzmaßnahmen (GB 0 eigener Satz, TRGS 521/519), Unterschriften und Anlagen (Prüfberichte Chlorid, PAK, Asbest/KMF, Bilddokumentation, Probenplan, Brandgeruch aus der Projektzentrale – mit Stand über das Anlagen-Protokoll und Abgleich der Anlagen-Nr.). 5. Befund, 6. Sanierungsmaßnahmen/Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit gelber Lücke da (folgt in Schritt 4/5). Solange der Brandbericht nicht fertig ist, ist Speichern in „Mitteilungen“ gesperrt – „Entwurf herunterladen“ geht. Eigene Angaben der Brand-Seite stehen in _BerichtKit.json unter „brand“; das Protokoll der gespeicherten Berichte merkt sich die Berichtsart.'],
   ['1.11.0', '31.10.2026', 'Offene Stellen sichtbar (Brandbericht Schritt 2, gilt schon für den Asbestbericht): Jede gelbe Lücke in der Word-Datei bekommt einen Kommentar am Rand – „Noch ausfüllen: …“, Autor „BerichtKit“ –, in Word mit Überprüfen › Nächster Kommentar von Lücke zu Lücke; ist die Stelle gefüllt, Kommentar löschen. Gelbe Markierung und [Text] bleiben, die Projektzentrale findet bei der Übergabe dieselben Lücken wie bisher. Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb (LibreOffice kann Kommentare dort nicht laden) – sie stehen immer auch auf dem Deckblatt oder im Text und haben dort ihren Kommentar. Im Formular oben „n Stellen noch offen“: Klick springt zum Feld, das die nächste Lücke füllt; leere Pflichtfelder sind gelb umrandet; in den Hinweisen steht zu jeder Lücke, wo sie zu füllen ist (z. B. „Personen › Labor“, „in der Projektzentrale eintragen“). Zähler und Rückfrage vor dem Speichern zählen auch, was erst die Word-Datei als Lücke einsetzt: fehlende Projektnummer und ein Foto, dessen Datei sich nicht lesen lässt ([Foto fehlt: …]).'],
   ['1.10.0', '31.10.2026', 'Vorbereitung Brandbericht (Schritt 1, am Asbestbericht ändert sich nichts): Die Berichtstexte sind aufgeteilt in gemeinsame Bausteine (bericht-gemeinsam.js: Deckblatt mit/ohne Versicherung, Kopfzeilen, Personen, Unterschriften, Anlagen, Proben und Asbest-Befund) und den Asbestbericht (bericht-asbest.js); bericht-text.js wählt die Berichtsart. Die Projektzentrale kann die Berichtsart mitgeben (#…&art=asbest|brand) – „Brandbericht“ zeigt vorerst „kommt bald“ mit Knopf zum Asbestbericht. Word-Ausgabe: Spaltenbreiten je Tabelle und Unterüberschriften (kursiv) für spätere Berichtsarten. Geprüft: alle Beispielberichte als Modell und Word-Datei vorher/nachher gleich.'],
@@ -678,16 +679,23 @@ function brandZeigen(m, f) {
   $('zeileAnwesende').hidden = anw !== 'liste'; $('fbAnwesende').value = b.anwesende || '';
   $('zeilePerson2').hidden = anw === 'teilnehmer';   // mit Teilnehmerliste nennt 3. keine Personen
   optionen($('fbPerson2'), b.person2, 'keine', k => k !== f.probenehmer);
+  // 5. Befund: Ergebnistabellen (nur mit Chlorid-/PAK-Wischproben), Hintergrundreferenz PAK (Vorbelegung aus der Nutzung) + Begründung
+  $('zeileTabellen').hidden = !mb.mitWischErgebnis; $('fbTabellen').checked = !!b.tabellen;
+  $('zeileReferenz').hidden = $('zeileReferenzGrund').hidden = !mb.mitPakWisch;
+  $('fbReferenz').value = b.referenz || ''; $('fbReferenzGrund').value = b.referenzGrund || '';
+  $('qbReferenz').textContent = mb.referenzVorgabe ? `Vorbelegung aus der Nutzung „${mb.nutzung}“: ca. ${mb.referenzVorgabe} µg/m² – anders gewählt? Dann Begründung ergänzen`
+    : `Nutzung ${mb.nutzung ? `„${mb.nutzung}“ ohne Zuordnung` : 'in der Projektzentrale nicht eingetragen'} – bitte wählen`;
   $('fbGb').value = b.gb || '';
   $('zeileUebrige').hidden = !b.gb || b.gb === '0'; $('fbUebrige').checked = !!b.uebrige;
   $('lbUebrige').textContent = `Satz „in den übrigen ${mb.nutzung === 'Wohnen' ? 'Wohnungen' : 'Bereichen'} keine besonderen Maßnahmen“ in 7.`;
-  const proben = [z.chlorid && `${z.chlorid} Chlorid`, z.pak && `${z.pak} PAK (Wischproben)`, z.pakMaterial && `${z.pakMaterial} PAK (Material)`,
-    z.asbest && `${z.asbest} Asbest`, z.kmf && `${z.kmf} KMF`, z.brandgeruch && `${z.brandgeruch} Brandgeruch`].filter(Boolean);
+  const proben = [z.chlorid && `${z.chlorid} Chlorid`, z.chloridAndere && `${z.chloridAndere} Chlorid (Material)`, z.bohrmehl && `${z.bohrmehl} Chlorid-Bohrmehl`,
+    z.pak && `${z.pak} PAK (Wischproben)`, z.pakMaterial && `${z.pakMaterial} PAK (Material)`, z.asbest && `${z.asbest} Asbest`, z.kmf && `${z.kmf} KMF`,
+    z.brandgeruch && `${z.brandgeruch} Brandgeruch`, z.sonstige && `${z.sonstige} weitere (Sonstige)`].filter(Boolean);
   $('qbProjekt').textContent = [`Proben: ${proben.length ? proben.join(' · ') : 'keine gefunden'}`,
     mb.schadendatum === 'unbekannt' ? 'Schadendatum: nicht bekannt' : mb.schadendatum === 'leer' ? 'Schadendatum: in der Projektzentrale nicht eingetragen' : '',
     mb.schadenereignis && `Schadenereignis: ${mb.schadenereignis}`, mb.brandgut && `Brandgut: ${mb.brandgut}`].filter(Boolean).join(' · ') + ' (Projektzentrale/LabelKit, nur zur Hilfe)';
   const art = T.BERICHTSARTEN.find(a => a.art === 'brand');
-  $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau: 5. Befund, 6. und 8. stehen als Lücke da. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht. ';
+  $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau: 5.1, 6. und 8. stehen als Lücke da. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht. ';
   $('brandVorschau').hidden = !!(art && art.bereit);
 }
 /* Offene Stellen (Lücken im Bericht): Zähler oben „n Stellen noch offen“, leere Pflichtfelder gelb umrandet, Klick auf den
@@ -1066,6 +1074,9 @@ function verbinden() {
   document.querySelectorAll('input[name=brAnw]').forEach(r => { r.onchange = () => setzeBrand({ nurBuero: r.value === 'buero', teilnehmerliste: r.value === 'teilnehmer' }); });
   $('fbAnwesende').onchange = e => setzeBrand({ anwesende: e.target.value.trim() });
   $('fbPerson2').onchange = e => setzeBrand({ person2: e.target.value });
+  $('fbTabellen').onchange = e => setzeBrand({ tabellen: e.target.checked });
+  $('fbReferenz').onchange = e => setzeBrand({ referenz: e.target.value });
+  $('fbReferenzGrund').onchange = e => setzeBrand({ referenzGrund: e.target.value.trim() });
   $('fbGb').onchange = e => setzeBrand({ gb: e.target.value });
   $('fbUebrige').onchange = e => setzeBrand({ uebrige: e.target.checked });
   $('probenListe').addEventListener('change', e => {

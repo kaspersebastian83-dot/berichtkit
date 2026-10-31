@@ -12,9 +12,9 @@ const pj = (o = {}) => B.pj({ projektnummer: '99.9002', objekt: 'Erdgeschoss lin
   schadennummer: 'BV-2026-0815', ...o });
 
 /** LabelKit-Datei. Proben je Liste als [nr, datum, z2 (Raum/Ort), matrix, extra]; Brandgeruch [id, z1, z2, p1 … p5] */
-function lk({ pak = [], chlorid = [], asbest = [], sonstige = [], brandgeruch = [], bgDatum = '', bgBlind, projektNr = '99.9002' } = {}) {
+function lk({ pak = [], chlorid = [], asbest = [], sonstige = [], brandgeruch = [], bgDatum = '', bgBlind, projektNr = '99.9002', ui = {} } = {}) {
   const probe = ([nr, datum, z2, matrix, extra]) => ({ id: nr, _nr: nr, datum, z1: projektNr, z2, z3: 'verrußt', z4: 'Putz', matrix, cm2: matrix === 'Wischprobe' ? '600' : '', notiz: '', ...extra });
-  return { version: '4.51.0', projekt: { nr: projektNr }, ui: {},
+  return { version: '4.51.0', projekt: { nr: projektNr }, ui,
     proben: pak.map(probe), chloridProben: chlorid.map(x => ({ ...probe(x), chloridNr: x[0] })), sonstigeProben: sonstige.map(probe),
     asbestProben: asbest.map(([nr, datum, z2, z3, matrix, extra]) => ({ id: nr, _nr: nr, datum, z1: projektNr, z2, z3, z4: 'fest gebunden', zustand: 'intakt', matrix, cm2: '', notiz: '', ...extra })),
     brandgeruchProben: brandgeruch.map(([id, z1, z2, ...p]) => ({ id, z1, z2, p1: p[0] || '', p2: p[1] || '', p3: p[2] || '', p4: p[3] || '', p5: p[4] || '' })),
@@ -23,7 +23,10 @@ function lk({ pak = [], chlorid = [], asbest = [], sonstige = [], brandgeruch = 
 
 /** Laborwerte je Art (Wortlaut wie Eurofins/ResultKit) */
 const W = {
-  cl: r => [{ p: 'Chlorid', r, u: 'µg/cm²' }],
+  cl: (r, u = 'µg/cm²') => [{ p: 'Chlorid', r, u }],
+  clMat: (r, u) => [{ p: 'Chlorid', r, u }],
+  blei: r => [{ p: 'Blei', r, u: 'mg/kg' }],
+  pakNn: () => [{ p: 'Naphthalin', r: '< 0,5', u: 'µg/m²' }, { p: 'Benzo[a]pyren', r: '< 0,5', u: 'µg/m²' }, { p: 'Summe 16 EPA-PAK exkl. BG', r: 'n. n.', u: 'µg/m²' }],
   pak: r => [{ p: 'Naphthalin', r: '< 0,5', u: 'µg/m²' }, { p: 'Benzo[a]pyren', r: '1,2', u: 'µg/m²' }, { p: 'Summe 16 EPA-PAK exkl. BG', r, u: 'µg/m²' }],
   pakMat: r => [{ p: 'Summe 16 EPA-PAK exkl. BG', r, u: 'mg/kg' }],
   ...B.werte,
@@ -58,15 +61,15 @@ const faelle = {
     pj: pj(),
     lk: lk({ chlorid: [[1, '2026-10-14', 'EG Küche Brandraum Decke', 'Wischprobe'], [2, '2026-10-14', 'EG Flur Wand', 'Wischprobe'], [3, '2026-10-14', 'OG Wohnzimmer REF Wand', 'Wischprobe']],
       pak: [[4, '2026-10-14', 'EG Küche Brandraum Decke', 'Wischprobe'], [5, '2026-10-14', 'EG Flur Wand', 'Wischprobe'], [6, '2026-10-14', 'OG Wohnzimmer REF Wand', 'Wischprobe'],
-        [7, '2026-10-14', 'EG Küche F-1 Wand', 'Wischprobe'], [8, '2026-10-14', 'EG Küche Dämmung', 'Material']],
+        [7, '2026-10-14', 'F-EG Küche Wand', 'Wischprobe'], [8, '2026-10-14', 'EG Küche Dämmung', 'Material']],
       asbest: [[9, '2026-10-14', 'EG Küche Boden', 'Fliesenkleber', 'Bituminöse Proben / Kleber'], [10, '2026-10-14', 'EG Küche Wand', 'Putz', 'Putze / Spachtelmassen'],
         [11, '2026-10-14', 'EG Küche Decke', 'Dämmstoff Mineralwolle', 'Sonstige']],
       brandgeruch: [[1, 'Sofa Wohnzimmer', 'Stoffbezug', '+', '+', '++', '+', '+'], [2, 'Teppich Flur', 'Wolle', '(+)', '-', '(+)', '-', '(+)']], bgDatum: '20.10.2026', bgBlind: false }),
     erg: erg([{ nr: 'AR-999-2026-000101-01', proben: [[1, W.cl('12,3'), 'Chlorid'], [2, W.cl('4,1'), 'Chlorid'], [3, W.cl('< 0,5'), 'Chlorid'],
-        [4, W.pak('2.300'), 'PAK'], [5, W.pak('85'), 'PAK'], [6, W.pak('9'), 'PAK'], [7, W.pak('7'), 'PAK'], [8, W.pakMat('14'), 'PAK']] },
+        [4, W.pak('2300'), 'PAK'], [5, W.pak('85'), 'PAK'], [6, W.pak('9'), 'PAK'], [7, W.pak('7'), 'PAK'], [8, W.pakMat('14'), 'PAK']] },
       { nr: 'AR-999-2026-000102-01', proben: [[9, W.chrysotil, 'Asbest'], [10, W.kein, 'Asbest'], [11, W.kmf, 'Asbest']] }]),
     anlagen: anlagen(),
-    form: form({ umfang: { gebaeude: true, technik: true, waren: false }, anwesende: 'Herr Muster (VN) und Herr Beispiel (Sanierungsfirma Muster GmbH)', person2: 'Vom', gb: '2', uebrige: true }),
+    form: form({ umfang: { gebaeude: true, technik: true, waren: false }, anwesende: 'Herr Muster (VN) und Herr Beispiel (Sanierungsfirma Muster GmbH)', person2: 'Vom', gb: '2', uebrige: true, tabellen: true }),
   },
   // Nur PAK (wie 26.0513), ohne Versicherung (Hausverwaltung), Schadendatum „unbekannt“, Untersuchungsbericht, nur unser Büro vor Ort, GB 0
   'BR2_nur_PAK_ohne_Versicherung_GB0': {
@@ -94,10 +97,31 @@ const faelle = {
   'BR4_Gewerbe_Teilnehmerliste_ENTWURF': {
     pj: pj({ nutzung: 'Gewerbe/Industrie', objekt: 'Industriestraße 3, 54321 Beispielstadt', versicherer: 'Andere Versicherung AG' }),
     lk: lk({ chlorid: [[1, '2026-10-15', 'Halle Regal 3', 'Wischprobe']], pak: [[2, '2026-10-15', 'Halle Regal 3', 'Wischprobe']],
+      sonstige: [[3, '2026-10-15', 'Halle Brandschutt', 'Bauschutt', { notiz: 'Schwermetalle' }]],
       brandgeruch: [[1, 'Karton', 'Regal 3', '+', '+', '+', '+', '++']], bgDatum: '2026-10-20', bgBlind: false }),
-    erg: erg([{ nr: 'AR-999-2026-000401-01', vorlaeufig: true, proben: [[1, W.cl('22'), 'Chlorid'], [2, W.pak('410'), 'PAK']] }]),
-    anlagen: anlagen({ brandgeruch: '99-9002_Anlage-7_Brandgeruch_2026-10-21.docx', protokollSha: SHA_ALT, bilddokuAnlage: 'Anlage 2' }),
+    erg: erg([{ nr: 'AR-999-2026-000401-01', vorlaeufig: true, proben: [[1, W.cl('22'), 'Chlorid'], [2, W.pak('410'), 'PAK']] },
+      { nr: 'AR-999-2026-000402-01', proben: [[3, W.blei('120'), 'Sonstige']] }]),
+    anlagen: anlagen({ brandgeruch: '99-9002_Anlage-7_Brandgeruch_2026-10-21.docx', protokollSha: SHA_ALT, bilddokuAnlage: 'Anlage 3' }),
     form: form({ titel: 'Sanierungsvorschlag', umfang: { gebaeude: true, technik: true, waren: true }, brandort: 'in einer Lagerhalle der Muster Logistik GmbH,', teilnehmerliste: true, gb: '1' }, { mt: '' }),
+  },
+  // Gewerbe (Lebensmittelmarkt) mit Referenz 10 µg/m² und Begründung (Befunde Nr. 5), Ergebnistabellen; Chlorid aus einem älteren
+  // Prüfbericht in mg/m² (Einordnung umgerechnet, Wert wie im Bericht), Chlorid-Materialprobe und Chlorid-Bohrmehl (LabelKit „Sonstige“
+  // mit Haken „Chlorid-Bohrmehl“), PAK „n. n.“, Referenzprobe; Untersuchungsbericht ohne Asbest/Brandgeruch
+  'BR5_Gewerbe_Bohrmehl_Tabellen': {
+    pj: pj({ nutzung: 'Gewerbe/Industrie', objekt: 'Marktplatz 1, 54321 Beispielstadt', schadendatum: '2026-10-09' }),
+    lk: lk({ chlorid: [[1, '2026-10-14', 'Verkaufsraum Regal 1', 'Wischprobe'], [2, '2026-10-14', 'Verkaufsraum Regal 2', 'Wischprobe'], [3, '2026-10-14', 'Verkaufsraum Regal 3', 'Wischprobe'],
+        [4, '2026-10-14', 'Lager Wand', 'Wischprobe'], [5, '2026-10-14', 'Büro Wand', 'Wischprobe'], [6, '2026-10-14', 'Verkaufsraum Kassenband', 'Material']],
+      pak: [[7, '2026-10-14', 'Verkaufsraum Regal 1', 'Wischprobe'], [8, '2026-10-14', 'Verkaufsraum Regal 2', 'Wischprobe'], [9, '2026-10-14', 'Verkaufsraum Regal 3', 'Wischprobe'],
+        [10, '2026-10-14', 'Lager Wand', 'Wischprobe'], [11, '2026-10-14', 'Büro REF Wand', 'Wischprobe']],
+      sonstige: [[12, '2026-10-14', 'Verkaufsraum Stütze', 'Material (mineralisch)', { notiz: 'Chlorid Bohrmehl', tiefe: '0 – 2 mm' }],
+        [13, '2026-10-14', 'Verkaufsraum Stütze', 'Material (mineralisch)', { notiz: 'Chlorid Bohrmehl', tiefe: '2 – 5 mm' }]], ui: { bohrmehlAktiv: true } }),
+    erg: erg([{ nr: 'AR-999-2026-000501-01', proben: [[1, W.cl('150', 'mg/m²'), 'Chlorid'], [2, W.cl('70', 'mg/m²'), 'Chlorid'], [3, W.cl('60', 'mg/m²'), 'Chlorid'],
+        [4, W.cl('20', 'mg/m²'), 'Chlorid'], [5, W.cl('< 5', 'mg/m²'), 'Chlorid'], [6, W.clMat('0,02', 'M.-%'), 'Chlorid']] },
+      { nr: 'AR-999-2026-000502-01', proben: [[7, W.pak('25'), 'PAK'], [8, W.pakNn(), 'PAK'], [9, W.pak('4'), 'PAK'], [10, W.pak('31'), 'PAK'], [11, W.pak('3'), 'PAK'],
+        [12, W.clMat('1.200', 'mg/kg'), 'Sonstige'], [13, W.clMat('450', 'mg/kg'), 'Sonstige']] }]),
+    anlagen: anlagen({ brandgeruch: '', bilddokuAnlage: 'Anlage 3' }),
+    form: form({ titel: 'Untersuchungsbericht', nurBuero: true, gb: '1', tabellen: true, referenz: '10',
+      referenzGrund: 'Aufgrund der Nutzung als Lebensmittelverkaufsstätte wird die für Wohn- und Bürobereiche übliche Hintergrundbelastung herangezogen.' }, { mt: '' }),
   },
 };
 

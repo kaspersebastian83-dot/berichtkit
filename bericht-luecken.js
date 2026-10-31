@@ -31,7 +31,7 @@ const FELDER = {
     { luecke: /^\[Foto fehlt/, ziel: '#probenListe', wo: 'Proben › Foto – Datei nicht lesbar: in FotoKit prüfen, anderes Foto wählen oder in Word einfügen' },
     { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
   ],
-  // Brandbericht (bericht-brand.js, ab 1.12.0 – Gerüst; 5., 6. und 8. bekommen in Schritt 4/5 eigene Felder)
+  // Brandbericht (bericht-brand.js, ab 1.12.0; 5.2–5.7 ab 1.13.0 – 5.1, 6. und 8. bekommen in Schritt 5 eigene Felder)
   brand: [
     { luecke: '[Auftragsdatum]', feld: '#fAuftrag', wo: 'Auftrag › Auftragsdatum' },
     { luecke: '[Auftraggeber]', feld: '#fAg', wo: 'Auftrag › Auftraggeber im Satz (Deckblatt: Projektzentrale)' },
@@ -48,6 +48,11 @@ const FELDER = {
     { luecke: '[Prüfdatum Brandgeruch]', wo: 'LabelKit › Brandgeruch › Prüfdatum' },
     { luecke: '[Anlage-Nr. Brandgeruch]', ziel: '#anlagenListe', wo: 'Projektzentrale › Anlage PN 98 / Brandgeruch erstellen (dann anhaken)' },
     { luecke: '[Probenahme beschreiben]', wo: 'LabelKit › Proben erfassen, sonst in Word ergänzen' },
+    { luecke: '[Untersuchungsparameter]', wo: 'LabelKit › Sonstige Proben › Untersuchungsparameter' },
+    { luecke: '[Hintergrundreferenz 10 oder 100 µg/m²]', feld: '#fbReferenz', wo: 'Brandbericht › Hintergrundreferenz PAK (Vorbelegung aus der Nutzung der Projektzentrale)' },
+    { luecke: '[Ergebnis der Brandgeruchprüfung ergänzen]', wo: 'LabelKit › Brandgeruch: Ergebnisse aufdecken und alle fünf Bewertungen eintragen' },
+    { luecke: /^\[Bewertung der .+ ergänzen\]$/, wo: 'in Word ergänzen' },
+    { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
     { luecke: '[Projektnummer]', wo: PZ },
     { luecke: '[Schadendatum]', wo: PZ + ' (Schadendatum oder „nicht bekannt“)' },
     { luecke: '[Ortstermin]', wo: PZ + ' (Ortstermin)' },
@@ -57,7 +62,7 @@ const FELDER = {
     { luecke: '[Objekt]', wo: PZ },
     { luecke: '[Schaden-Nr.]', wo: PZ },
     { luecke: /^\[Foto fehlt/, wo: 'Foto – Datei nicht lesbar: in FotoKit prüfen oder in Word einfügen' },
-    { luecke: /^\[(?:Befund|Sanierungsmaßnahmen|Schlussfolgerungen|Zusammenfassung der Sanierungsmaßnahmen) ergänzen\]$/, wo: 'in Word ergänzen (Formular dafür folgt)' },
+    { luecke: /^\[(?:Brandlast und Schadenbild beschreiben|Sanierungsmaßnahmen ergänzen|Schlussfolgerungen ergänzen|Zusammenfassung der Sanierungsmaßnahmen ergänzen)\]$/, wo: 'in Word ergänzen (Formular dafür folgt)' },
   ],
 };
 const IN_WORD = 'in Word ausfüllen';

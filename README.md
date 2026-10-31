@@ -3,7 +3,8 @@
 Erstellt den **Asbest-Untersuchungsbericht** („1. Mitteilung“) als Word-Datei im Format des Büros – aus den Daten, die
 die anderen Spektron-Apps schon im Projektordner abgelegt haben. Läuft im Browser (Edge/Chrome), ohne Server, ohne Installation.
 Der **Brandbericht** („Sanierungsvorschlag“ / „Untersuchungsbericht“) ist im Aufbau: ab 1.12.0 als Vorschau mit
-`#projekt=<Ordner>&art=brand&vorschau=1` (Deckblatt, Kopf, 1.–4., 7., Unterschriften, Anlagen; 5., 6., 8. als Lücke) –
+`#projekt=<Ordner>&art=brand&vorschau=1` (Deckblatt, Kopf, 1.–4., ab 1.13.0 5. Befund mit 5.2–5.7, 7., Unterschriften, Anlagen;
+5.1, 6., 8. als Lücke) –
 Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht.
 
 Adresse: `https://kaspersebastian83-dot.github.io/berichtkit/` · aus der Projektzentrale: `…/berichtkit/#projekt=<Ordnername>`
@@ -113,7 +114,8 @@ Aufbau (ab 1.10.0, Vorbereitung für weitere Berichtsarten):
 | `bericht-text.js` | Fassade für `app.js` und Tests (`BerichtText`): wählt die Berichtsart nach `form.art` (leer = `asbest`), `BERICHTSARTEN` mit `bereit` |
 | `bericht-gemeinsam.js` | Bausteine jeder Berichtsart: Helfer, Lücken, Personen/Rollen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund und Abgleich, Projektsicht, Deckblatt mit/ohne Versicherung, Kopfzeilen, Auftraggeber mit Artikel, Unterschriften, Anlagen |
 | `bericht-asbest.js` | Berichtsart `asbest` – die Texte unten |
-| `bericht-brand.js` | Berichtsart `brand` (Doc „Textbausteine Brand-Sanierungsvorschlag“ + Entscheidungen aus fünf echten Mitteilungen) – ab 1.12.0 das Gerüst: Deckblatt („Schaden vom:“ / „Brandschaden“), Kopf, 1. Veranlassung, 2. Aufgabenstellung, 3. Ortsbesichtigung, 4. Probenahme, 7. Arbeitsschutzmaßnahmen, Unterschriften, Anlagen; 5., 6., 8. als Überschrift mit Lücke. Eigene Angaben der Brand-Seite stehen in `form.brand` (in `_BerichtKit.json` unter `brand`, feldweise gemerkt) |
+| `bericht-brand.js` | Berichtsart `brand` (Doc „Textbausteine Brand-Sanierungsvorschlag“ + Entscheidungen aus fünf echten Mitteilungen) – ab 1.12.0 das Gerüst: Deckblatt („Schaden vom:“ / „Brandschaden“), Kopf, 1. Veranlassung, 2. Aufgabenstellung, 3. Ortsbesichtigung, 4. Probenahme (ab 1.13.0 mit Chlorid-Material/-Bohrmehl und weiteren Proben aus LabelKit „Sonstige“), 7. Arbeitsschutzmaßnahmen, Unterschriften, Anlagen; ab 1.13.0 5. Befund: 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest, 5.6 Brandgeruch, 5.7 weitere Untersuchungen (nur, was es gibt; Spanne, Zähl-Absatz, höchster Wert, < BG, Referenzprobe/Freimessung, Ergebnistabellen hinter dem Haken, Asbest-Tabelle immer); 5.1, 6., 8. als Überschrift mit Lücke. Eigene Angaben der Brand-Seite stehen in `form.brand` (in `_BerichtKit.json` unter `brand`, feldweise gemerkt) |
+| `bericht-bewertung.js` | ab 1.13.0: Einordnung der Laborwerte für 5.2/5.3 – Zahlen lesen, BG/n. n., KORROSION-CHLORID v1 (5–10 µg/cm², Einheit umgerechnet) und VdS-Faktor Σ16 EPA-PAK **aus ResultKit `bewertung.ts`/`uebersicht.ts`**, Rolle Referenzprobe/Freimessung aus dem Datenarchiv der Projektzentrale, Anhang B (VDI 3866 Blatt 5) aus `nwg` – dort ändern, hier nachziehen (`tests/brand.cjs` vergleicht die Tabellen, wenn `../resultkit` daneben liegt) |
 | `bericht-luecken.js` | je Berichtsart: welche Lücke welches Formularfeld füllt (Zähler, Sprung, gelbe Umrandung) bzw. wo sie sonst zu füllen ist |
 
 Berichtsart aus der Projektzentrale: `#projekt=<Ordner>&art=asbest|brand`. Eine Berichtsart, die noch nicht bereit ist, zeigt
@@ -138,8 +140,8 @@ node tests/text.cjs              # alle Berichtsvarianten (Textbausteine)
 node tests/anlagen.cjs           # Anlagen: erkennen, Hausreihenfolge, veraltet, mehrteilig
 node tests/berichtsart.cjs       # Berichtsart wählen, Bausteine, Word: Spaltenbreiten je Tabelle, Unterüberschrift
 node tests/asbest-golden.cjs     # Asbestbericht festgeschrieben (Beispielberichte); gewollte Änderung: --neu, Diff ansehen
-node tests/brand.cjs             # Brandbericht: Regeln aus den Textbausteinen (erfundene Daten tests/daten/brand.cjs)
-node tests/brand-golden.cjs      # Brandbericht festgeschrieben (vier Beispiele); gewollte Änderung: --neu, Diff ansehen
+node tests/brand.cjs             # Brandbericht: Regeln aus den Textbausteinen (erfundene Daten tests/daten/brand.cjs); mit ../resultkit: Einordnung gleich
+node tests/brand-golden.cjs      # Brandbericht festgeschrieben (fünf Beispiele); gewollte Änderung: --neu, Diff ansehen
 node tests/luecken-kommentare.cjs  # Word-Kommentar je Lücke (Asbest und Brand, Kopf-Lücken über alle Kombinationen); mit ../projektzentrale: word-luecken.js findet dieselben Lücken
                                    # --beispiel <datei.docx> / --brand <Ordner>: Dateien zum Ansehen (z. B. in LibreOffice)
                                    # (--beispiel <datei.docx> schreibt eine Datei mit vielen Lücken zum Ansehen)

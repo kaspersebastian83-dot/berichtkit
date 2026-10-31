@@ -38,7 +38,7 @@ jobs:
         run: node tests/berichtsart.cjs
       - name: Asbestbericht wie festgeschrieben (Beispielberichte)
         run: node tests/asbest-golden.cjs
-      - name: Brandbericht – Regeln (Gerüst)
+      - name: Brandbericht – Regeln (Gerüst, 5. Befund, Einordnung)
         run: node tests/brand.cjs
       - name: Brandbericht wie festgeschrieben (Beispielberichte)
         run: node tests/brand-golden.cjs

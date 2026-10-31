@@ -2,24 +2,29 @@
    Browserteile, in Node testbar. Grundlage: Doc „Textbausteine Brand-Sanierungsvorschlag“ (freigegeben 31.10.2026) und die
    Entscheidungen aus „berichtkit-brand-befunde-mitteilungen.md“ (gehen vor). Bausteine, die jede Berichtsart braucht (Deckblatt-
    Feldblock, Kopf, Personen, Unterschriften, Anlagen, Asbest-/KMF-Proben …), stehen in bericht-gemeinsam.js.
-   Stand Schritt 3 (Gerüst, 1.12.0): Deckblatt, Kopf, 1.–4., 7., Unterschriften, Anlagen. 5. Befund, 6. Sanierungsmaßnahmen /
-   Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit Lücke da – Inhalt folgt in Schritt 4/5.
-   Regeln wie im Asbestbericht: nichts umrechnen oder umformulieren, fehlende Angaben als [Lücke], nichts erfinden.
+   Stand Schritt 4 (1.13.0): Deckblatt, Kopf, 1.–4., 5. Befund (5.1 als Lücke, 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest,
+   5.6 Brandgeruch, 5.7 weitere Untersuchungen – nur, was es gibt, fortlaufend nummeriert), 7., Unterschriften, Anlagen.
+   6. Sanierungsmaßnahmen / Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit Lücke da – Inhalt folgt in Schritt 5.
+   Regeln wie im Asbestbericht: Laborwerte unverändert wie im Prüfbericht (umgerechnet wird nur für die Einordnung, siehe
+   bericht-bewertung.js), fehlende Angaben als [Lücke], nichts erfinden.
 
    eingabe wie im Asbestbericht (bericht-asbest.js), dazu
      pj: schadendatum (JJJJ-MM-TT | „unbekannt“ | leer), ortstermin, nutzung, schadenereignis, brandgut (Projektzentrale),
-     lk: proben[] (PAK), chloridProben[], sonstigeProben[], brandgeruchProben[], brandgeruchDatum, bgBlind (LabelKit),
+     lk: proben[] (PAK), chloridProben[], sonstigeProben[] (im Modus „Chlorid-Bohrmehl“ = ui.bohrmehlAktiv: Bohrmehlproben auf
+       Chlorid, sonst weitere Untersuchungen mit notiz = Untersuchungsparameter), brandgeruchProben[], brandgeruchDatum, bgBlind (LabelKit),
      form.brand: eigene Angaben der Brand-Seite (vorgabe() = Vorgaben): { titel, umfang:{gebaeude,technik,waren}, anwesende,
        nurBuero, teilnehmerliste, person2 (Kürzel, zweite Person vor Ort), brandort (ersetzt „in dem Wohngebäude“ …),
-       gb ('0'–'3'), uebrige (Satz zu den übrigen Bereichen in 7.) }
+       gb ('0'–'3'), uebrige (Satz zu den übrigen Bereichen in 7.), tabellen (Ergebnistabellen Chlorid/PAK in 5., Vorbelegung aus),
+       referenz ('10' | '100' µg/m², Vorbelegung aus der Nutzung), referenzGrund (optionaler Begründungssatz in 5.3) }
    Ergebnis wie im Asbestbericht, dazu brand: { titel, objektartVorgabe, nutzung, schadenereignis, brandgut, zahlen:{…} }. */
 (function (root) {
 'use strict';
 const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./anlagen.js') : null);
 const G = root.BerichtGemeinsam || (typeof require === 'function' ? require('./bericht-gemeinsam.js') : null);
-const { s, L, datumDE, liste, zahlwort, ABGLEICH_SPERRT, IST_KMF, istStorniert, probenSammeln, person, nominativ, pnQuelle, projektSicht,
-  objektImSatz, labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz, unterschriftenBlock, pruefberichtPdf,
-  anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
+const BW = root.BerichtBewertung || (typeof require === 'function' ? require('./bericht-bewertung.js') : null);
+const { s, L, datumDE, liste, zahlwort, PNR, tidy, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, istStorniert, probenSammeln,
+  person, nominativ, pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
+  unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
 
 const TITEL = ['Sanierungsvorschlag', 'Untersuchungsbericht'];
 /** Nutzung (Projektzentrale) → Objektart im ersten Satz von 1. Veranlassung (Tabelle im Doc); sonst „in dem Objekt“ */
@@ -33,11 +38,27 @@ const BUERO = ' (Sachverständigenbüro Dr. Heinz Schiffers & Partner)';
 /** Prüfbericht mit Chlorid- bzw. PAK-Werten (Gruppen wie ResultKit src/uebersicht.ts gruppeVon) */
 const CHLORID = /^Chlorid\b/i, SUMME_PAK = /^(?:Summe|Σ)\s*16\s*EPA[-– ]?PAK/i;
 const GB = ['0', '1', '2', '3'];
+/** Hintergrundreferenz PAK nach der Nutzung (wie ResultKit usageFromNutzung): Wohn-/Bürobereiche 10, Gewerbe/Industrie 100 µg/m² */
+const REFERENZ_NUTZUNG = { 'Wohnen': '10', 'Büro': '10', 'Öffentlich': '10', 'Gesundheit & Labor': '10', 'Gewerbe/Industrie': '100', 'Landwirtschaft': '100' };
+const referenzVorgabe = nutzung => REFERENZ_NUTZUNG[s(nutzung)] || '';
+/** Ergebnistabellen 5.2/5.3 (zusammen 9070 twips): Probe (breit genug für „(Freimessung)“), Labor-Nr. (eine Zeile wie in Tabelle 1
+    des Asbestberichts), Entnahmestelle, Wert („Σ 16 EPA-PAK“ ohne Umbruch am Bindestrich), Einordnung – in LibreOffice geprüft */
+const SPALTEN_ERG = [1600, 2080, 2040, 1700, 1650];
+/** Asbest-Tabelle in 5.5: Spalten wie Tabelle 1 im Asbestbericht (bericht-asbest.js SPALTEN_TAB1) */
+const SPALTEN_TAB1 = [950, 2080, 2240, 1850, 1950];
+/** Einordnung wie im Doc; nach „/“ darf die Zeile umbrechen (breitenloses Leerzeichen U+200B) */
+const CL_STUFE = ['unterhalb', 'im Bereich', 'oberhalb'], PAK_STUFE = ['unter Referenz', 'Referenz erreicht/\u200Büberschritten'];
+const CL_GROESSE = 'der korrosionschemisch relevanten Größenordnung';
+/** Brandgeruch-Bewertung je Prüfperson (LabelKit p1–p5, Legende der Projektzentrale-Anlage) → Wort im Ergebnis-Satz */
+const BG_STUFEN = [['++', 'ein starker'], ['+', 'ein mittelstarker'], ['(+)', 'ein schwacher'], ['-', 'kein']];
+const BG_KEYS = ['p1', 'p2', 'p3', 'p4', 'p5'];
+const bgWert = v => { const t = s(v).replace(/[–−—]/g, '-').replace(/\s+/g, ''); return BG_STUFEN.some(([k]) => k === t) ? t : ''; };
 
 /** Vorgaben der Brand-Seite (nie in _BerichtKit.json; eigene Angaben stehen in form.brand) */
 function vorgabe(pj) {
   return { titel: 'Sanierungsvorschlag', umfang: { gebaeude: true, technik: false, waren: false }, anwesende: '', nurBuero: false,
-    teilnehmerliste: false, person2: '', brandort: '', gb: '', uebrige: s(pj && pj.nutzung) === 'Wohnen' };
+    teilnehmerliste: false, person2: '', brandort: '', gb: '', uebrige: s(pj && pj.nutzung) === 'Wohnen',
+    tabellen: false, referenz: referenzVorgabe(pj && pj.nutzung), referenzGrund: '' };
 }
 
 /** „Schaden vom“: Datum, „unbekannt“ (Knopf „nicht bekannt“ der Projektzentrale) oder leer */
@@ -57,13 +78,16 @@ function stornierteLabels(lk) {
     for (const p of (lk && Array.isArray(lk[k]) ? lk[k] : [])) if (p && istStorniert(p) && p._nr != null) out.add('P' + p._nr);
   return out;
 }
+/** Sonstige Probe = Chlorid-Bohrmehl? LabelKit schaltet die ganze Liste „Sonstige“ mit dem Haken „Chlorid-Bohrmehl“ um
+    (ui.bohrmehlAktiv, ältere Dateien oben im Objekt); ohne den Haken zählt eine Probe mit Tiefe und „Chlorid“ im Untersuchungsparameter. */
+const istBohrmehl = (lk, p) => !!(lk && ((lk.ui && lk.ui.bohrmehlAktiv) || lk.bohrmehlAktiv)) || (!!s(p.tiefe) && /chlorid/i.test(s(p.notiz)));
 /** LabelKit-Proben je Gruppe, ohne stornierte (LabelKit 4.49.0) */
 function lkProben(lk) {
   const liste_ = k => (lk && Array.isArray(lk[k]) ? lk[k] : []).filter(p => p && !istStorniert(p));
   const wisch = p => s(p.matrix).toLowerCase() === 'wischprobe';
-  const cl = liste_('chloridProben'), pak = liste_('proben');
+  const cl = liste_('chloridProben'), pak = liste_('proben'), so = liste_('sonstigeProben');
   return { clWisch: cl.filter(wisch), clAndere: cl.filter(p => !wisch(p)), pakWisch: pak.filter(wisch), pakMaterial: pak.filter(p => !wisch(p)),
-    sonstige: liste_('sonstigeProben'), asbest: liste_('asbestProben'), brandgeruch: liste_('brandgeruchProben'),
+    bohrmehl: so.filter(p => istBohrmehl(lk, p)), sonstige: so.filter(p => !istBohrmehl(lk, p)), asbest: liste_('asbestProben'), brandgeruch: liste_('brandgeruchProben'),
     bgDatum: s(lk && lk.brandgeruchDatum), bgBlind: !!lk && Array.isArray(lk.brandgeruchProben) && lk.brandgeruchProben.length > 0 && (lk.bgBlind === undefined ? true : !!lk.bgBlind) };
 }
 /** Prüfberichte (ResultKit) mit Chlorid- bzw. PAK-Ergebnissen, in Reihenfolge der Berichte; dazu, ob einer davon vorläufig ist.
@@ -79,6 +103,73 @@ function berichteNach(erg, storniertLabels) {
   }
   return { cl, pak, vorlaeufig };
 }
+/** LabelKit-Proben der nummerierten Listen nach Label „P<n>“ (Nummern sind über alle Listen eindeutig), ohne stornierte:
+    { liste: 'pak'|'chlorid'|'asbest'|'sonstige', nr, matrix, z2 (Raum/Ort), notiz (Untersuchungsparameter), tiefe, bohrmehl } */
+function lkKarte(lk) {
+  const out = new Map();
+  for (const [k, liste_] of [['proben', 'pak'], ['chloridProben', 'chlorid'], ['asbestProben', 'asbest'], ['sonstigeProben', 'sonstige']])
+    for (const p of (lk && Array.isArray(lk[k]) ? lk[k] : [])) {
+      if (!p || istStorniert(p)) continue;
+      const nr = p._nr != null && p._nr !== '' ? +p._nr : +p.id; if (!nr) continue;
+      out.set('P' + nr, { liste: liste_, nr, matrix: s(p.matrix), z2: s(p.z2), notiz: s(p.notiz).replace(/\s*\n\s*/g, ', '), tiefe: s(p.tiefe),
+        bohrmehl: liste_ === 'sonstige' && istBohrmehl(lk, p) });
+    }
+  return out;
+}
+/** Proben aus den Prüfberichten (ResultKit), ohne stornierte: [{ label, ref, labNr, bericht, desc, raum, werte }] in Berichtsreihenfolge */
+function laborProben(erg, weg) {
+  const out = [];
+  for (const b of (erg && Array.isArray(erg.berichte) ? erg.berichte : [])) for (const p of (b && b.proben) || []) {
+    if (!p) continue;
+    const label = s(p.label) || (PNR(p.ref) ? 'P' + PNR(p.ref) : s(p.ref));
+    if (!label || weg.has(label)) continue;
+    out.push({ label, ref: s(p.ref), labNr: s(p.labNr), bericht: s(b.bericht || p.bericht), desc: s(p.desc), raum: s(p.raum), werte: p.werte || [] });
+  }
+  return out;
+}
+/** Ergebnisse eines Parameters (re) je Probe – erster Bericht mit Wert gewinnt (ResultKit hat ersetzte Werte schon entfernt).
+    wisch: Wischprobe laut LabelKit (Liste und Matrix), ohne LabelKit-Eintrag nach der Einheit (je Fläche).
+    rolle: 'referenz' | 'frei' | '' (Projektzentrale-Datenarchiv) */
+function ergebnisse(proben, re, karte, liste_) {
+  const out = [], gesehen = new Set();
+  for (const p of proben) {
+    if (gesehen.has(p.label)) continue;
+    const w = BW.bevorzugt(p.werte, re);
+    if (!w || /^[-–—]?$/.test(s(w.r))) continue;
+    gesehen.add(p.label);
+    const l = karte.get(p.label) || null;
+    const wisch = l ? l.liste === liste_ && l.matrix.toLowerCase() === 'wischprobe' : BW.FLAECHE.test(s(w.u));
+    out.push({ label: p.label, nr: (l && l.nr) || PNR(p.ref) || PNR(p.label), ref: p.ref, labNr: p.labNr, bericht: p.bericht,
+      w: { r: s(w.r), u: s(w.u) }, wisch, lk: l, roh: (l && l.z2) || p.raum || tidy(p.desc), rolle: BW.rolleAuto(l ? l.z2 : '', p.desc) });
+  }
+  return out.sort((a, b) => (a.nr || 0) - (b.nr || 0));
+}
+/** Laborwerte einer Asbest-/KMF-Probe aus probenSammeln() (dort ohne werte) – für die Nachweisgrenze (Anhang B) */
+function werteVon(erg, p) {
+  for (const b of (erg && Array.isArray(erg.berichte) ? erg.berichte : [])) if (s(b && b.bericht) === p.bericht)
+    for (const x of (b.proben || [])) if (x && (s(x.label) || (PNR(x.ref) ? 'P' + PNR(x.ref) : s(x.ref))) === p.label) return x.werte || [];
+  return [];
+}
+/** Probennummern im Satz: „1“, „1 und 4“, „1 bis 3 und 5“ (ab drei aufeinanderfolgenden Nummern „bis“) */
+function nrText(xs) {
+  const nrs = [...new Set(xs.map(x => x.nr).filter(n => n != null))].sort((a, b) => a - b), teile = [];
+  for (let i = 0; i < nrs.length;) {
+    let j = i; while (j + 1 < nrs.length && nrs[j + 1] === nrs[j] + 1) j++;
+    if (j - i >= 2) teile.push(`${nrs[i]} bis ${nrs[j]}`); else for (let k = i; k <= j; k++) teile.push(String(nrs[k]));
+    i = j + 1;
+  }
+  xs.filter(x => x.nr == null).forEach(x => teile.push(x.ref || x.label));
+  return liste(teile);
+}
+/** „Beide“ / „Alle drei“ / „Alle 13“ */
+const alleN = n => (n === 2 ? 'Beide' : `Alle ${zahlwort(n)}`);
+const probe = xs => `${xs.length === 1 ? 'Probe' : 'Proben'} ${nrText(xs)}`;
+const wertText = w => `${w.r}${w.u ? ' ' + w.u : ''}`;
+/** „(Probe 4, EG Küche Decke)“ – mit Tiefe bei Bohrmehl */
+const ortKlammer = x => `(Probe ${x.nr != null ? x.nr : x.ref || x.label}${x.stelle ? ', ' + x.stelle : ''}${x.lk && x.lk.tiefe ? ', Tiefe ' + x.lk.tiefe : ''})`;
+/** „1.250“ oder „n. b.“ → nicht vergleichbar; sonst Zahl (BG-Werte zählen für die Spanne nicht) */
+const zahl = x => (BW.labQualifier(x.w.r) === 'measured' ? BW.labNumber(x.w.r) : NaN);
+
 /** „(Anlage 1)“, „(Anlagen 1 und 2)“, „(Anlagen 1 bis 3)“ */
 function anlagenVerweis(ns) {
   if (!ns.length) return '';
@@ -130,6 +221,15 @@ function bericht(eingabe) {
   // Prüfberichte nur mit KMF-Werten (keine Asbestwerte): eigene Anlage und eigener Verweis im KMF-Absatz
   const kmfNr = [...new Set(kmf.map(p => p.bericht).filter(Boolean))].filter(nr => !asbNr.includes(nr));
   const pos = asb.filter(p => p.befund.gefunden);
+  // Laborwerte Chlorid/PAK je Probe (für 5.2/5.3) und weitere Untersuchungen (LabelKit „Sonstige“ ohne Chlorid-Bohrmehl)
+  const karte = lkKarte(e.lk), lp = laborProben(e.erg, stornierteLabels(e.lk));
+  const clErg = ergebnisse(lp, CHLORID, karte, 'chlorid'), pakErg = ergebnisse(lp, SUMME_PAK, karte, 'pak');
+  const mitWert = new Set([...clErg, ...pakErg].map(x => x.label));
+  const weitereLabels = new Set([...karte].filter(([, l]) => l.liste === 'sonstige' && !l.bohrmehl).map(([k]) => k));
+  const weitereErg = [...new Set(lp.filter(p => weitereLabels.has(p.label) && !mitWert.has(p.label) && p.werte.length).map(p => p.label))]
+    .map(label => ({ label, nr: karte.get(label).nr, lk: karte.get(label) })).sort((a, b) => a.nr - b.nr);
+  // Prüfberichte mit Proben aus „Sonstige“ (ohne Bohrmehl), die nicht schon als Chlorid/PAK/Asbest-Bericht eine Anlage sind
+  const weitereNr = [...new Set(lp.filter(p => weitereLabels.has(p.label) && p.werte.length).map(p => p.bericht).filter(Boolean))];
 
   // Personen
   const pn = person(e.cfg, e.mitarbeiter, f.probenehmer), sv = person(e.cfg, e.mitarbeiter, f.sv), mt = person(e.cfg, e.mitarbeiter, f.mt);
@@ -158,7 +258,7 @@ function bericht(eingabe) {
   v.push({ t: 'p', runs: ['Schadenbedingt kann es auch zur Bildung und Freisetzung von Schadstoffen sowie deren räumlicher Verteilung kommen. Im Wesentlichen können Schadstoffe eine Gefährdung von Mensch und Umwelt und ein erhöhtes Korrosionsrisiko bedingen.'] });
   v.push({ t: 'p', runs: ['Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polycyclischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar.'] });
   // Korrosionsabsätze nur mit Chlorid-Proben (Befunde Nr. 7)
-  const mitChlorid = lk.clWisch.length + lk.clAndere.length > 0 || rk.cl.length > 0;
+  const mitChlorid = lk.clWisch.length + lk.clAndere.length + lk.bohrmehl.length > 0 || rk.cl.length > 0;
   if (mitChlorid) {
     v.push({ t: 'p', runs: ['Ein Korrosionsrisiko besteht für metallische Bauteile und mineralische Bausubstanz, insbesondere für Stahlbeton.'] });
     v.push({ t: 'p', runs: ['Aus halogenorganischen Materialien (meist PVC) wird beim Abbrand Halogenwasserstoffsäure freigesetzt. Auch beim Verschmoren von PVC wird bei Temperaturen oberhalb 200 °C bereits in merklichem Umfang Chlorwasserstoff abgespalten. Somit wird als Leitmessgröße für ein erhöhtes Korrosionsrisiko die Konzentration an Chloriden herangezogen.'] });
@@ -173,7 +273,7 @@ function bericht(eingabe) {
   if (sanierung) auf.push(' Aus den getroffenen Feststellungen ist ein Sanierungskonzept abzuleiten.');
 
   /* 3. Ortsbesichtigung: Ortstermin aus der Projektzentrale, sonst Probenahmedatum aus LabelKit */
-  const lkDaten = [...new Set([...lk.pakWisch, ...lk.pakMaterial, ...lk.clWisch, ...lk.clAndere, ...lk.asbest, ...lk.sonstige]
+  const lkDaten = [...new Set([...lk.pakWisch, ...lk.pakMaterial, ...lk.clWisch, ...lk.clAndere, ...lk.asbest, ...lk.bohrmehl, ...lk.sonstige]
     .map(p => datumDE(p.datum)).filter(Boolean))].sort((a, b) => a.split('.').reverse().join('').localeCompare(b.split('.').reverse().join('')));
   const ortstermin = datumDE(P.ortstermin);
   if (ortstermin && lkDaten.length && lkDaten.some(d => d !== ortstermin)) hinweise.push(`Probenahmedatum in LabelKit (${liste(lkDaten)}) weicht vom Ortstermin der Projektzentrale (${ortstermin}) ab – bitte prüfen.`);
@@ -190,12 +290,13 @@ function bericht(eingabe) {
   /* Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter = eine Anlage), dann Bilddokumentation,
      Probenplan, Brandgeruch (nur mit Brandgeruch-Proben) */
   const prb = [];
-  for (const nr of [...rk.cl, ...rk.pak, ...asbNr, ...kmfNr]) if (!prb.includes(nr)) prb.push(nr);
+  for (const nr of [...rk.cl, ...rk.pak, ...asbNr, ...kmfNr, ...weitereNr]) if (!prb.includes(nr)) prb.push(nr);
   const pdfVon = nr => pruefberichtPdf(e.erg, nr);
   const A = ANL.zusammenstellen({ profil: 'brand', pruefberichte: prb.map(nr => ({ nr, pdf: pdfVon(nr) })), labor, gefunden: e.anlagen || {},
     wahl: f.anlagen, extra: f.anlagenExtra, ohne: lk.brandgeruch.length ? [] : ['brandgeruch'],
     // Nur Brandgeruch (oder gar keine Proben): kein Laborbericht zu erwarten – keine Platzhalter-Anlage „Prüfbericht Nr. […]“ (Codex, PR #14)
-    ohnePruefbericht: !(lk.clWisch.length + lk.clAndere.length + lk.pakWisch.length + lk.pakMaterial.length + asb.length + kmf.length + offen.filter(o => !o.aus).length) });
+    ohnePruefbericht: !(lk.clWisch.length + lk.clAndere.length + lk.bohrmehl.length + lk.pakWisch.length + lk.pakMaterial.length + lk.sonstige.length
+      + asb.length + kmf.length + offen.filter(o => !o.aus).length) });
   anlagenUebernehmen(A, hinweise, hinweisAktionen);
   const anlNr = nrs => anlagenVerweis(nrs.map(nr => prb.indexOf(nr) + 1).filter(n => n > 0));
   const nrListe = nrs => liste(nrs.map(x => 'Nr. ' + x));
@@ -205,11 +306,17 @@ function bericht(eingabe) {
   /* 4. Probenahme: je Untersuchung ein Absatz, nur mit Proben (stornierte zählen nicht) */
   const pr = [];
   const nCl = lk.clWisch.length, nPak = lk.pakWisch.length, nPakM = lk.pakMaterial.length, nBg = lk.brandgeruch.length;
-  const gemeinsam = nCl && (nPak || nPakM) && rk.cl.length && rk.cl.length === rk.pak.length && rk.cl.every(x => rk.pak.includes(x));
-  if (nCl) {
-    pr.push({ t: 'p', runs: [`Zur Messung der Chloridbelastung ${nCl === 1 ? 'wurde eine Wischprobe' : `wurden ${zahlwort(nCl)} Wischproben`} entnommen. `,
-      nCl === 1 ? 'Die Probe wurde der ' : 'Die Proben wurden der ', L(labor, 'Labor'), ' zur Untersuchung auf Chlorid übergeben.',
-      ...(gemeinsam ? [] : [' ', ...analysen(rk.cl)])] });
+  const nClM = lk.clAndere.length, nBm = lk.bohrmehl.length, nClAlle = nCl + nClM + nBm;
+  const gemeinsam = nClAlle && (nPak || nPakM) && rk.cl.length && rk.cl.length === rk.pak.length && rk.cl.every(x => rk.pak.includes(x));
+  if (nClAlle) {
+    // Chlorid-Materialproben (LabelKit Chlorid, Matrix nicht „Wischprobe“) und Chlorid-Bohrmehl (LabelKit „Sonstige“) im selben Absatz
+    const andere = [nClM && einOderMehr(nClM, 'eine Materialprobe', 'Materialproben'), nBm && einOderMehr(nBm, 'eine Bohrmehlprobe', 'Bohrmehlproben')].filter(Boolean);
+    const r = [];
+    if (nCl) r.push(`Zur Messung der Chloridbelastung ${nCl === 1 ? 'wurde eine Wischprobe' : `wurden ${zahlwort(nCl)} Wischproben`} entnommen. `);
+    if (andere.length) r.push(`${nCl ? 'Zusätzlich' : 'Zur Messung der Chloridbelastung'} ${nClM + nBm === 1 ? 'wurde' : 'wurden'} ${liste(andere)} entnommen. `);
+    r.push(nClAlle === 1 ? 'Die Probe wurde der ' : 'Die Proben wurden der ', L(labor, 'Labor'), ' zur Untersuchung auf Chlorid übergeben.',
+      ...(gemeinsam ? [] : [' ', ...analysen(rk.cl)]));
+    pr.push({ t: 'p', runs: r });
     if (!rk.cl.length) hinweise.push('Chlorid: noch kein Prüfbericht mit Chlorid-Werten in ResultKit – Ergebnisse übernehmen.');
   }
   if (nPak || nPakM) {
@@ -242,15 +349,258 @@ function bericht(eingabe) {
       A.nr.brandgeruch ? String(A.nr.brandgeruch) : { gap: '[Anlage-Nr. Brandgeruch]' }, ' dargestellt.'] });
     if (lk.bgBlind) hinweise.push('Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für die Anlage in LabelKit „Ergebnisse aufdecken“ und speichern.');
   }
-  const nGesamt = nCl + nPak + nPakM + nBg + new Set([...asb, ...kmf]).size;
+  // Weitere Untersuchungen (LabelKit „Sonstige“ ohne Chlorid-Bohrmehl): je Untersuchungsparameter ein Satz, dazu der Prüfbericht
+  if (lk.sonstige.length) {
+    const gruppen = new Map();
+    lk.sonstige.forEach(p => { const k = s(p.notiz).replace(/\s*\n\s*/g, ', '); gruppen.set(k, (gruppen.get(k) || 0) + 1); });
+    const r = [];
+    [...gruppen].forEach(([param, n], i) => {
+      const z = zusatz(), weitere = z === 'Zusätzlich' ? 'weitere ' : '';
+      r.push(...(i ? [' '] : []), `${z} ${n === 1 ? `wurde eine ${weitere}Probe` : `wurden ${zahlwort(n)} ${weitere}Proben`} entnommen und auf `,
+        param ? param : { gap: '[Untersuchungsparameter]' }, ' untersucht.');
+    });
+    r.push(' ', ...analysen(weitereNr));
+    pr.push({ t: 'p', runs: r });
+    if (!weitereNr.length) hinweise.push('Weitere Proben (LabelKit „Sonstige“): noch kein Prüfbericht in ResultKit – Ergebnisse übernehmen.');
+    if ([...gruppen.keys()].some(k => !k)) hinweise.push('Weitere Proben (LabelKit „Sonstige“): Untersuchungsparameter fehlt – in LabelKit eintragen.');
+  }
+  const nGesamt = nClAlle + nPak + nPakM + nBg + lk.sonstige.length + new Set([...asb, ...kmf]).size;
   const verweis = verweisSatz(A.nr, nGesamt === 1);
   if (verweis && nGesamt) pr.push({ t: 'p', runs: [verweis] });
   if (!nGesamt) { pr.push({ t: 'p', runs: [{ gap: '[Probenahme beschreiben]' }] }); hinweise.push('Keine Proben in LabelKit/ResultKit gefunden – 4. Probenahme bleibt eine Lücke.'); }
-  if (lk.clAndere.length) hinweise.push(`${lk.clAndere.length} Chlorid-${lk.clAndere.length === 1 ? 'Probe' : 'Proben'} ohne Matrix „Wischprobe“ (z. B. Bohrmehl) – im Brandbericht noch nicht berücksichtigt, bitte in Word ergänzen.`);
-  if (lk.sonstige.length) hinweise.push(`${lk.sonstige.length} sonstige ${lk.sonstige.length === 1 ? 'Probe' : 'Proben'} (LabelKit) – im Brandbericht noch nicht berücksichtigt, bitte in Word ergänzen.`);
 
-  /* 5., 6., 8.: Überschrift und Lücke (Inhalt folgt in Schritt 4/5) */
-  const befund = [{ t: 'p', runs: [{ gap: '[Befund ergänzen]' }] }];
+  /* 5. Befund: 5.1 immer (Freitext folgt in Schritt 5 – bis dahin Lücke), dann nur, wozu es Ergebnisse gibt, fortlaufend nummeriert:
+     Chlorid, PAK, KMF, Asbest (Reihenfolge wie im Doc), Brandgeruch, weitere Untersuchungen. Laborwerte wie im Prüfbericht;
+     eingeordnet wird mit den Grenzen aus ResultKit (bericht-bewertung.js). Referenzproben und Freimessungen stehen in der
+     Tabelle gekennzeichnet und in eigenen Sätzen, im Zähl-Absatz zählen sie nicht. */
+  const befund = [{ t: 'h2', runs: ['5.1 Brandlast und Schadenbild'] }, { t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] }];
+  let unter = 1, tabNr = 0;
+  const h2 = titel_ => befund.push({ t: 'h2', runs: [`5.${++unter} ${titel_}`] });
+  const kuerzel = new Set();
+  const stelle = roh => { const r = raumAusschreiben(roh); r.ersetzt.forEach(k => kuerzel.add(k)); return r.text; };
+  [...clErg, ...pakErg].forEach(x => { x.stelle = stelle(x.roh); });
+  proben.forEach(p => { p.stelleBericht = stelle(p.stelle); });
+  const mitTabellen = !!fb.tabellen;
+  const rolleZusatz = x => (x.rolle === 'referenz' ? ' (Referenz)' : x.rolle === 'frei' ? ' (Freimessung)' : '');
+  /** Einzelergebnisse: Tabelle (Haken) oder Verweis auf den Prüfbericht */
+  const tabelleOderVerweis = (xs, runs, tab) => {
+    if (mitTabellen) { tab.caption = `Tabelle ${++tabNr}: ${tab.caption}`; runs.push(` Die Ergebnisse sind in Tabelle ${tabNr} zusammengefasst.`); return tab; }
+    const nrs = [...new Set(xs.map(x => x.bericht).filter(Boolean))], anl = anlNr(nrs);
+    runs.push(` Die Einzelergebnisse sind ${nrs.length > 1 ? 'den Prüfberichten' : 'dem Prüfbericht'}${anl ? ' ' + anl : ''} zu entnehmen.`);
+    return null;
+  };
+  /** Wert-Spalte: Einheit im Kopf, wenn alle gleich – sonst je Zelle */
+  const einheitVon = xs => { const u = [...new Set(xs.map(x => x.w.u))]; return u.length === 1 ? u[0] : ''; };
+  /** Referenzproben / Freimessungen: eigener Satz je Rolle */
+  const rollenSaetze = xs => [['referenz', 'Die Referenzprobe', 'Die Referenzproben'], ['frei', 'Die Freimessung', 'Die Freimessungen']].flatMap(([r, eins, mehr]) => {
+    const ys = xs.filter(x => x.rolle === r); if (!ys.length) return [];
+    return [ys.length === 1 ? ` ${eins} (Probe ${nrText(ys)}) ergab ${wertText(ys[0].w)}.` : ` ${mehr} ergaben ${liste(ys.map(y => `${wertText(y.w)} (Probe ${nrText([y])})`))}.`];
+  });
+  /** Spanne „zwischen … und …“ über die gemessenen Werte (ohne < BG) */
+  const spanne = (xs, wer) => {
+    const g = xs.filter(x => Number.isFinite(zahl(x))); if (g.length < 2) return '';
+    const lo = g.reduce((a, b) => (zahl(b) < zahl(a) ? b : a)), hi = g.reduce((a, b) => (zahl(b) > zahl(a) ? b : a));
+    if (zahl(lo) === zahl(hi) && lo.w.u === hi.w.u) return '';
+    return lo.w.u === hi.w.u ? `${wer} liegen zwischen ${lo.w.r} und ${hi.w.r}${hi.w.u ? ' ' + hi.w.u : ''}. ` : `${wer} liegen zwischen ${wertText(lo.w)} und ${wertText(hi.w)}. `;
+  };
+  const hoechster = xs => { const g = xs.filter(x => Number.isFinite(zahl(x))); return g.length ? g.reduce((a, b) => (zahl(b) > zahl(a) ? b : a)) : null; };
+  /** Material-, Bohrmehl- oder weitere Proben mit Chlorid- bzw. PAK-Wert: je Art ein Satz mit den Werten, Bewertung als Lücke
+      (das Doc nennt dafür keine Einordnung). luecken = { material, bohrmehl, probe } → Lückentext je Art */
+  const materialSaetze = (xs, zus, groesse, groessen, luecken_) => {
+    const art = x => (x.lk && x.lk.bohrmehl ? 'bohrmehl' : x.lk && x.lk.liste !== 'sonstige' ? 'material' : 'probe');
+    return ['material', 'bohrmehl', 'probe'].map(a => [a, xs.filter(x => art(x) === a)]).filter(([, ys]) => ys.length).map(([a, ys], i) => {
+      const [eins, mehr] = { bohrmehl: ['Bohrmehlprobe', 'Bohrmehlproben'], material: ['Materialprobe', 'Materialproben'], probe: ['weiteren Probe', 'weiteren Proben'] }[a];
+      const z = zus || i > 0;
+      const r = ys.length === 1 ? `${z ? 'Zusätzlich wurde an der' : 'An der'} ${eins} ${ortKlammer(ys[0])} ein ${groesse} von ${wertText(ys[0].w)} ermittelt.`
+        : `${z ? 'Zusätzlich wurden an den' : 'An den'} ${mehr} folgende ${groessen} ermittelt: ${liste(ys.map(x => `${wertText(x.w)} ${ortKlammer(x)}`))}.`;
+      return { t: 'p', runs: [r, ' ', { gap: luecken_[a] }] };
+    });
+  };
+  const nichtBewertbar = (x, was, wo) => hinweise.push(`Probe ${x.nr != null ? x.nr : x.label}: ${was} „${wertText(x.w)}“ nicht einzuordnen (Wert oder Einheit) – in ${wo} nicht mitgezählt, bitte im Prüfbericht prüfen.`);
+  const ohneErgebnis = (lkListe, erg, was, wo) => {
+    const fehlt = lkListe.filter(p => !erg.some(x => x.label === 'P' + (p._nr != null && p._nr !== '' ? +p._nr : +p.id)));
+    if (fehlt.length && erg.length) hinweise.push(`${was}: noch kein Ergebnis für ${fehlt.map(p => 'P' + (p._nr != null && p._nr !== '' ? p._nr : p.id)).join(', ')} – in ${wo} nicht berücksichtigt.`);
+  };
+
+  /* 5.2 Korrosionsschäden (Chlorid) */
+  const clW = clErg.filter(x => x.wisch), clM = clErg.filter(x => !x.wisch);
+  if (clErg.length) {
+    h2('Korrosionsschäden');
+    let abschluss = null;   // A/B steht am Ende von 5.2, hinter den Material-/Bohrmehlproben
+    const nr52 = `5.${unter}`;
+    ohneErgebnis(lk.clWisch, clW, 'Chlorid', nr52);
+    if (clW.length) {
+      befund.push({ t: 'p', runs: ['Abhängig von Material und Umgebungsbedingungen ist ab Chloridflächenbelastungen in der Größenordnung von 5 bis 10 µg/cm² (korrosionschemisch relevante Größenordnung nach VdS 2357) davon auszugehen, dass beschleunigte Korrosionsvorgänge einsetzen und fortschreiten.'] });
+      clW.forEach(x => { x.stufe = BW.chloridStufe(x.w); });
+      const reg = clW.filter(x => !x.rolle), bew = reg.filter(x => x.stufe >= 0);
+      reg.filter(x => x.stufe < 0).forEach(x => nichtBewertbar(x, 'Chlorid', nr52));
+      const r = [];
+      if (bew.length === 1) {
+        const x = bew[0];
+        r.push(`Die Chlorid-Wischprobe ${ortKlammer(x)} ergab ${wertText(x.w)} und liegt damit ${CL_STUFE[x.stufe]} ${CL_GROESSE}.`);
+      } else if (bew.length > 1) {
+        r.push(spanne(bew, 'Die ermittelten Chloridflächenbelastungen'));
+        const gr = [2, 1, 0].map(i => bew.filter(x => x.stufe === i));
+        const voll = gr.filter(g => g.length);
+        if (voll.length === 1) r.push(`${alleN(bew.length)} Chlorid-Wischproben liegen ${CL_STUFE[voll[0][0].stufe]} ${CL_GROESSE}.`);
+        else {
+          const teile = []; let genannt = false;
+          if (gr[0].length) { teile.push(`${zahlwort(gr[0].length)} oberhalb ${CL_GROESSE} (${probe(gr[0])})`); genannt = true; }
+          if (gr[1].length) teile.push(`${zahlwort(gr[1].length)} ${genannt ? 'in diesem Bereich' : `im Bereich ${CL_GROESSE}`} (${probe(gr[1])})`);
+          if (gr[2].length) teile.push(`${zahlwort(gr[2].length)} darunter`);
+          r.push(`Von den ${zahlwort(bew.length)} Chlorid-Wischproben ${voll[0].length === 1 ? 'liegt' : 'liegen'} ${liste(teile)}.`);
+        }
+        const hi = hoechster(bew);
+        if (hi) r.push(` Die höchste Belastung wurde mit ${wertText(hi.w)} in Probe ${nrText([hi])}${hi.stelle ? ` (${hi.stelle})` : ''} festgestellt.`);
+        const nn = bew.filter(x => BW.ohneNachweis(x.w.r));
+        if (nn.length === bew.length) r.push(` In keiner der ${zahlwort(bew.length)} Chlorid-Wischproben war Chlorid oberhalb der Bestimmungsgrenze nachweisbar.`);
+        else if (nn.length) r.push(` In ${nn.length === 1 ? 'Probe' : 'den Proben'} ${nrText(nn)} lag der Chloridgehalt unterhalb der Bestimmungsgrenze.`);
+      }
+      r.push(...rollenSaetze(clW));
+      const u = einheitVon(clW);
+      const tab = tabelleOderVerweis(clW, r, { t: 'tab', caption: clW.length === 1 ? 'Chlorid-Wischprobe' : 'Chlorid-Wischproben',
+        kopf: ['Probe', 'Labor-Nr.', 'Entnahmestelle', u ? `Chlorid [${u}]` : 'Chlorid', 'Einordnung'], ausrichtung: ['center', 'center', 'left', 'center', 'left'],
+        spalten: SPALTEN_ERG, ohneUmbruch: [1],
+        zeilen: clW.map(x => [`${x.nr != null ? x.nr : x.label}${rolleZusatz(x)}`, x.labNr, x.stelle, u ? x.w.r : wertText(x.w), x.stufe >= 0 ? CL_STUFE[x.stufe] : '–']) });
+      if (r.join('').trim()) befund.push({ t: 'p', runs: [r.join('').replace(/^\s+/, '')] });
+      if (tab) befund.push(tab);
+      // Abschluss: A, wenn keine (regulär bewertete) Probe im Bereich oder darüber liegt; sonst B
+      const basis = reg.length ? reg : clW;
+      const varianteA = basis.length > 0 && basis.every(x => x.stufe === 0);
+      if (varianteA) abschluss = { t: 'p', runs: ['Eine korrosionschemisch relevante Chloridbelastung liegt nicht vor.'] };
+      // „Untersuchungsbericht“ hat keine Sanierungsmaßnahmen – vorläufige Formulierung wie in 7. (bis Basti einen Wortlaut gibt)
+      else abschluss = ({ t: 'p', runs: [sanierung ? 'Nach fachgerechter Durchführung der unter 6. angegebenen Sanierungsmaßnahmen ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden.'
+        : 'Nach fachgerechter Durchführung von Sanierungsarbeiten ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden.'] });
+    }
+    if (clM.length) befund.push(...materialSaetze(clM, clW.length > 0, 'Chloridgehalt', 'Chloridgehalte', { material: '[Bewertung der Chlorid-Materialproben ergänzen]',
+      bohrmehl: '[Bewertung der Chlorid-Bohrmehlproben ergänzen]', probe: '[Bewertung der weiteren Chlorid-Proben ergänzen]' }));
+    if (abschluss) befund.push(abschluss);
+  }
+
+  /* 5.3 Organische Schadstoffe (PAK) */
+  const pakW = pakErg.filter(x => x.wisch), pakM = pakErg.filter(x => !x.wisch);
+  const R = fb.referenz === '10' ? 10 : fb.referenz === '100' ? 100 : 0;
+  if (pakErg.length) {
+    h2('Organische Schadstoffe');
+    const nr53 = `5.${unter}`;
+    ohneErgebnis(lk.pakWisch, pakW, 'PAK', nr53);
+    befund.push({ t: 'p', runs: ['Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polycyclische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen.'] });
+    if (pakW.length) {
+      befund.push({ t: 'p', runs: [`Gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, ist die Größenordnung der Hintergrundbelastung bei brandgasbeaufschlagten Oberflächen als Sanierungszielwert anzustreben bzw. zu unterschreiten.`] });
+      const refLuecke = { gap: '[Hintergrundreferenz 10 oder 100 µg/m²]' };
+      befund.push({ t: 'p', runs: ['Erfahrungsgemäß liegt die Hintergrundbelastung in Wohn- und Bürobereichen, die einer turnusgemäßen Reinigung unterzogen werden, in einer Größenordnung von ca. 10 µg/m² für die Summe der 16 PAK nach EPA; in Gewerbe- und Industriebereichen können auch höhere Werte von ca. 100 µg/m² vorliegen. ',
+        R ? `Für das vorliegende Objekt wird die Hintergrundreferenz von ca. ${R} µg/m² herangezogen.` : refLuecke, ...(s(fb.referenzGrund) ? [' ' + s(fb.referenzGrund)] : [])] });
+      if (!R) hinweise.push(`Hintergrundreferenz PAK fehlt (Nutzung ${P.nutzung ? `„${P.nutzung}“ ohne Zuordnung` : 'in der Projektzentrale nicht eingetragen'}) – unter „Brandbericht“ 10 oder 100 µg/m² wählen.`);
+      const rv = referenzVorgabe(P.nutzung);
+      if (R && rv && String(R) !== rv && !s(fb.referenzGrund)) hinweise.push(`Hintergrundreferenz ${R} µg/m² weicht von der Nutzung „${P.nutzung}“ (${rv} µg/m²) ab – Begründung unter „Brandbericht“ ergänzen?`);
+      pakW.forEach(x => { x.stufe = R ? BW.pakStufe(x.w, R) : -1; });
+      const reg = pakW.filter(x => !x.rolle), bew = R ? reg.filter(x => x.stufe >= 0) : reg;
+      if (R) reg.filter(x => x.stufe < 0).forEach(x => nichtBewertbar(x, 'Σ 16 EPA-PAK', nr53));
+      const r = [];
+      const ref = `die Hintergrundreferenz von ca. ${R} µg/m²`;
+      if (bew.length === 1 && R) {
+        const x = bew[0];
+        r.push(`Die PAK-Wischprobe ${ortKlammer(x)} ergab einen Summenwert von ${wertText(x.w)} und ${x.stufe ? `erreicht oder überschreitet damit ${ref}` : `liegt damit unterhalb der Hintergrundreferenz von ca. ${R} µg/m²`}.`);
+      } else if (bew.length) {
+        r.push(spanne(bew, 'Die ermittelten Summenwerte (16 EPA-PAK)'));
+        if (!R) r.push(refLuecke, ' ');
+        else {
+          const ueber = bew.filter(x => x.stufe === 1), drunter = bew.filter(x => x.stufe === 0);
+          if (!drunter.length) r.push(`${alleN(bew.length)} PAK-Wischproben erreichen oder überschreiten ${ref}. `);
+          else if (!ueber.length) r.push(`${alleN(bew.length)} PAK-Wischproben liegen unterhalb der Hintergrundreferenz von ca. ${R} µg/m². `);
+          else r.push(`Von den ${zahlwort(bew.length)} PAK-Wischproben ${ueber.length === 1 ? 'erreicht oder überschreitet eine' : `erreichen oder überschreiten ${zahlwort(ueber.length)}`} ${ref} (${probe(ueber)}); ${drunter.length === 1 ? 'eine liegt' : `${zahlwort(drunter.length)} liegen`} darunter. `);
+        }
+        const hi = hoechster(bew);
+        if (hi && bew.length > 1) r.push(`Der höchste Summenwert wurde mit ${wertText(hi.w)} in Probe ${nrText([hi])}${hi.stelle ? ` (${hi.stelle})` : ''} festgestellt.`);
+        else if (hi) r.push(`Die PAK-Wischprobe ${ortKlammer(hi)} ergab einen Summenwert von ${wertText(hi.w)}.`);
+        const nn = bew.filter(x => BW.ohneNachweis(x.w.r));
+        if (bew.length > 1 && nn.length) r.push(` In ${nn.length === 1 ? 'Probe' : 'den Proben'} ${nrText(nn)} ${nn.length === 1 ? 'war keine' : 'waren keine'} der untersuchten PAK-Einzelverbindungen oberhalb der Bestimmungsgrenze nachweisbar.`);
+      }
+      r.push(...rollenSaetze(pakW));
+      const u = einheitVon(pakW);
+      const tab = tabelleOderVerweis(pakW, r, { t: 'tab', caption: pakW.length === 1 ? 'PAK-Wischprobe' : 'PAK-Wischproben',
+        kopf: ['Probe', 'Labor-Nr.', 'Entnahmestelle', u ? `Σ 16 EPA-PAK [${u}]` : 'Σ 16 EPA-PAK', 'Einordnung'], ausrichtung: ['center', 'center', 'left', 'center', 'left'],
+        spalten: SPALTEN_ERG, ohneUmbruch: [1],
+        zeilen: pakW.map(x => [`${x.nr != null ? x.nr : x.label}${rolleZusatz(x)}`, x.labNr, x.stelle, u ? x.w.r : wertText(x.w), x.stufe >= 0 ? PAK_STUFE[x.stufe] : '–']) });
+      const runs = r.filter(x => x !== ''); if (typeof runs[0] === 'string') runs[0] = runs[0].replace(/^\s+/, '');
+      if (runs.length) befund.push({ t: 'p', runs });
+      if (tab) befund.push(tab);
+    }
+    if (pakM.length) befund.push(...materialSaetze(pakM, pakW.length > 0, 'Summenwert (16 EPA-PAK)', 'Summenwerte (16 EPA-PAK)', { material: '[Bewertung der PAK-Materialproben ergänzen]',
+      bohrmehl: '[Bewertung der PAK-Materialproben ergänzen]', probe: '[Bewertung der weiteren PAK-Proben ergänzen]' }));
+    befund.push({ t: 'p', runs: [`Die beim Brand gebildeten organischen Schadstoffe sind adsorptiv sehr stark an den Ruß gebunden. Mit Entfernung der schadensbedingten Verunreinigungen werden somit auch zwangsläufig die gebildeten Schadstoffe entfernt, so dass nach ordnungsgemäßer Durchführung ${sanierung ? 'der angegebenen Sanierungsmaßnahmen' : 'von Sanierungsarbeiten'} keine Gesundheitsgefährdung durch Brandkondensate gegeben ist.`] });
+  }
+
+  /* 5.4 Künstliche Mineralfaserwolle – Texte wie im Asbestbericht (TRGS 905, Fassung 2026) */
+  if (kmf.length) {
+    h2('Künstliche Mineralfaserwolle');
+    kmf.forEach(p => befund.push({ t: 'p', runs: [`In der Dämmstoffprobe ${p.nr || p.ref || p.label}${p.stelleBericht ? ` (${p.stelleBericht})` : ''} wurden ${p.whoNachgewiesen ? '' : 'keine '}WHO-Fasern${p.whoNachgewiesen ? ' (lungengängige Fasern)' : ''} nachgewiesen. `,
+      'Der Prüfbericht weist einen Kanzerogenitätsindex von KI = ', L(p.ki, 'KI-Wert'), ' aus.'] }));
+    if (kmf.some(p => p.whoNachgewiesen)) befund.push({ t: 'p', runs: ['Nach der seit 05.06.2026 geltenden Fassung der TRGS 905 werden WHO-Fasern nicht mehr über den Kanzerogenitätsindex, ',
+      'sondern nach den Kategorien für krebserzeugende Stoffe in Anhang I der CLP-Verordnung bewertet. Der KI-Wert wird daher nur ergänzend angegeben.'] });
+  }
+
+  /* 5.5 Asbest – Befund-Logik wie im Asbestbericht, Methode VDI 3866 Blatt 5 (Anhang B aus der Nachweisgrenze), Tabelle immer */
+  if (asb.length) {
+    h2('Asbest');
+    const anB = asb.filter(p => BW.anhangB(werteVon(e.erg, p)) === true);
+    asb.forEach(p => {
+      const b = BW.anhangB(werteVon(e.erg, p));
+      // positiv schon bei 1 % / 0,1 %: Anhang B ist dann nicht nötig – nur negative Ergebnisse prüfen
+      if (b === false && !p.befund.gefunden && BW.matrixErwartetAnhangB(p.matrix)) hinweise.push(`${p.ref || p.label}: Matrix „${p.matrix}“ wird meist nach VDI 3866 Blatt 5 Anhang B untersucht, der Prüfbericht nennt dafür keine Nachweisgrenze von 0,001 % – bitte prüfen.`);
+    });
+    const eine = asb.length === 1, rPos = asb.filter(p => p.befund.gefunden), rNeg = asb.filter(p => !p.befund.gefunden && p.befund.eindeutig), rUnklar = asb.filter(p => !p.befund.eindeutig);
+    const methode = eine ? `Die Materialprobe wurde gemäß VDI 3866 Blatt 5${anB.length ? ' unter Anwendung des Verfahrens nach Anhang B' : ''} auf Asbest untersucht.`
+      : anB.length === asb.length ? 'Die Materialproben wurden gemäß VDI 3866 Blatt 5 unter Anwendung des Verfahrens nach Anhang B auf Asbest untersucht.'
+      : `Die Materialproben wurden gemäß VDI 3866 Blatt 5 auf Asbest untersucht${anB.length ? `, ${probe(anB.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} unter Anwendung des Verfahrens nach Anhang B` : ''}.`;
+    tabNr++;
+    befund.push({ t: 'p', runs: [methode, ` ${eine ? 'Das Ergebnis ist' : 'Die Ergebnisse sind'} in Tabelle ${tabNr} zusammengefasst.`] });
+    const mat = p => ['„', L(p.material, 'Material'), '“'];
+    if (!rPos.length && !rUnklar.length) befund.push({ t: 'p', runs: [eine ? 'In der Materialprobe wurde kein Asbest nachgewiesen.' : `In keiner der ${zahlwort(asb.length)} Materialproben wurde Asbest nachgewiesen.`] });
+    else {
+      rPos.forEach(p => befund.push({ t: 'p', runs: [`In ${p.ref || 'Probe ' + p.nr} (Material: `, ...mat(p), `) wurde Asbest nachgewiesen: ${p.befund.text}.`] }));
+      rUnklar.forEach(p => befund.push({ t: 'p', runs: [`Für ${p.ref || 'Probe ' + p.nr} (Material: `, ...mat(p), `) weist der Prüfbericht aus: ${p.befund.text}. `, { gap: '[Schlussfolgerung für nicht eindeutige Ergebnisse ergänzen]' }] }));
+      if (rNeg.length) befund.push({ t: 'p', runs: [rNeg.length === 1 ? 'In der übrigen Probe wurde kein Asbest nachgewiesen.' : 'In den übrigen Proben wurde kein Asbest nachgewiesen.'] });
+    }
+    befund.push({ t: 'tab', caption: `Tabelle ${tabNr}: ${eine ? 'Materialprobe und Ergebnis' : 'Materialproben und Ergebnisse'} (Asbest)`,
+      kopf: ['Probe', 'Labor-Nr.', 'Entnahmestelle', 'Material', 'Ergebnis'], ausrichtung: ['center', 'center', 'left', 'left', 'left'],
+      spalten: SPALTEN_TAB1, ohneUmbruch: [1],
+      zeilen: asb.map(p => [p.nr ? String(p.nr) : (p.ref || p.label), p.labNr, p.stelleBericht, p.material, p.befund.text]) });
+  }
+
+  /* 5.6 Sensorische Prüfung auf Brandgeruch – Ergebnis-Satz je Probe aus den Bewertungen p1–p5 (Nr. wie in der Anlage der
+     Projektzentrale: Reihenfolge der LabelKit-Liste). Verdeckt (Blind-Modus) oder Bewertungen unvollständig → Lücke. */
+  if (nBg) {
+    h2('Sensorische Prüfung auf Brandgeruch');
+    const alleBg = (e.lk && Array.isArray(e.lk.brandgeruchProben) ? e.lk.brandgeruchProben : []).map((p, i) => ({ p, nr: i + 1 })).filter(x => x.p && !istStorniert(x.p));
+    // Wortlaut Methode/Schluss vorläufig (nur Bruchstücke aus 26.0527 bekannt) – Basti bestätigt beim Testlauf
+    befund.push({ t: 'p', runs: [`${nBg === 1 ? 'Die Materialprobe wurde' : `Die ${zahlwort(nBg)} Materialproben wurden`} in einem geschlossenen Luftraum auf 50 °C konditioniert und anschließend durch fünf Prüfpersonen unabhängig voneinander sensorisch auf Brandgeruch geprüft. Bewertet wurde in den Stufen stark (++), mittel (+), schwach ((+)) und ohne Brandgeruch (–).`] });
+    const unvollstaendig = alleBg.filter(x => BG_KEYS.some(k => !bgWert(x.p[k])));
+    if (lk.bgBlind || unvollstaendig.length) {
+      befund.push({ t: 'p', runs: [{ gap: '[Ergebnis der Brandgeruchprüfung ergänzen]' }] });
+      if (!lk.bgBlind) hinweise.push(`Brandgeruch: Bewertungen fehlen oder sind unlesbar (${unvollstaendig.map(x => 'Probe ' + x.nr).join(', ')}) – in LabelKit alle fünf Bewertungen eintragen.`);
+    } else {
+      const saetze = alleBg.map(({ p, nr }) => {
+        const n = BG_STUFEN.map(([k, wort]) => ({ wort, n: BG_KEYS.filter(key => bgWert(p[key]) === k).length })).filter(x => x.n);
+        n.sort((a, b) => b.n - a.n);   // häufigste Bewertung zuerst, bei Gleichstand die stärkere (Reihenfolge BG_STUFEN, sort ist stabil)
+        const teile = n.map(x => `von ${x.n === 5 ? 'allen fünf Prüfpersonen' : x.n === 1 ? 'einer Prüfperson' : `${zahlwort(x.n)} Prüfpersonen`} ${x.wort}`);
+        const beschr = [s(p.z1), s(p.z2)].filter(Boolean).join(', ');
+        return `Bei Probe ${nr}${beschr ? ` (${beschr})` : ''} wurde ${liste(teile)} Brandgeruch festgestellt.`;
+      });
+      befund.push({ t: 'p', runs: [saetze.join(' ')] });
+    }
+    befund.push({ t: 'p', runs: ['Die Einzelbewertungen der Prüfpersonen sind in Anlage ', A.nr.brandgeruch ? String(A.nr.brandgeruch) : { gap: '[Anlage-Nr. Brandgeruch]' }, ' dargestellt.'] });
+  }
+
+  /* 5.7 Weitere Untersuchungen (LabelKit „Sonstige“ ohne Chlorid-Bohrmehl): keine Einordnung im Doc – Verweis und Lücke */
+  if (weitereErg.length) {
+    h2('Weitere Untersuchungen');
+    const params = [...new Set(weitereErg.map(x => x.lk.notiz).filter(Boolean))];
+    const nrs = [...new Set(lp.filter(p => weitereErg.some(x => x.label === p.label)).map(p => p.bericht).filter(Boolean))];
+    befund.push({ t: 'p', runs: [`Die Ergebnisse ${weitereErg.length === 1 ? 'der weiteren Probe' : 'der weiteren Proben'} (${probe(weitereErg)}${params.length ? '; ' + params.join('; ') : ''}) sind `,
+      nrs.length > 1 ? 'den Prüfberichten ' : 'dem Prüfbericht ', nrListe(nrs), ` zu entnehmen ${anlNr(nrs)}. `, { gap: '[Bewertung der weiteren Untersuchungen ergänzen]' }] });
+  }
+  if (kuerzel.size) hinweise.push(`Entnahmestelle: Abkürzungen ausgeschrieben (${[...kuerzel].map(k => `${k} → ${RAUM_KUERZEL[k]}`).join(', ')}) – im Prüfbericht stehen die Kürzel; bitte prüfen.`);
   const massnahmen = [{ t: 'p', runs: [{ gap: sanierung ? '[Sanierungsmaßnahmen ergänzen]' : '[Schlussfolgerungen ergänzen]' }] }];
 
   /* 7. Arbeitsschutzmaßnahmen: GB 0 eigener Satz (Befunde Nr. 10), GB 1–3 ein Satz mit der Nummer; KMF (TRGS 521) und Asbest (TRGS 519) */
@@ -303,13 +653,15 @@ function bericht(eingabe) {
     annahmen: annahmenAus([['probenehmer', probenehmerQuelle], ['versicherer', versichererQuelle], ['sv', svQuelle]]),
     brand: { titel: titelArt, objektartVorgabe: objektart(P.nutzung), nutzung: P.nutzung, schadenereignis: P.schadenereignis, brandgut: P.brandgut,
       schadendatum: sd.art, ortstermin: ortstermin || '', probenahme: lkDaten,
-      zahlen: { chlorid: nCl, pak: nPak, pakMaterial: nPakM, kmf: kmf.length, asbest: asb.length, brandgeruch: nBg, chloridAndere: lk.clAndere.length, sonstige: lk.sonstige.length } },
+      zahlen: { chlorid: nCl, pak: nPak, pakMaterial: nPakM, kmf: kmf.length, asbest: asb.length, brandgeruch: nBg, chloridAndere: nClM, bohrmehl: nBm, sonstige: lk.sonstige.length },
+      // Formular: Ergebnistabellen nur mit Chlorid-/PAK-Wischproben, Hintergrundreferenz nur mit PAK-Wischproben (Ergebnisse oder LabelKit)
+      mitWischErgebnis: clW.length + pakW.length > 0, mitPakWisch: pakW.length > 0 || nPak > 0, referenzVorgabe: referenzVorgabe(P.nutzung) },
   };
   modell.luecken = luecken(modell);
   return modell;
 }
 
-const API = { VERSION: 1, art: 'brand', bericht, vorgabe, objektart, OBJEKTART, TITEL };
+const API = { VERSION: 1, art: 'brand', bericht, vorgabe, objektart, OBJEKTART, TITEL, referenzVorgabe, SPALTEN_ERG, nrText };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtBrand = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
