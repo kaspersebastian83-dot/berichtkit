@@ -385,37 +385,39 @@ const daten = {
     for (let i = 0; i < 40 && !(neuGeschrieben && neuGeschrieben.nurEigene); i++) { await page.waitForTimeout(150); neuGeschrieben = JSON.parse(await projektDatei(bkPfad)); }
     // Vorgaben und Leeres fallen weg; was von der heutigen Vorgabe abweicht (Probenehmer, zweite Unterschrift), bleibt als eigene Angabe
     assert.deepEqual(neuGeschrieben.form, { einbau: 'vor1996', probenehmer: 'Mes', mt: 'Mes' }, 'nur noch eigene Angaben in der Datei');
-    // Berichtsart aus der Projektzentrale (#…&art=): den Brandbericht gibt es noch nicht → „kommt bald“, kein Bericht der falschen Art
+    // Berichtsart aus der Projektzentrale (#…&art=): eine Berichtsart, die es nicht gibt → Hinweis mit Knopf zum Asbestbericht, kein Bericht der falschen Art
     const startZeigt = async (titel, text) => {
       await page.waitForSelector('#start:not([hidden])');
       assert.equal(await page.textContent('#startTitel'), titel); assert.match(await page.textContent('#startText'), text);
       assert.ok(await page.isHidden('#app')); assert.ok(await page.isHidden('#btnWaehlen')); assert.ok(await page.isVisible('#btnAsbest'));
     };
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand');   // nur die Adresse ändert sich, Projekt offen
-    await startZeigt('Brandbericht', /Der Brandbericht kommt bald\. Bisher erstellt BerichtKit den Asbestbericht\./);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak');   // nur die Adresse ändert sich, Projekt offen
+    await startZeigt('Bericht', /Die Berichtsart „pak“ kennt BerichtKit nicht/);
+    assert.ok(await page.isHidden('#btnArtVorschau'), 'ohne Modul keine Vorschau');
     await page.click('#btnAsbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.doesNotMatch(page.url(), /art=/); assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom/);
-    // Projekt offen: wieder art=brand, dann zurück (Zurück-Knopf) und per Link art=asbest → der Bericht ist wieder da
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await startZeigt('Brandbericht', /kommt bald/);
+    // Projekt offen: wieder art=pak, dann zurück (Zurück-Knopf) und per Link art=asbest → der Bericht ist wieder da
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await startZeigt('Bericht', /kennt BerichtKit nicht/);
     await page.goBack(); await page.waitForSelector('#app:not([hidden]) .blatt');
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await startZeigt('Brandbericht', /kommt bald/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await startZeigt('Bericht', /kennt BerichtKit nicht/);
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await page.reload();   // frisch geöffnet
-    await startZeigt('Brandbericht', /kommt bald/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await page.reload();   // frisch geöffnet
+    await startZeigt('Bericht', /kennt BerichtKit nicht/);
     // Archiv ist auch hier bekannt – „Projekt wählen“ im Kopf öffnet dann mit Mitarbeitern, Unterschriften, Einstellungen aus dem Archiv
     assert.ok(await page.evaluate(() => !!S.archiv), 'Archiv geladen');
-    // Brandbericht im Aufbau: „Vorschau ansehen“ öffnet das Formular mit der Brand-Seite – Speichern gesperrt, nur Entwurf
-    assert.ok(await page.isVisible('#btnArtVorschau'));
-    await page.click('#btnArtVorschau'); await page.waitForSelector('#app:not([hidden]) .blatt');
-    assert.match(page.url(), /art=brand/); assert.match(page.url(), /vorschau=1/);
+    // Brandbericht ab 1.14.0 bereit: #…&art=brand öffnet direkt das Formular mit der Brand-Seite – ohne „kommt bald“, ohne Sperre „im Aufbau“
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await page.reload();
+    await page.waitForSelector('#app:not([hidden]) .blatt'); await page.waitForSelector('#karteBrand:not([hidden])');
+    assert.match(page.url(), /art=brand/); assert.doesNotMatch(page.url(), /vorschau=/);
     assert.ok(await page.isVisible('#karteBrand')); assert.ok(await page.isHidden('#zeileVariante'));
+    assert.equal(await page.textContent('#brandVorschauText'), '', 'kein Hinweis „noch im Aufbau“'); assert.ok(await page.isVisible('#btnZumAsbest'));
     assert.match(await page.textContent('#vorschau'), /Sanierungsvorschlag vom/); assert.match(await page.textContent('#vorschau'), /7\. Arbeitsschutzmaßnahmen/);
     // 5. Befund (ab 1.13.0): 5.1 als Lücke (nur Vorbelegung), Asbest-Abschnitt mit Methode und Tabelle; ohne Chlorid/PAK keine Felder für Tabellen/Referenz
     assert.match(await page.textContent('#vorschau'), /5\.1 Brandlast und Schadenbild[\s\S]*\[Brandlast und Schadenbild beschreiben\][\s\S]*5\.\d Asbest[\s\S]*VDI 3866 Blatt 5/);
     assert.ok(await page.isHidden('#zeileTabellen')); assert.ok(await page.isHidden('#zeileReferenz')); assert.ok(await page.isHidden('#zeileReferenzGrund'));
     assert.ok(await page.evaluate(() => BerichtBewertung.chloridStufe({ r: '60', u: 'mg/m²' }) === 1), 'bericht-bewertung.js geladen');
-    assert.ok(await page.isDisabled('#btnErstellen')); assert.equal(await page.textContent('#btnLaden'), 'Entwurf herunterladen');
-    assert.match(await page.textContent('#hinweise'), /Gesperrt: Der Brandbericht ist noch im Aufbau/);
+    assert.ok(await page.isEnabled('#btnErstellen')); assert.equal(await page.textContent('#btnLaden'), 'Herunterladen');
+    assert.doesNotMatch(await page.textContent('#hinweise'), /noch im Aufbau|Gesperrt/);
     assert.ok(await page.evaluate(() => S.luecken.some(x => x.luecke === '[Gefahrenbereich wählen]')));
     await page.selectOption('#fbGb', '2');
     assert.match(await page.textContent('#vorschau'), /Gefahrenbereich 2 \(GB 2\)/);
@@ -457,15 +459,23 @@ const daten = {
     await page.fill('#fbZusammenfassung', 'Keller: Feinreinigung'); await page.dispatchEvent('#fbZusammenfassung', 'change');
     assert.match(await page.textContent('#vorschau'), /Zusatz zum Arbeitsschutz\.\s*8\. Zusammenfassung Sanierungsmaßnahmen\s*Keller: Feinreinigung/);
     assert.ok(await page.evaluate(() => [...document.querySelectorAll('#vorschau ul.punkte li b')].some(b => b.textContent === 'Keller:')));
-    // Word (Entwurf): Aufzählung als Word-Liste, kursiver Zwischentitel, zwei Fotos, fettes „Keller:“
+    // Word: Aufzählung als Word-Liste, kursiver Zwischentitel, zwei Fotos, fettes „Keller:“
     const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#btnLaden')]);
     const wbuf = fs.readFileSync(await dl.path()), wxml = zipDatei(wbuf, 'word/document.xml');
-    assert.match(dl.suggestedFilename(), /_ENTWURF\.docx$/);
+    assert.equal(dl.suggestedFilename(), '3._Mitteilung_99.9001.docx', 'kein Entwurf mehr');
     assert.ok((wxml.match(/<w:numPr>/g) || []).length >= 3, 'Aufzählungspunkte als Word-Liste');
     assert.equal((wxml.match(/<pic:pic /g) || []).length, 2, 'Asbestfoto und Foto aus 5.1');
     assert.match(wxml, /<w:b\/>(?:(?!<\/w:r>)[\s\S])*<w:t[^>]*>Keller:<\/w:t>/, 'fettes „Keller:“');
     assert.match(wxml, /<w:outlineLvl w:val="2"\/>(?:(?!<\/w:p>)[\s\S])*<w:i\/>(?:(?!<\/w:p>)[\s\S])*>Keller</, 'Zwischentitel kursiv ohne Nummer');
-    if (process.env.BERICHT_AUSGABE) fs.writeFileSync(path.join(process.env.BERICHT_AUSGABE, 'browser_brand_ENTWURF.docx'), wbuf);
+    if (process.env.BERICHT_AUSGABE) fs.writeFileSync(path.join(process.env.BERICHT_AUSGABE, 'browser_brand.docx'), wbuf);
+    // Speichern in „Mitteilungen“ freigegeben (bereit): Lücken-Rückfrage wie beim Asbestbericht, dann die Datei, Protokoll mit art „brand“
+    await page.click('#btnErstellen'); await page.waitForSelector('#status .ok', { timeout: 15000 });
+    const gespeichert = await projektDatei('Mitteilungen/3._Mitteilung_99.9001.docx');
+    assert.ok(gespeichert && gespeichert.startsWith('PK'), 'Brandbericht in „Mitteilungen“ gespeichert');
+    let protokoll = null;
+    for (let i = 0; i < 40 && !(protokoll && (protokoll.berichte || []).some(b => b.art === 'brand')); i++) { await page.waitForTimeout(150); protokoll = JSON.parse(await projektDatei(bkPfad)); }
+    assert.ok(protokoll.berichte.some(b => b.art === 'brand' && /3\._Mitteilung_99\.9001\.docx$/.test(b.datei)), 'Protokoll: art brand');
+    assert.ok(await page.isVisible('#btnUebergabe'), '„Ans Büro übergeben →“');
     await page.check('input[name=brTitel][value=Untersuchungsbericht]');
     // Untersuchungsbericht: ein Feld „Schlussfolgerungen“, keine Sanierungsfelder, kein 8.
     assert.ok(await page.isVisible('#fbSchluss')); assert.ok(await page.isHidden('#fbSanGebaeude')); assert.ok(await page.isHidden('#fbZusammenfassung'));

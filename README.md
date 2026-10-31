@@ -2,10 +2,9 @@
 
 Erstellt den **Asbest-Untersuchungsbericht** („1. Mitteilung“) als Word-Datei im Format des Büros – aus den Daten, die
 die anderen Spektron-Apps schon im Projektordner abgelegt haben. Läuft im Browser (Edge/Chrome), ohne Server, ohne Installation.
-Der **Brandbericht** („Sanierungsvorschlag“ / „Untersuchungsbericht“) ist im Aufbau: ab 1.12.0 als Vorschau mit
-`#projekt=<Ordner>&art=brand&vorschau=1` (Deckblatt, Kopf, 1.–4., ab 1.13.0 5. Befund mit 5.2–5.7, 7., Unterschriften, Anlagen;
-ab 1.14.0 Freitextfelder 5.1, 6., 7. und 8. mit Fotos aus FotoKit) –
-Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht.
+Ab 1.14.0 auch den **Brandbericht** („Sanierungsvorschlag“ / „Untersuchungsbericht“) mit `#projekt=<Ordner>&art=brand`: Deckblatt,
+Kopf, 1.–4., 5. Befund (5.1 Freitext, 5.2–5.7 aus den Laborwerten), 6. Sanierungsmaßnahmen bzw. Schlussfolgerungen, 7., 8. Zusammenfassung,
+Unterschriften, Anlagen – Freitextfelder mit Fotos aus FotoKit (bis 1.13.0 nur als Vorschau mit `&vorschau=1`, Speichern gesperrt).
 
 Adresse: `https://kaspersebastian83-dot.github.io/berichtkit/` · aus der Projektzentrale: `…/berichtkit/#projekt=<Ordnername>`
 

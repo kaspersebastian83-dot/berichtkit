@@ -7,7 +7,7 @@
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), zlib = require('node:zlib');
 const ROOT = path.join(__dirname, '..');
 const T = require('../bericht-text.js'), W = require('../bericht-docx.js'), BL = require('../bericht-luecken.js'), B = require('./daten/beispiel.cjs'), { faelle } = require('./daten/faelle.cjs');
-const BD = require('./daten/brand.cjs'), BRAND = Object.entries(BD.faelle).map(([name, f]) => [name, { ...f, entwurf: true }]);   // Brand: noch gesperrt → Entwurf
+const BD = require('./daten/brand.cjs'), BRAND = Object.entries(BD.faelle).map(([name, f]) => [name, { ...f, entwurf: true }]);   // Brand als Entwurf: Kennzeile „ENTWURF“ im Kopf mitgeprüft
 const D = vm.runInThisContext('(function(){' + fs.readFileSync(path.join(ROOT, 'vendor/docx.iife.js'), 'utf8') + '\n;return docx;})()');
 const PZ = path.join(ROOT, '..', 'projektzentrale', 'word-luecken.js');
 const WL = fs.existsSync(PZ) ? require(PZ) : null;

@@ -1,6 +1,6 @@
 {
  "BR1_voll_Versicherung": {
-  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "dateiname": "1._Mitteilung_99.9002.docx",
   "deckblatt": {
    "titel": "Sanierungsvorschlag vom 27.10.2026",
    "mitteilung": "1. Mitteilung",
@@ -56,12 +56,7 @@
     "Erdgeschoss links, Brandweg 7, 54321 Beispielstadt"
    ]
   ],
-  "kennzeilen": [
-   {
-    "art": "entwurf",
-    "text": "ENTWURF – nicht versenden"
-   }
-  ],
+  "kennzeilen": [],
   "abschnitte": [
    {
     "titel": "1. Veranlassung",
@@ -1108,9 +1103,7 @@
   "storniert": [],
   "hinweise": [],
   "hinweisAktionen": {},
-  "sperren": [
-   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
-  ],
+  "sperren": [],
   "probenehmerQuelle": {
    "angenommen": true,
    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
@@ -1165,7 +1158,7 @@
   ]
  },
  "BR2_nur_PAK_ohne_Versicherung_GB0": {
-  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "dateiname": "1._Mitteilung_99.9002.docx",
   "deckblatt": {
    "titel": "Untersuchungsbericht vom 27.10.2026",
    "mitteilung": "1. Mitteilung",
@@ -1206,12 +1199,7 @@
     "Erdgeschoss links, Brandweg 7, 54321 Beispielstadt"
    ]
   ],
-  "kennzeilen": [
-   {
-    "art": "entwurf",
-    "text": "ENTWURF – nicht versenden"
-   }
-  ],
+  "kennzeilen": [],
   "abschnitte": [
    {
     "titel": "1. Veranlassung",
@@ -1535,9 +1523,7 @@
   "storniert": [],
   "hinweise": [],
   "hinweisAktionen": {},
-  "sperren": [
-   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
-  ],
+  "sperren": [],
   "probenehmerQuelle": {
    "angenommen": true,
    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
@@ -1581,7 +1567,7 @@
   ]
  },
  "BR3_Luecken": {
-  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "dateiname": "1._Mitteilung_99.9002.docx",
   "deckblatt": {
    "titel": "Sanierungsvorschlag vom 27.10.2026",
    "mitteilung": "1. Mitteilung",
@@ -1645,12 +1631,7 @@
     }
    ]
   ],
-  "kennzeilen": [
-   {
-    "art": "entwurf",
-    "text": "ENTWURF – nicht versenden"
-   }
-  ],
+  "kennzeilen": [],
   "abschnitte": [
    {
     "titel": "1. Veranlassung",
@@ -2231,9 +2212,7 @@
     "was": "erstellen"
    }
   },
-  "sperren": [
-   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
-  ],
+  "sperren": [],
   "probenehmerQuelle": {
    "angenommen": true,
    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
@@ -2302,7 +2281,7 @@
   ]
  },
  "BR4_Gewerbe_Teilnehmerliste_ENTWURF": {
-  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "dateiname": "1._Mitteilung_99.9002.docx",
   "deckblatt": {
    "titel": "Sanierungsvorschlag vom 27.10.2026",
    "mitteilung": "1. Mitteilung",
@@ -2358,10 +2337,6 @@
    ]
   ],
   "kennzeilen": [
-   {
-    "art": "entwurf",
-    "text": "ENTWURF – nicht versenden"
-   },
    {
     "art": "vorlaeufig",
     "text": "Vorläufig – beruht auf einem vorläufigen Prüfbericht"
@@ -2956,9 +2931,7 @@
     "was": "öffnen"
    }
   },
-  "sperren": [
-   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
-  ],
+  "sperren": [],
   "probenehmerQuelle": {
    "angenommen": true,
    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."
@@ -3005,7 +2978,7 @@
   ]
  },
  "BR5_Gewerbe_Bohrmehl_Tabellen": {
-  "dateiname": "1._Mitteilung_99.9002_ENTWURF.docx",
+  "dateiname": "1._Mitteilung_99.9002.docx",
   "deckblatt": {
    "titel": "Untersuchungsbericht vom 27.10.2026",
    "mitteilung": "1. Mitteilung",
@@ -3060,12 +3033,7 @@
     "Marktplatz 1, 54321 Beispielstadt"
    ]
   ],
-  "kennzeilen": [
-   {
-    "art": "entwurf",
-    "text": "ENTWURF – nicht versenden"
-   }
-  ],
+  "kennzeilen": [],
   "abschnitte": [
    {
     "titel": "1. Veranlassung",
@@ -3632,9 +3600,7 @@
   "storniert": [],
   "hinweise": [],
   "hinweisAktionen": {},
-  "sperren": [
-   "Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern."
-  ],
+  "sperren": [],
   "probenehmerQuelle": {
    "angenommen": true,
    "text": "Probenehmer Max Messer angenommen (nicht aus dem Feldbogen; kein Probenehmer im Feldbogen) – bitte prüfen."

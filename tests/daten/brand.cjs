@@ -112,7 +112,8 @@ const faelle = {
     cfg: { ...B.cfg, labor: '' },
   },
   // Gewerbe (Lager) mit Warenvorräten und technischer Einrichtung, eigener Brandort im Satz, Teilnehmerliste, vorläufiger Prüfbericht;
-  // Brandgeruch-Anlage mit falscher Nummer im Titel und LabelKit danach geändert (veraltet → nicht vorgehakt) → ENTWURF
+  // Brandgeruch-Anlage mit falscher Nummer im Titel und LabelKit danach geändert (veraltet → nicht vorgehakt); „ENTWURF“ im Namen aus
+  // 1.12.0, als der Brandbericht noch gesperrt war – seit 1.14.0 (bereit) ohne Sperre
   'BR4_Gewerbe_Teilnehmerliste_ENTWURF': {
     pj: pj({ nutzung: 'Gewerbe/Industrie', objekt: 'Industriestraße 3, 54321 Beispielstadt', versicherer: 'Andere Versicherung AG' }),
     lk: lk({ chlorid: [[1, '2026-10-15', 'Halle Regal 3', 'Wischprobe']], pak: [[2, '2026-10-15', 'Halle Regal 3', 'Wischprobe']],

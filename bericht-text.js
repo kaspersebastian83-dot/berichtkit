@@ -9,9 +9,10 @@ const ARTEN = { asbest: lade('BerichtAsbest', './bericht-asbest.js'), brand: lad
 if (!G || !ARTEN.asbest || !ARTEN.brand) throw new Error('BerichtKit: bericht-gemeinsam.js/bericht-asbest.js/bericht-brand.js nicht geladen (Reihenfolge der Skripte in index.html).');
 
 /** Alle Berichtsarten, die es geben soll (Reihenfolge = Auswahl). bereit = fertig für Berichte in „Mitteilungen“. Eine Berichtsart
-    mit Modul, die noch nicht bereit ist (brand bis Schritt 5), baut trotzdem ihr Modell – für Tests und die Vorschau
-    (#…&art=brand&vorschau=1) –, aber immer mit Sperre: nur als Entwurf herunterladen, nie in „Mitteilungen“. */
-const BEREIT = { asbest: true, brand: false };
+    mit Modul, die noch nicht bereit ist, baut trotzdem ihr Modell – für Tests und die Vorschau (#…&art=<art>&vorschau=1) –,
+    aber immer mit Sperre: nur als Entwurf herunterladen, nie in „Mitteilungen“. brand ist bereit ab 1.14.0 (nach Schritt 5;
+    eigener Commit, damit er sich notfalls einzeln zurücknehmen lässt). */
+const BEREIT = { asbest: true, brand: true };
 const BERICHTSARTEN = [
   { art: 'asbest', name: 'Asbestbericht' },
   { art: 'brand', name: 'Brandbericht' },

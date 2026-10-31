@@ -11,14 +11,14 @@ const text = (m, nr) => abschnitt(m, nr).inhalt.map(x => T.text(x.runs)).join('\
 const F = D.faelle;
 const mitForm = (f, brand = {}, o = {}) => ({ ...f, form: { ...f.form, ...o, brand: { ...f.form.brand, ...brand } } });
 
-fall('Berichtsart brand: Modell wird gebaut, ist aber noch gesperrt (nur Entwurf) – bereit erst nach Schritt 5', () => {
-  assert.deepEqual(T.BERICHTSARTEN.map(a => [a.art, a.bereit, a.modul]), [['asbest', true, true], ['brand', false, true]]);
+fall('Berichtsart brand: bereit ab 1.14.0 (nach Schritt 5) – Speichern in „Mitteilungen“ ohne Sperre „noch im Aufbau“', () => {
+  assert.deepEqual(T.BERICHTSARTEN.map(a => [a.art, a.bereit, a.modul]), [['asbest', true, true], ['brand', true, true]]);
   const m = modell(F.BR1_voll_Versicherung);
-  assert.match(m.sperren[0], /Brandbericht ist noch im Aufbau/);
+  assert.deepEqual(m.sperren, []);
   assert.equal(m.dateiname, '1._Mitteilung_99.9002.docx');
   assert.deepEqual(m.abschnitte.map(a => a.titel), ['1. Veranlassung', '2. Aufgabenstellung', '3. Ortsbesichtigung', '4. Probenahme', '5. Befund',
     '6. Sanierungsmaßnahmen', '7. Arbeitsschutzmaßnahmen', '8. Zusammenfassung Sanierungsmaßnahmen']);
-  // Modul direkt (ohne Fassade) ohne Sperre – die Sperre setzt bericht-text.js, solange brand nicht bereit ist
+  // Modul direkt (ohne Fassade) gleich – die Sperre „im Aufbau“ setzte bericht-text.js, solange brand nicht bereit war
   assert.deepEqual(BR.bericht({ cfg: B.cfg, mitarbeiter: B.mitarbeiter, ...F.BR1_voll_Versicherung }).sperren, []);
 });
 
