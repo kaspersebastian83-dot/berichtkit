@@ -102,6 +102,12 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     assert.deepEqual(z.map(x => [x.feld, x.bekannt]), [['#fLabor', true], ['#probenListe input[data-art="ki"]', true], ['', true], ['', false]]);
     assert.equal(z[2].wo, 'in der Projektzentrale eintragen'); assert.equal(z[3].wo, 'in Word ausfüllen');
     assert.deepEqual([0, 1, 2, 13].map(L.zaehlerText), ['', '1 Stelle noch offen', '2 Stellen noch offen', '13 Stellen noch offen']);
+    // Zähler/Rückfrage: fehlende Projektnummer setzt erst bericht-docx.js ein – offene() zählt sie mit, Modell unverändert
+    const ohneNr = T.bericht({ ...eingabe(form()), pj: B.pj({ projektnummer: '' }) });
+    assert.equal(ohneNr.deckblatt.projektnummer, ''); assert.ok(!ohneNr.luecken.includes('[Projektnummer]'));
+    assert.equal(L.offene(ohneNr)[0], '[Projektnummer]'); assert.deepEqual(L.offene(T.bericht(eingabe(form()))), T.bericht(eingabe(form())).luecken);
+    // Jede fertige Berichtsart hat eine Tabelle (sonst hieße jede Lücke still „in Word ausfüllen“)
+    for (const a of T.BERICHTSARTEN.filter(x => x.bereit)) assert.ok(Array.isArray(L.FELDER[a.art]) && L.FELDER[a.art].length, `bericht-luecken.js: Tabelle für ${a.art}`);
     // Felder der Tabelle gibt es im Formular (ids aus index.html)
     const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
     for (const e of L.FELDER.asbest) for (const id of `${e.feld || ''} ${e.ziel || ''}`.match(/#[\w-]+/g) || []) assert.ok(html.includes(`id="${id.slice(1)}"`), `${id} in index.html`);

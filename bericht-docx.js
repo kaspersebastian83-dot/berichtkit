@@ -11,11 +11,12 @@
    · { t:'fig', label, datei, caption } Foto · { t:'tab', caption, kopf[], zeilen[][], ausrichtung[], spalten[] } Tabelle
    (spalten = Breiten in twips, zusammen 9070; fehlen sie, gleich breit; ohneUmbruch = Spalten, deren Text nicht am Bindestrich
    umbrechen darf, z. B. die Labor-Nr.).
-   bilder = { logoSvg:Uint8Array, logoPng:Uint8Array, sig:{<Kürzel>:{data,w,h}}, fotos:{<Label>:{data,w,h}} } */
+   bilder = { logoSvg:Uint8Array, logoPng:Uint8Array, sig:{<Kürzel>:{data,w,h}}, fotos:{<Label>:{data,w,h}} }
+   optionen = { kommentare: false } – Lücken ohne Kommentar (nur für Tests: Vergleich mit dem Stand vor den Kommentaren) */
 (function (root) {
 'use strict';
 
-function erstellen(D, m, bilder) {
+function erstellen(D, m, bilder, optionen = {}) {
   const { Document, Paragraph, TextRun, ImageRun, Header, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType,
     TabStopType, PageNumber, ShadingType, HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType,
     SectionType, VerticalAlign, UnderlineType, NoBreakHyphen, CommentRangeStart, CommentRangeEnd, CommentReference } = D;
@@ -26,13 +27,18 @@ function erstellen(D, m, bilder) {
 
   /* Lücke: gelber Text „[…]“ zwischen Kommentaranfang und -ende, dahinter der Verweis auf den Kommentar (eigener Lauf ohne
      Text – trennt zwei gelbe Läufe nicht, word-luecken.js zählt nur Text). Jede Stelle bekommt ihren eigenen Kommentar. */
-  const kommentare = [], jetzt = new Date();
+  const kommentare = [], mitKommentaren = optionen.kommentare !== false;   // false nur für den Vergleich im Test (Stand bis 1.10.0)
   const KOMMENTAR = { author: 'BerichtKit', initials: 'BK' };
+  /* Zeit des Kommentars: Word liest w:date als Ortszeit (und schreibt selbst Ortszeit mit „Z“), die docx-Bibliothek schreibt
+     date.toISOString() – also die Ortszeit ohne Millisekunden übergeben, sonst zeigt Word die Zeit 1–2 h zu früh. */
+  const d0 = new Date(), zwei = n => String(n).padStart(2, '0');
+  const ortszeit = `${d0.getFullYear()}-${zwei(d0.getMonth() + 1)}-${zwei(d0.getDate())}T${zwei(d0.getHours())}:${zwei(d0.getMinutes())}:${zwei(d0.getSeconds())}Z`;
+  const jetzt = { toISOString: () => ortszeit };
   const luecke = (text, o = {}, mitKommentar = true) => {
-    if (!mitKommentar) return [new TextRun({ text, font: FONT, highlight: 'yellow', ...o })];
+    if (!mitKommentar || !mitKommentaren) return [new TextRun({ text, font: FONT, highlight: 'yellow', ...o })];
     const id = kommentare.length;
-    kommentare.push({ id, ...KOMMENTAR, date: jetzt,
-      children: [new Paragraph({ children: [new TextRun({ text: 'Noch ausfüllen: ' + String(text).replace(/^\[\s*|\s*\]$/g, '') })] })] });
+    kommentare.push({ id, ...KOMMENTAR, date: jetzt,   // Kommentartext 10 pt wie Words Formatvorlage „Kommentartext“
+      children: [new Paragraph({ children: [new TextRun({ text: 'Noch ausfüllen: ' + String(text).replace(/^\[\s*|\s*\]$/g, ''), size: 20 })] })] });
     return [new CommentRangeStart(id), new TextRun({ text, font: FONT, highlight: 'yellow', ...o }), new CommentRangeEnd(id),
       new TextRun({ font: FONT, children: [new CommentReference(id)] })];
   };
@@ -70,7 +76,9 @@ function erstellen(D, m, bilder) {
 
   /* Kopf Folgeseiten – Lücken hier ohne Kommentar: Einen Kommentar-Verweis in der Kopfzeile kann LibreOffice nicht laden
      („source file could not be loaded“), und Word bietet Kommentare im Kopf gar nicht an. Jede Lücke des Kopfes (Titel, Betreff,
-     VN/AG, Risiko/Schadenort) steht auch auf dem Deckblatt bzw. im Text und hat dort ihren Kommentar; gelb bleibt sie trotzdem. */
+     VN/AG, Risiko/Schadenort) steht auch auf dem Deckblatt bzw. im Text und hat dort ihren Kommentar; gelb bleibt sie trotzdem.
+     Das hängt an den Berichtstexten (gleiche Lücken-Namen, [Objekt] auch im Text) – tests/luecken-kommentare.cjs prüft es für
+     alle Kombinationen der Projektdaten; eine neue Berichtsart muss dort mitlaufen. */
   const k9 = r => einfach(runs(r, { size: 18 }, false));
   const kopfFolge = new Header({ children: [
     new Paragraph({ children: [logo(3.97, -0.26, -0.44), t('\t'), new TextRun({ font: FONT, children: ['Seite ', PageNumber.CURRENT, ' von ', PageNumber.TOTAL_PAGES] })],

@@ -615,15 +615,16 @@ function render() {
   anlagenZeigen(m);
   document.querySelectorAll('input[name=einbau]').forEach(r => { r.checked = r.value === (f.einbau || 'unbekannt'); });
   // Hinweise
+  const lz = BerichtLuecken.zuordnen(BerichtLuecken.offene(m), T.berichtsart(S.form));
   $('hinweise').innerHTML = [
     ...m.sperren.map(x => `<li class="sperre">Gesperrt: ${esc(x)}</li>`),
     ...m.annahmen.map(a => `<li class="luecke">${esc(a.text)} <button type="button" class="klein-knopf" data-ok="${esc(a.id)}" title="Stimmt so – Hinweis ausblenden">✓ stimmt</button></li>`),
-    ...BerichtLuecken.zuordnen(m.luecken, T.berichtsart(S.form)).map(x => `<li class="luecke">Lücke im Bericht: ${esc(x.luecke)} <span class="klein">– ${esc(x.wo)}</span></li>`),
+    ...lz.map(x => `<li class="luecke">Lücke im Bericht: ${esc(x.luecke)} <span class="klein">– ${esc(x.wo)}</span></li>`),
     ...m.hinweise.map(h => `<li>${esc(h)}${aktionHtml(m.hinweisAktionen[h])}</li>`),
     ...[...S.quellenDaten, ...S.quellen].map(q => `<li class="${q.ok ? 'ok' : ''}">${q.ok ? '✓ ' : ''}${esc(q.text)}</li>`),
     ...(S.cfgOrt === 'lokal' ? ['<li>Archivordner nicht verbunden: Einstellungen gelten nur in diesem Browser.</li>'] : []),
   ].join('');
-  lueckenZeigen(m);
+  lueckenZeigen(lz);
   const gesperrt = m.sperren.length > 0;
   vorschau(gesperrt ? T.alsEntwurf(m) : m);
   $('btnErstellen').disabled = gesperrt;
@@ -631,42 +632,47 @@ function render() {
   $('btnLaden').textContent = gesperrt ? 'Entwurf herunterladen' : 'Herunterladen';
   if (S.statusFest && Date.now() < S.statusFest.bis) $('status').innerHTML = S.statusFest.html;   // eben gemeldet – nicht gleich überschreiben
   else (S.statusFest = null, $('status')).textContent = gesperrt ? `Speichern gesperrt (${m.sperren.length}) – siehe Hinweise. „Entwurf herunterladen“ geht.`
-    : `Speichert als Mitteilungen/${m.dateiname}` + (m.luecken.length ? ` · ${m.luecken.length} Lücke(n) gelb markiert` : '');
+    : `Speichert als Mitteilungen/${m.dateiname}` + (lz.length ? ` · ${lz.length} Lücke(n) gelb markiert` : '');
 }
 /* Offene Stellen (Lücken im Bericht): Zähler oben „n Stellen noch offen“, leere Pflichtfelder gelb umrandet, Klick auf den
    Zähler springt zum Feld der ersten Stelle – jeder weitere Klick zur nächsten. Welche Lücke welches Feld füllt, steht nur in
    bericht-luecken.js. Gefüllte Felder (Lücke kommt dann aus der Projektzentrale, z. B. Auftraggeber auf dem Deckblatt) und
-   versteckte Felder sind kein Sprungziel; Lücken ohne Feld in BerichtKit stehen mit „wo“ im Tooltip und in den Hinweisen. */
+   versteckte Felder sind kein Sprungziel; Lücken ohne Feld in BerichtKit stehen mit „wo“ in den Hinweisen (letztes Sprungziel). */
 const sichtbar = el => !!el && !el.disabled && el.getClientRects().length > 0;
 const istLeer = el => !String(el.value == null ? '' : el.value).trim();
-function lueckenZeigen(m) {
-  const z = BerichtLuecken.zuordnen(m.luecken, T.berichtsart(S.form)), schluessel = m.luecken.join('\u0000');
-  if (S.lueckenSchluessel !== schluessel) { S.lueckenSchluessel = schluessel; S.lueckeSprung = 0; }   // andere Lücken → wieder bei der ersten
+/** Wiedererkennbar über ein Neuzeichnen hinweg (die Probenliste wird bei jeder Eingabe neu gebaut) */
+const zielKey = el => el.id || (el.dataset && el.dataset.art ? `${el.dataset.art}:${el.dataset.l}` : '');
+function lueckenZeigen(z) {
   S.luecken = z;
   document.querySelectorAll('.offen-feld').forEach(el => el.classList.remove('offen-feld'));
   for (const x of z) if (x.feld) document.querySelectorAll(x.feld).forEach(el => { if (sichtbar(el) && istLeer(el)) el.classList.add('offen-feld'); });
   const b = $('lueckenZaehler'), n = z.length;
   b.hidden = false; b.disabled = !n; b.classList.toggle('ok', !n);
   b.textContent = n ? BerichtLuecken.zaehlerText(n) : '✓ Keine offenen Stellen im Bericht';
+  b.setAttribute('aria-label', n ? `${BerichtLuecken.zaehlerText(n)} – zur nächsten Stelle springen` : 'Keine offenen Stellen im Bericht');
   b.title = n ? z.map(x => `${x.luecke} – ${x.wo}`).join('\n') + '\n\nKlick: zur nächsten Stelle im Formular' : '';
+  $('lueckenListe').textContent = z.map(x => `${x.luecke} – ${x.wo}`).join('; ');
 }
-/** Sprungziele in Berichtsreihenfolge: das erste leere, sichtbare Feld der Lücke, sonst ihr Ziel (z. B. die Probenliste);
-    Lücken ohne beides (Projektzentrale, in Word) → zuletzt die Hinweisliste, wo sie mit „wo“ stehen */
+/** Sprungziele in Berichtsreihenfolge, jedes einmal: das erste leere, sichtbare Feld der Lücke, sonst ihr Ziel (z. B. die
+    Probenliste); Lücken ohne beides (Projektzentrale, in Word) → zuletzt die Hinweisliste, wo sie mit „wo“ stehen */
 function lueckenZiele() {
   const ziele = []; let ohne = false;
   for (const x of S.luecken || []) {
     const feld = x.feld ? [...document.querySelectorAll(x.feld)].find(el => sichtbar(el) && istLeer(el)) : null;
     const el = feld || (x.ziel ? document.querySelector(x.ziel) : null);
-    if (el && el.getClientRects().length) { if (ziele[ziele.length - 1] !== el) ziele.push(el); } else ohne = true;
+    if (el && el.getClientRects().length) { if (!ziele.includes(el)) ziele.push(el); } else ohne = true;
   }
   if (ohne) ziele.push($('hinweise'));
   return ziele;
 }
+/** Nächstes Ziel nach dem zuletzt angesprungenen (gemerkt über zielKey, nicht als Nummer – die Liste ändert sich beim
+    Ausfüllen); ist das letzte nicht mehr dabei, wieder das erste */
 function zurLuecke() {
   const ziele = lueckenZiele(); if (!ziele.length) return;
-  const el = ziele[(S.lueckeSprung || 0) % ziele.length]; S.lueckeSprung = (S.lueckeSprung || 0) + 1;
+  const i = S.lueckeLetzt ? ziele.findIndex(el => zielKey(el) === S.lueckeLetzt) : -1;
+  const el = ziele[i < 0 ? 0 : (i + 1) % ziele.length]; S.lueckeLetzt = zielKey(el);
   el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  if (/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) el.focus({ preventScroll: true });
+  el.focus({ preventScroll: true });   // Probenliste und Hinweise haben tabindex="-1" – auch dort landet der Tastaturfokus
   el.classList.remove('luecke-hier'); void el.offsetWidth; el.classList.add('luecke-hier');
   setTimeout(() => el.classList.remove('luecke-hier'), 1600);
 }
@@ -815,7 +821,8 @@ async function speichern() {
         name = m0.dateiname; if (await dateiDa(ziel, name)) name = await freierName(ziel, name);
       }
     }
-    if (m0.luecken.length && !confirm(`Im Bericht sind noch ${m0.luecken.length} Lücke(n) gelb markiert:\n${m0.luecken.join(', ')}\n\nTrotzdem speichern?`)) { render(); return; }
+    const offen0 = BerichtLuecken.offene(m0);
+    if (offen0.length && !confirm(`Im Bericht sind noch ${offen0.length} Lücke(n) gelb markiert:\n${offen0.join(', ')}\n\nTrotzdem speichern?`)) { render(); return; }
     if (neueNr) { S.form.mitteilung = neueNr; S.form.mitteilungAm = new Date().toISOString(); formMerken('mitteilung', 'mitteilungAm'); render(); }
     S.statusFest = null; $('status').textContent = 'Word-Datei wird erstellt …';
     const { blob, m, fehlen } = await wordBlob(m0);
@@ -828,7 +835,7 @@ async function speichern() {
     // Protokoll: welche Dateien als Anlage dazugehören (für die Übergabe: Pfade im Projektordner), wie viele Lücken beim Speichern offen waren,
     // Nummer und Datum (beim nächsten Öffnen: eine Nummer, die es schon gibt, und das Datum dazu werden nicht mehr vorgeschlagen)
     await zustandSchreiben({ datei: name, am: new Date().toISOString(), von: ich(), mitteilung: +S.form.mitteilung || 1, datum: S.form.datum || '',
-      anlagen: m.anlagenDateien, anlagenListe: m.anlagenListe, luecken: m.luecken.length })
+      anlagen: m.anlagenDateien, anlagenListe: m.anlagenListe, luecken: BerichtLuecken.offene(m).length })
       .catch(e => fehler('Bericht gespeichert, Angaben dazu nicht: ' + (e && e.message || e)));
     if (window.MosaikLeiste) MosaikLeiste.aktualisieren();
     statusFest(`<span class="ok">✓ Gespeichert: Mitteilungen/${esc(name)}</span>` + (fehlen.length ? ` · Foto(s) nicht lesbar: ${esc(fehlen.join(', '))}` : ''));
@@ -958,7 +965,8 @@ function verbinden() {
   $('fMitteilung').onchange = e => { S.form.mitteilung = Math.max(1, +e.target.value || 1); S.form.mitteilungAm = new Date().toISOString(); formMerken('mitteilung', 'mitteilungAm'); render(); };
   $('fEingang').onchange = e => setze('eingangsdatum', e.target.value);
   $('fAuftrag').onchange = e => setze('auftragsdatum', e.target.value);
-  $('fAg').oninput = e => { S.form.agSatz = e.target.value; formMerken('agSatz'); vorschau(modell()); };
+  $('fAg').oninput = e => { S.form.agSatz = e.target.value; formMerken('agSatz'); const m = modell(); vorschau(m);
+    lueckenZeigen(BerichtLuecken.zuordnen(BerichtLuecken.offene(m), T.berichtsart(S.form))); };
   $('fAg').onchange = () => render();
   $('fPn').onchange = e => { const k = e.target.value, mtAlt = S.form.mt; S.form.probenehmer = k; if (k && rolle(k) === 'mt') S.form.mt = k; else if (S.form.mt && S.form.mt !== k && rolle(S.form.mt) === 'mt') S.form.mt = '';
     S.form.pnQuelle = 'hand'; formMerken('probenehmer', 'pnQuelle', ...(S.form.mt !== mtAlt ? ['mt'] : [])); render(); };

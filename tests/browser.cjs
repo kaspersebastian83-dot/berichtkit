@@ -123,7 +123,7 @@ const daten = {
     // Offene Stellen: Zähler oben, leeres Pflichtfeld gelb umrandet, Klick springt zum Feld (Zuordnung aus bericht-luecken.js)
     assert.equal(await page.textContent('#lueckenZaehler'), '1 Stelle noch offen');
     assert.ok(await page.isEnabled('#lueckenZaehler'));
-    assert.match(await page.getAttribute('#lueckenZaehler', 'title'), /\[Labor\] – Personen › Labor/);
+    assert.equal(await page.textContent('#lueckenListe'), '[Labor] – Personen › Labor', 'Liste für Vorleser (aria-describedby)');
     assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.offen-feld')].map(el => el.id)), ['fLabor']);
     await page.click('#lueckenZaehler');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'fLabor', 'Sprung zum Feld, das die Lücke füllt');
@@ -432,6 +432,14 @@ const daten = {
     assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.offen-feld')].map(el => el.id)), ['fPn']);
     await page.click('#lueckenZaehler'); assert.equal(await fokus(), 'fPn', 'neue Lückenliste → wieder bei der ersten');
     assert.match(await page.textContent('#vorschau'), /\[Probenehmer\]/);
+    // Zugestellte Probe: „Probenahme durch“ ist versteckt – keine Umrandung, kein Sprungziel; offen ist das Eingangsdatum
+    await page.check('input[name=variante][value=zugestellt]');
+    assert.ok(await page.isHidden('#fPn'));
+    assert.deepEqual(await page.evaluate(() => S.luecken.map(x => x.luecke)), ['[Eingangsdatum]']);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.offen-feld')].map(el => el.id)), ['fEingang']);
+    await page.click('#lueckenZaehler'); assert.equal(await fokus(), 'fEingang');
+    assert.match(await page.getAttribute('#lueckenZaehler', 'aria-label'), /^1 Stelle noch offen – zur nächsten Stelle springen$/);
+    assert.equal(await page.textContent('#lueckenListe'), '[Eingangsdatum] – Bericht › Eingangsdatum');
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('ok – BerichtKit im Browser: öffnen, Vorschau, Einstellungen, Word-Datei in „Mitteilungen“, Angaben im Projektordner, Spektron-Leiste');
   } catch (e) {

@@ -28,7 +28,7 @@ const FELDER = {
     { luecke: '[Risiko]', wo: PZ },
     { luecke: '[Schadenort]', wo: PZ },
     { luecke: '[Objekt]', wo: PZ },
-    { luecke: /^\[Foto fehlt/, ziel: '#probenListe', wo: 'Proben › Foto (FotoKit)' },
+    { luecke: /^\[Foto fehlt/, wo: 'Foto beim Speichern nicht lesbar – in FotoKit prüfen oder in Word einfügen' },
     { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
   ],
 };
@@ -45,10 +45,18 @@ function zuordnen(luecken, art) {
     return { luecke: l, feld: (e && e.feld) || '', ziel: (e && e.ziel) || '', wo: (e && e.wo) || IN_WORD, bekannt: !!e };
   });
 }
+/** Offene Lücken eines Berichtsmodells, wie sie in der Word-Datei stehen: modell.luecken plus die Lücken, die erst
+    bericht-docx.js einsetzt (fehlende Projektnummer auf dem Deckblatt). Für Zähler, Hinweise und Rückfrage vor dem Speichern –
+    das Modell selbst bleibt unverändert. ([Foto fehlt: …] entsteht erst, wenn beim Speichern ein Foto nicht lesbar ist.) */
+function offene(m) {
+  const l = [...((m && m.luecken) || [])];
+  if (m && m.deckblatt && !m.deckblatt.projektnummer && !l.includes('[Projektnummer]')) l.unshift('[Projektnummer]');
+  return l;
+}
 /** „1 Stelle noch offen“ / „3 Stellen noch offen“ / '' */
 const zaehlerText = n => (n === 1 ? '1 Stelle noch offen' : n > 1 ? `${n} Stellen noch offen` : '');
 
-const API = { FELDER, IN_WORD, eintrag, zuordnen, zaehlerText };
+const API = { FELDER, IN_WORD, eintrag, zuordnen, offene, zaehlerText };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtLuecken = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

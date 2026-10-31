@@ -120,7 +120,8 @@ Veranlassung (Probenahme durch uns / zugestellte Probe mit Gewährleistungssatz)
 Die Formatierung (A4, Arial 12, 1,5-zeilig, Deckblatt mit Logo, Kopfzeilen, „Seite X von Y“) baut `bericht-docx.js` – für jede
 Berichtsart gleich; alle Texte (auch der Titel) kommen aus dem Modell. Blöcke: Absatz `p`, Unterüberschrift `h2` (kursiv, z. B. „5.1 …“),
 Foto `fig`, Tabelle `tab` mit `spalten` (Breiten in twips, zusammen 9070; ohne Angabe gleich breit) und `ohneUmbruch` (z. B. Labor-Nr.).
-Jede Lücke (`{ gap }`) wird gelb und bekommt ihren Kommentar in `bericht-docx.js` – das Modell kennt keine Kommentare.
+Jede Lücke (`{ gap }`) wird gelb und bekommt ihren Kommentar in `bericht-docx.js` (außer in der Kopfzeile der Folgeseiten) – das
+Modell kennt keine Kommentare.
 
 ## Tests
 

@@ -6,7 +6,7 @@
 // wie vor den Kommentaren. Liegt ../projektzentrale daneben (CI), läuft deren word-luecken.js gegen dieselben Dateien.
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), zlib = require('node:zlib');
 const ROOT = path.join(__dirname, '..');
-const T = require('../bericht-text.js'), W = require('../bericht-docx.js'), B = require('./daten/beispiel.cjs'), { faelle } = require('./daten/faelle.cjs');
+const T = require('../bericht-text.js'), W = require('../bericht-docx.js'), BL = require('../bericht-luecken.js'), B = require('./daten/beispiel.cjs'), { faelle } = require('./daten/faelle.cjs');
 const D = vm.runInThisContext('(function(){' + fs.readFileSync(path.join(ROOT, 'vendor/docx.iife.js'), 'utf8') + '\n;return docx;})()');
 const PZ = path.join(ROOT, '..', 'projektzentrale', 'word-luecken.js');
 const WL = fs.existsSync(PZ) ? require(PZ) : null;
@@ -55,7 +55,9 @@ const gelbeLaeufe = tt => gelbeTexte(tt, false).length;
 const ohneKommentare = xml => xml.replace(/<w:commentRange(?:Start|End) w:id="\d+"\/>|<w:r>(?:<w:rPr>(?:(?!<\/w:rPr>)[\s\S])*<\/w:rPr>)?<w:commentReference w:id="\d+"\/><\/w:r>/g, '');
 
 const bilder = { logoSvg: fs.readFileSync(path.join(ROOT, 'assets/logo-schiffers.svg')), logoPng: fs.readFileSync(path.join(ROOT, 'assets/logo-schiffers.png')), sig: {}, fotos: {} };
-const wordVon = async m => { const buf = await D.Packer.toBuffer(W.erstellen(D, m, bilder)); return { buf, tt: teile(buf) }; };
+const wordVon = async (m, optionen) => { const buf = await D.Packer.toBuffer(W.erstellen(D, m, bilder, optionen)); return { buf, tt: teile(buf) }; };
+/** Nummern, die sich durch die zusätzliche Datei comments.xml verschieben (Beziehungen, Zeichnungs-Ids), angleichen */
+const angleichen = xml => xml.replace(/rId\d+/g, 'rId').replace(/docPr id="\d+"/g, 'docPr id=""');
 const modellVon = (f, cfg = B.cfg) => { const m0 = T.bericht({ ...f, cfg, mitarbeiter: B.mitarbeiter }); return f.entwurf ? T.alsEntwurf(m0) : m0; };
 
 /** Prüft eine Word-Datei: genau ein Kommentar je gelber Lücke außerhalb der Kopfzeilen, Text „Noch ausfüllen: …“, Autor
@@ -144,17 +146,41 @@ const VIELE = { pj: B.pj({ projektnummer: '', auftragsdatum: '', objekt: '', ver
     assert.match(h2, /<w:i\/>/, 'Lücke in der Unterüberschrift bleibt kursiv'); assert.match(h2, /<w:commentRangeStart/);
   });
 
-  await fall('Gelber Text und Klammern unverändert – ohne Kommentar-Markup sind die Textteile Wort für Wort gleich', async () => {
+  await fall('Gelber Text und Klammern unverändert – ohne Kommentar-Markup Wort für Wort gleich wie ohne Kommentare (Stand 1.10.0)', async () => {
     for (const [name, f] of [...Object.entries(faelle), ['VIELE', VIELE]]) {
-      const { tt } = await wordVon(modellVon(f, name === 'VIELE' ? { ...B.cfg, labor: '' } : B.cfg));
+      const m = modellVon(f, name === 'VIELE' ? { ...B.cfg, labor: '' } : B.cfg);
+      const { tt } = await wordVon(m), { tt: vorher } = await wordVon(m, { kommentare: false });
+      assert.equal(vorher['word/comments.xml'], undefined, `${name}: ohne Kommentare keine comments.xml`);
       for (const [k, xml] of Object.entries(tt)) if (TEXTTEILE.test(k)) {
         const ohne = ohneKommentare(xml);
         assert.ok(!/comment/.test(ohne), `${name} ${k}: Kommentar-Markup vollständig erkannt`);
+        assert.equal(angleichen(ohne), angleichen(vorher[k]), `${name} ${k}: außer den Kommentaren nichts geändert`);
         // Jeder Kommentar-Verweis steht in einem eigenen Lauf ohne Text direkt hinter dem Bereichsende
         assert.equal((xml.match(/<w:commentRangeEnd w:id="(\d+)"\/><w:r>(?:<w:rPr>(?:(?!<\/w:rPr>)[\s\S])*<\/w:rPr>)?<w:commentReference w:id="\1"\/><\/w:r>/g) || []).length,
           (xml.match(/<w:commentReference/g) || []).length, `${name} ${k}: Verweis hinter dem Bereich`);
       }
     }
+  });
+
+  await fall('Kopf-Lücken: jede steht mit gleichem Namen auch auf dem Deckblatt oder im Text – für alle Kombinationen der Projektdaten', () => {
+    const werte = { vn: ['', 'Muster Hausverwaltung GmbH, Hauptstr. 5, 12345 Musterstadt'], ag: ['', 'Beispiel Versicherung AG', 'VN'],
+      objekt: ['', 'Musterweg 12, 12345 Musterstadt'], versicherer: ['', 'Andere Versicherung AG'], variante: ['eigen', 'zugestellt'],
+      deckblatt: ['', 'versicherung', 'direkt'], projektnummer: ['', '99.9001'], eingang: ['', '2026-10-20'] };
+    let k = 0;
+    const kombis = Object.entries(werte).reduce((acc, [schl, ws]) => acc.flatMap(a => ws.map(w => ({ ...a, [schl]: w }))), [{}]);
+    for (const c of kombis) {
+      const pj = B.pj({ versicherungsnehmer: c.vn, auftraggeber: c.ag === 'VN' ? c.vn : c.ag, objekt: c.objekt, versicherer: c.versicherer, projektnummer: c.projektnummer });
+      const m = T.bericht({ pj, lk: B.lk([[1, '2026-10-16', 'Keller', 'Putz', 'Putze / Spachtelmassen']]), erg: B.erg([[1, 'kein']]), cfg: B.cfg, mitarbeiter: B.mitarbeiter,
+        form: { datum: '2026-10-27', mitteilung: 1, variante: c.variante, probenehmer: 'Mes', sv: 'Tst', deckblatt: c.deckblatt, eingangsdatum: c.eingang } });
+      const kopf = [], lauf = (x, out) => { if (Array.isArray(x)) x.forEach(y => lauf(y, out)); else if (x && typeof x === 'object') { if (x.gap) out.push(x.gap); else Object.values(x).forEach(y => lauf(y, out)); } };
+      lauf(m.kopf, kopf);
+      const rest = new Set(modellLuecken(m));
+      for (const g of kopf) assert.ok(rest.has(g), `${JSON.stringify(c)}: Kopf-Lücke ${g} hat keinen Kommentar woanders`);
+      // Zähler/Rückfrage (bericht-luecken.js offene) = alle Lücken, die in der Word-Datei stehen (ohne [Foto fehlt], das entsteht beim Speichern)
+      assert.deepEqual([...new Set(BL.offene(m))].sort(), [...new Set([...rest, ...kopf])].sort(), `${JSON.stringify(c)}: Zähler = Lücken in Word`);
+      k++;
+    }
+    assert.equal(k, 2 * 3 * 2 * 2 * 2 * 3 * 2 * 2);
   });
 
   if (WL) await fall('Projektzentrale word-luecken.js: dieselben Lücken wie ohne Kommentare; jede hat einen Kommentar', async () => {

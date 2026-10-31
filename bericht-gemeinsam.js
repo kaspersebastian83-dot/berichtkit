@@ -291,7 +291,8 @@ function deckblattFelder(P, f, hinweise) {
   return { vfall, felder, versicherer, versichererQuelle };
 }
 
-/** Kopf der Folgeseiten (4 Zeilen, 9 pt): Titel, Betreff, VN bzw. AG, Risiko bzw. Schadenort */
+/** Kopf der Folgeseiten (4 Zeilen, 9 pt): Titel, Betreff, VN bzw. AG, Risiko bzw. Schadenort. Lücken hier bekommen in Word
+    keinen Kommentar (bericht-docx.js) – jede muss mit gleichem Namen auch auf dem Deckblatt oder im Text stehen. */
 function kopfZeilen(titel, betreff, P, vfall) {
   return [titel, betreff,
     vfall ? ['VN: ', L(zeilen(P.vn).join(', '), 'VN')] : ['AG: ', L(zeilen(P.ag).join(', '), 'Auftraggeber')],
