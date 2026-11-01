@@ -85,7 +85,46 @@ function beimBuero(aufgaben, vermerke, datei) {
     .sort((a, b) => String(a.erstellt).localeCompare(String(b.erstellt)))[0] || null;
 }
 
-const API = { VERSION: 1, mitteilungNr, naechsteNr, formBereinigen, beimBuero, stabil, gleich };
+/* ---------- Berichtsart ohne Angabe in der Adresse (ab 1.15.0) ----------
+   Reihenfolge: (1) gemerkte Berichtsart des Projekts (_BerichtKit.json, Feld „art“ – gemerkt bei #…&art=, Umschalten und
+   Speichern; Dateien bis 1.14.0 haben kein Feld: dann die Art des zuletzt gespeicherten Berichts aus berichte[], ohne „art“ =
+   asbest) → (2) die LabelKit-Proben wie Projektzentrale Stufen.berichtsart (Chlorid inkl. Bohrmehl, PAK oder Brandgeruch →
+   brand, nur Asbest → asbest; storniert zählt nicht) → (3) asbest. Die Wahl nach (2)/(3) wird nicht gemerkt.
+   Gleiche Regel in der Spektron-Leiste (mosaik-leiste.js, nur Schritt 1 – die Leiste liest keine LabelKit-Proben). */
+const ARTEN = ['asbest', 'brand'];
+const artOk = a => { const x = String(a == null ? '' : a).trim().toLowerCase(); return ARTEN.includes(x) ? x : ''; };
+/** Gemerkte Berichtsart aus dem Inhalt von _BerichtKit.json ({ art, berichte }) → 'asbest' | 'brand' | '' */
+function artGemerkt(datei) {
+  if (!datei || typeof datei !== 'object') return '';
+  const a = artOk(datei.art); if (a) return a;
+  const b = (Array.isArray(datei.berichte) ? datei.berichte : []).filter(x => x && x.datei).pop();
+  return b ? (artOk(b.art) || (b.art ? '' : 'asbest')) : '';
+}
+/** Wie Projektzentrale stufen.js berichtsart(lk) – dort ändern, hier nachziehen. → { art: 'brand'|'asbest'|'', grund } */
+function artAusProben(lk) {
+  const liste = k => (lk && Array.isArray(lk[k]) ? lk[k] : []).filter(p => p && typeof p === 'object' && !p.storniert);
+  const txt = v => String(v == null ? '' : v).trim();
+  const anz = (n, eins, viele) => `${n} ${n === 1 ? eins : viele}`;
+  const bohrAn = !!(lk && ((lk.ui && lk.ui.bohrmehlAktiv) || lk.bohrmehlAktiv));
+  const bohrmehl = liste('sonstigeProben').filter(p => bohrAn || (!!txt(p.tiefe) && /chlorid/i.test(txt(p.notiz)))).length;
+  const n = { cl: liste('chloridProben').length + bohrmehl, pak: liste('proben').length, bg: liste('brandgeruchProben').length, as: liste('asbestProben').length };
+  const teile = [[n.cl, 'Chlorid-Probe', 'Chlorid-Proben'], [n.pak, 'PAK-Probe', 'PAK-Proben'], [n.bg, 'Brandgeruch-Probe', 'Brandgeruch-Proben']]
+    .filter(([z]) => z).map(([z, e, v]) => anz(z, e, v));
+  if (teile.length) return { art: 'brand', grund: teile.join(', ') + (n.as ? ` und ${anz(n.as, 'Asbestprobe', 'Asbestproben')}` : '') };
+  if (n.as) return { art: 'asbest', grund: anz(n.as, 'Asbestprobe', 'Asbestproben') };
+  return { art: '', grund: '' };
+}
+/** Berichtsart beim Öffnen. adresse: Wert aus #…&art= ('' = keine Angabe), datei: _BerichtKit.json oder null, lk: LabelKit-Daten.
+    → { art, quelle: 'adresse'|'gemerkt'|'proben'|'standard', merken: nur bei 'adresse', grund } */
+function artWaehlen({ adresse, datei, lk } = {}) {
+  const a = String(adresse == null ? '' : adresse).trim().toLowerCase();
+  if (a) return { art: a, quelle: 'adresse', merken: !!artOk(a), grund: '' };
+  const g = artGemerkt(datei); if (g) return { art: g, quelle: 'gemerkt', merken: false, grund: '' };
+  const p = artAusProben(lk); if (p.art) return { art: p.art, quelle: 'proben', merken: false, grund: p.grund };
+  return { art: 'asbest', quelle: 'standard', merken: false, grund: '' };
+}
+
+const API = { VERSION: 1, mitteilungNr, naechsteNr, formBereinigen, beimBuero, stabil, gleich, artGemerkt, artAusProben, artWaehlen };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtVorgaben = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

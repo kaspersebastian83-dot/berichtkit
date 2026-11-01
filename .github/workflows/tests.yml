@@ -54,6 +54,8 @@ jobs:
         run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit
       - name: Offline-Dateien und Leiste
         run: node tests/sw.cjs
+      - name: Leiste v2 und Berichtsart ohne art (gemerkt / Proben / asbest), Haken, Weiter
+        run: node tests/leiste.cjs
 
   browser-tests:
     name: Browser test (chromium)
