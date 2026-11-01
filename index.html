@@ -35,7 +35,7 @@ body{font-family:var(--sp-font);background:var(--sp-bg);color:var(--sp-text)}
 .sp-wahl-kacheln{display:flex;gap:10px;flex-wrap:wrap}
 .sp-kachel{width:150px;min-height:64px;margin:0;padding:6px 8px;border-radius:var(--sp-radius-k);border:1.5px dashed var(--sp-line2);background:var(--sp-bg);color:var(--sp-text);font:inherit;font-size:14px;font-weight:600;line-height:1.2;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;opacity:1}
 .sp-kachel.flach{width:auto;min-width:150px;min-height:52px;padding:6px 18px}
-.sp-kachel:hover:not(:disabled){border-style:solid;border-color:var(--sp-app);background:var(--sp-panel);color:var(--sp-text)}
+.sp-kachel:hover:not(:disabled):not([aria-pressed="true"]){border-style:solid;border-color:var(--sp-app);background:var(--sp-panel);color:var(--sp-text)}
 .sp-kachel[aria-pressed="true"]{border:1.5px solid var(--sp-panel);background:var(--sp-panel);box-shadow:0 0 0 3px var(--sp-app);font-weight:700;cursor:default}
 .sp-kachel:disabled{border-color:var(--sp-line);color:#8a9aa6;cursor:not-allowed;opacity:1}
 .sp-kachel svg{width:22px;height:22px;flex:none}
@@ -241,7 +241,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     <div class="sp-wahl-zeile">
       <span class="sp-wahl-frage" id="wahlArtFrage">Welcher Bericht?</span>
       <div class="sp-wahl-kacheln" id="wahlArt" role="group" aria-labelledby="wahlArtFrage"></div>
-      <span class="sp-wahl-notiz" id="wahlArtNotiz" role="status"></span>
+      <span class="sp-wahl-notiz" id="wahlArtNotiz"></span>
     </div>
     <div class="sp-rueckfrage" id="wahlRueckfrage" role="alertdialog" aria-labelledby="wahlRueckfrageText" hidden>
       <span id="wahlRueckfrageText"></span>
@@ -371,7 +371,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 
 <!-- Fußleiste: „Mehr …“ links (immer an derselben Stelle), rechts genau eine Hauptaktion -->
 <div class="leiste" id="leiste">
-  <button type="button" id="btnMehr" class="mehr-knopf" aria-haspopup="menu" aria-expanded="false" title="Berichtsart wechseln, Einstellungen, anderes Projekt, nur herunterladen, Handbuch, Rückmeldung">Mehr …</button>
+  <button type="button" id="btnMehr" class="mehr-knopf" aria-haspopup="menu" aria-expanded="false" title="Einstellungen, anderes Projekt, nur herunterladen, Handbuch, Rückmeldung">Mehr …</button>
   <span class="leiste-aktionen" id="leisteAktionen" hidden>
     <span class="status" id="status"></span>
     <button type="button" id="btnLaden" hidden title="Word-Datei mit „ENTWURF“ herunterladen – speichern in „Mitteilungen“ ist gesperrt, siehe Hinweise">Entwurf herunterladen →</button>

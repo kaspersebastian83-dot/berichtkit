@@ -388,7 +388,10 @@ const daten = {
     await page.click('#wahlArt [data-art=brand]'); await page.waitForSelector('#wahlRueckfrage:not([hidden])');
     assert.match(await page.textContent('#wahlRueckfrageText'), /schon ein Asbestbericht gespeichert \(1\. und 2\. Mitteilung\)\. Trotzdem als Brandbericht weiterarbeiten\? Die gespeicherten Berichte bleiben/);
     assert.equal(await page.textContent('#btnWahlJa'), 'Ja, Brandbericht'); assert.equal(await page.evaluate(() => document.activeElement.id), 'btnWahlJa');
+    await page.dblclick('#wahlArt [data-art=brand]');   // Doppelklick auf die Kachel bestätigt nicht – nur „Ja, …“
+    assert.ok(await page.isVisible('#wahlRueckfrage')); assert.match(page.url(), /art=asbest/);
     await page.keyboard.press('Escape'); await page.waitForSelector('#wahlRueckfrage', { state: 'hidden' });
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.art), 'asbest', 'Abbrechen: Fokus auf der gewählten Kachel');
     assert.match(page.url(), /art=asbest/); assert.equal(await page.getAttribute('#wahlArt [data-art=asbest]', 'aria-pressed'), 'true');
     await page.emulateMedia({ media: 'print' }); assert.ok(await page.isHidden('#berichtswahl'), 'Berichtswahl nicht im Druck'); await page.emulateMedia({ media: 'screen' });
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
@@ -547,6 +550,7 @@ const daten = {
     await page.click('#wahlArt [data-art=asbest]'); await page.waitForSelector('#wahlRueckfrage:not([hidden])');   // Brandbericht gespeichert → Rückfrage
     assert.match(await page.textContent('#wahlRueckfrageText'), /schon ein Brandbericht gespeichert \(3\. Mitteilung\)/);
     await page.click('#btnWahlJa');
+    await page.waitForFunction(() => document.activeElement && document.activeElement.dataset.art === 'asbest');   // nach dem Umschalten: Fokus auf der neuen Kachel
     await page.waitForFunction(() => document.getElementById('karteBrand').hidden); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.match(await page.textContent('#vorschau'), /Betreff|Untersuchung auf Asbest/);
     assert.match(page.url(), /&art=asbest&auto=1$/); assert.doesNotMatch(page.url(), /vorschau=/); assert.ok(await page.evaluate(() => document.getElementById('karteBrand').hidden && document.getElementById('karteBrandTexte').hidden)); assert.ok(await page.isEnabled('#btnErstellen'));
@@ -556,7 +560,7 @@ const daten = {
     assert.equal(mitArt.art, 'asbest', 'Umschalten gemerkt');
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT)); await page.reload(); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.match(page.url(), /&art=asbest&auto=1$/, 'ohne art: gemerkte Berichtsart'); assert.ok(await page.evaluate(() => document.getElementById('karteBrand').hidden));
-    assert.match(await page.getAttribute('#kopfArt', 'title'), /für dieses Projekt gemerkt/);
+    assert.match(await page.textContent('#wahlArtNotiz'), /^Gemerkt für dieses Projekt\./);
     assert.doesNotMatch(await page.textContent('#vorschau'), /Gefahrenbereich|Sanierungsvorschlag|Untersuchungsbericht vom[\s\S]*Schlussfolgerungen[\s\S]*Arbeitsschutz/);
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest');
     await page.waitForSelector('#app:not([hidden]) .blatt');

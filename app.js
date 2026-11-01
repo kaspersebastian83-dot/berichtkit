@@ -144,6 +144,7 @@ async function start() {
 }
 const START = { titel: $('startTitel').textContent, text: $('startText').textContent };
 function zeigeStart(text, zugriff) {
+  S.artWechsel = false; $('berichtswahl').removeAttribute('aria-busy');
   $('start').hidden = false; $('app').hidden = true; $('leisteAktionen').hidden = true;
   $('startTitel').textContent = START.titel; $('startText').textContent = text || START.text;
   $('btnZugriff').hidden = !zugriff; $('btnWaehlen').hidden = false; $('btnAsbest').hidden = true; $('btnArtVorschau').hidden = true;
@@ -171,11 +172,8 @@ function zurBerichtsart(art) {
 const ART_NAME = a => (T.BERICHTSARTEN.find(x => x.art === a) || {}).name || 'Bericht';
 /** Kopf und Fenstertitel nennen die Berichtsart (ohne geöffnetes Projekt nur „BerichtKit“) */
 function titelSetzen() {
-  const offen = !!S.dir && !$('app').hidden, name = ART_NAME(S.art), w = S.artWahl;
+  const offen = !!S.dir && !$('app').hidden, name = ART_NAME(S.art);
   $('kopfArt').hidden = !offen; $('kopfArt').textContent = offen ? name : '';
-  $('kopfArt').title = !offen || !w ? '' : w.quelle === 'adresse' ? `${name} – so gewählt, für dieses Projekt gemerkt`
-    : w.quelle === 'gemerkt' ? `${name} – für dieses Projekt gemerkt` : w.quelle === 'fremd' ? `${name} – ein Kollege hat inzwischen eine andere Berichtsart gemerkt (siehe Hinweis)` : w.quelle === 'proben' ? `${name} – passt zu den LabelKit-Proben (${w.grund}); noch nicht gemerkt`
-    : `${name} – keine gemerkte Berichtsart und keine Brand-Proben; noch nicht gemerkt`;
   document.title = offen ? `${name} · ${S.dir.name} · BerichtKit ${APP_VERSION}` : `BerichtKit ${APP_VERSION} · Spektron`;
 }
 
@@ -209,10 +207,11 @@ function wahlZeigen(m) {
   const z = S.zustand || {}, inDatei = z.artNeu || V.artGemerkt({ art: z.art, berichte: z.berichte });
   const gemerkt = inDatei === S.art || (w.quelle === 'adresse' && w.merken) ? 'Gemerkt für dieses Projekt.'
     : inDatei ? `Für dieses Projekt ist der ${ART_NAME(inDatei)} gemerkt – beim Speichern gilt dieser hier.` : 'Noch nicht gemerkt – wird beim Speichern gemerkt.';
-  $('wahlArtNotiz').innerHTML = esc(gemerkt) + (p.art === S.art ? ` <b class="sp-ok">Passt zu den Proben</b> (${esc(p.grund)}).`
+  const notiz = esc(gemerkt) + (p.art === S.art ? ` <b class="sp-ok">Passt zu den Proben</b> (${esc(p.grund)}).`
     : p.art ? ` Die Proben sprechen für den ${esc(ART_NAME(p.art))} (${esc(p.grund)}).` : '');
+  if ($('wahlArtNotiz').innerHTML !== notiz) $('wahlArtNotiz').innerHTML = notiz;   // nur bei Änderung (Vorleser sagen sie sonst bei jedem Zeichnen neu an)
   // Rückfrage vor dem Umschalten
-  const ziel = S.wahlFrage && T.BERICHTSARTEN.find(x => x.art === S.wahlFrage);
+  const ziel = S.wahlFrage && S.wahlFrage !== S.art && T.BERICHTSARTEN.find(x => x.art === S.wahlFrage);
   $('wahlRueckfrage').hidden = !ziel;
   if (ziel) {
     const nr = [...new Set(gespeicherteDerArt().map(b => +b.mitteilung || 0).filter(Boolean))].sort((a, b) => a - b);
@@ -232,13 +231,25 @@ function wahlZeigen(m) {
   }
   const wert = ((m && m[S.art]) || {})[fo.feld] || ((S.form && S.form[S.art]) || {})[fo.feld], gew = fo.formen.find(x => x.id === wert) || fo.formen[0];
   for (const b of $('wahlForm').querySelectorAll('.sp-kachel')) b.setAttribute('aria-pressed', String(b.dataset.form === gew.id));
-  $('wahlFormNotiz').textContent = `${gew.name}: ${gew.hinweis}`;
+  const formNotiz = `${gew.name}: ${gew.hinweis}`; if ($('wahlFormNotiz').textContent !== formNotiz) $('wahlFormNotiz').textContent = formNotiz;
 }
 /** Klick auf eine Berichtsart: gleich umschalten – oder erst nachfragen, wenn ein Bericht der offenen Art schon gespeichert ist */
 function wahlArtKlick(art) {
-  if (!art || art === S.art || !S.dir) return;
-  if (gespeicherteDerArt().length && S.wahlFrage !== art) { S.wahlFrage = art; render(); $('btnWahlJa').focus(); return; }
-  S.wahlFrage = ''; zurBerichtsart(art);
+  if (!art || !S.dir || S.laedt || S.artWechsel) return;   // während des Umschaltens: keine zweite Runde (Doppelklick)
+  if (art === S.art) { if (S.wahlFrage) wahlNein(); return; }
+  // Rückfrage: bestätigt wird nur mit „Ja, …“ – ein zweiter Klick auf die Kachel lässt die Frage offen
+  if (gespeicherteDerArt().length) { if (S.wahlFrage !== art) { S.wahlFrage = art; render(); } $('btnWahlJa').focus(); return; }
+  wahlWechseln(art);
+}
+/** Umschalten starten: Kacheln gesperrt bis das Projekt in der neuen Art offen ist, danach Fokus auf die neue Kachel (oeffnen) */
+function wahlWechseln(art) {
+  S.wahlFrage = ''; S.artWechsel = true; $('berichtswahl').setAttribute('aria-busy', 'true');
+  zurBerichtsart(art);
+}
+function wahlFertig() {
+  if (!S.artWechsel) return;
+  S.artWechsel = false; $('berichtswahl').removeAttribute('aria-busy');
+  const b = !$('app').hidden && $('wahlArt').querySelector('[aria-pressed="true"]'); if (b) b.focus();
 }
 function wahlNein() {
   S.wahlFrage = ''; render();
@@ -299,6 +310,7 @@ async function oeffnen(dir) {
   S.laedt = false;
   titelSetzen();
   render();
+  wahlFertig();
   if (window.MosaikLeiste) MosaikLeiste.aktualisieren();
 }
 async function archivLesen() {
@@ -833,7 +845,7 @@ function brandZeigen(m, f) {
     mb.schadenereignis && `Schadenereignis: ${mb.schadenereignis}`, mb.brandgut && `Brandgut: ${mb.brandgut}`].filter(Boolean).join(' · ') + ' (Projektzentrale/LabelKit, nur zur Hilfe)';
   const art = T.BERICHTSARTEN.find(a => a.art === 'brand');
   $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht.';
-  $('brandVorschau').hidden = !$('brandVorschauText').textContent;   // „Als Asbestbericht öffnen“ steht unter „Mehr …“
+  $('brandVorschau').hidden = !$('brandVorschauText').textContent;   // Berichtsart: oben in der Berichtswahl
 }
 /** Wert setzen, aber nicht in ein Feld, in dem gerade getippt wird (sonst springt der Cursor bei jedem Neuzeichnen) */
 function wertOhneFokus(el, v) { if (el && document.activeElement !== el) el.value = v == null ? '' : v; }
@@ -1329,10 +1341,10 @@ function verbinden() {
   $('wahlArt').addEventListener('click', e => { const b = e.target.closest('.sp-kachel'); if (b && !b.disabled) wahlArtKlick(b.dataset.art); });
   $('wahlForm').addEventListener('click', e => {
     const b = e.target.closest('.sp-kachel'), a = T.BERICHTSARTEN.find(x => x.art === S.art), fo = a && a.form;
-    if (!b || !fo || b.getAttribute('aria-pressed') === 'true') return;
+    if (!b || !fo || S.laedt || S.artWechsel || b.getAttribute('aria-pressed') === 'true') return;
     S.form[S.art] = { ...(S.form[S.art] || {}), [fo.feld]: b.dataset.form }; formMerken([S.art, fo.feld]); render();
   });
-  $('btnWahlJa').onclick = () => { const art = S.wahlFrage; S.wahlFrage = ''; if (art) zurBerichtsart(art); };
+  $('btnWahlJa').onclick = () => { const art = S.wahlFrage; if (art && !S.laedt && !S.artWechsel) wahlWechseln(art); };
   $('btnWahlNein').onclick = wahlNein;
   $('wahlRueckfrage').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); wahlNein(); } });
   $('fbUmfang').addEventListener('change', e => { const k = e.target.dataset.umfang; if (k) setzeBrand({ umfang: { ...((S.form.brand || {}).umfang || {}), [k]: e.target.checked } }); });
