@@ -305,7 +305,7 @@
       'body #mosaikLeiste.ml-band .ml-step strong{font-weight:inherit;max-width:100%;overflow:hidden;text-overflow:ellipsis}' +
       'body #mosaikLeiste.ml-band a.ml-step:hover{background:#2f3f4f;color:#fff}' +
       'body #mosaikLeiste.ml-band .ml-step.next{border-style:solid;border-color:var(--ac)}' +
-      'body #mosaikLeiste.ml-band .ml-step.done{border:1.5px solid var(--ac);background:var(--ac);color:#fff}body #mosaikLeiste.ml-band a.ml-step.done:hover{filter:brightness(1.12)}' +
+      'body #mosaikLeiste.ml-band .ml-step.done{border:1.5px solid var(--ac);background:var(--ac);color:#fff}body #mosaikLeiste.ml-band a.ml-step.done:hover{background:var(--ac);color:#fff;filter:brightness(1.12)}' +
       'body #mosaikLeiste.ml-band .ml-step.hier{border:1.5px solid #fff;background:#fff;color:#17222c;font-weight:700;box-shadow:0 0 0 3px var(--ac);cursor:default}' +
       'body #mosaikLeiste.ml-band .ml-weiter{flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;height:64px;max-width:280px;padding:0 18px;border-radius:10px}' +
       'body #mosaikLeiste.ml-band .ml-weiter strong{font-size:16px;font-weight:700}body #mosaikLeiste.ml-band .ml-weiter small{max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:12px;opacity:.92}' +
@@ -493,6 +493,9 @@
       });
       mehrPop.appendChild(el);
     });
+    mehrPop.addEventListener('focusout', function(ev){   // mit Tab hinaus: Menü zu
+      var z = ev.relatedTarget; if (mehrPop && z && !mehrPop.contains(z) && z !== mehrKnopf) schliesseMehr();
+    });
     mehrPop.addEventListener('keydown', function(ev){   // Pfeiltasten wandern durch das Menü
       if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp') return;
       var alle = Array.prototype.slice.call(mehrPop.querySelectorAll('a,button:not([disabled])')), i = alle.indexOf(document.activeElement);
@@ -542,7 +545,7 @@
       window.addEventListener('focus', aktualisieren);
       document.addEventListener('visibilitychange', function(){ if (!document.hidden) aktualisieren(); });
       window.addEventListener('popstate', aktualisieren);
-      window.addEventListener('resize', function(){ clearTimeout(passen.t); passen.t = setTimeout(passen, 100); });
+      window.addEventListener('resize', function(){ clearTimeout(passen.t); passen.t = setTimeout(passen, 100); if (mehrPop) schliesseMehr(); });
       document.addEventListener('click', function(ev){ if (pop && !pop.contains(ev.target)) schliessePop(); if (mehrPop && !mehrPop.contains(ev.target) && !(mehrKnopf && mehrKnopf.contains(ev.target))) schliesseMehr(); });
       document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && pop){ var b = bar.querySelector('.ml-proj'); schliessePop(); if (b) b.focus(); } if (ev.key === 'Escape' && mehrPop){ schliesseMehr(); if (mehrKnopf) mehrKnopf.focus(); } });
       timer = setInterval(function(){ if (!document.hidden) aktualisieren(); }, 20000);

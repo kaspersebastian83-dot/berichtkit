@@ -205,7 +205,7 @@ async function waehlen() {
 async function oeffnen(dir) {
   await zustandAbschliessen();
   S.laedt = true;
-  S.dir = dir; S.kartenGesetzt = false;   // Karten beim ersten vollständigen Zeichnen nach den offenen Stellen auf-/zuklappen
+  S.dir = dir; S.kartenGesetzt = false; S.sperreOffen = false;   // Karten beim ersten vollständigen Zeichnen nach den offenen Stellen auf-/zuklappen
   $('start').hidden = true; $('app').hidden = false; $('leisteAktionen').hidden = false;
   fehler('');
   const nr = (/^(\d{2})\.(\d{4})/.exec(dir.name) || []).slice(1).join('.');
@@ -834,7 +834,8 @@ function lueckenZeigen(z) {
   // „n offen“ je Karte: Lücken, deren Feld (oder Ziel) in der Karte liegt, und offene Annahmen der Karte
   const je = {};
   for (const x of z) {
-    const el = (x.feld ? [...document.querySelectorAll(x.feld)].find(e => !versteckt(e)) : null) || (x.ziel ? document.querySelector(x.ziel) : null);
+    // wie lueckenZiele: ein leeres, sichtbares Feld, sonst das Ziel – eine Lücke mit gefülltem Feld (kommt z. B. aus der Projektzentrale) gehört zu keiner Karte
+    const el = (x.feld ? [...document.querySelectorAll(x.feld)].find(e => sichtbar(e) && istLeer(e)) : null) || (x.ziel ? document.querySelector(x.ziel) : null);
     const k = el && !versteckt(el) && el.closest('details.karte'); if (k) je[k.id] = (je[k.id] || 0) + 1;
   }
   for (const id of S.annahmenKarten || []) je[id] = (je[id] || 0) + 1;
