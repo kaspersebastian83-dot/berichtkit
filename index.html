@@ -32,6 +32,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.45}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 header{background:var(--head);color:#fff;height:52px;display:flex;align-items:center;gap:14px;padding:0 20px;position:sticky;top:0;z-index:10}
 header h1{font-size:15px;font-weight:600;margin:0;white-space:nowrap}
+header .kopf-art{font-weight:600;color:#ffd7b8}header .kopf-art::before{content:" · ";color:rgba(255,255,255,.6)}
 header .projekt{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:4px;padding:3px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
 header .rechts{margin-left:auto;display:flex;gap:8px;align-items:center}
 header button{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff;padding:4px 11px;font-size:13px}
@@ -146,13 +147,15 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
 .meldungen{background:#fff8e1;border:1px solid #f0d58a;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
 .meldungen ul{margin:0;padding-left:18px;flex:1}
 .meldungen li+li{margin-top:4px}
+.art-hinweis{background:#fdf0e6;border:1px solid #e3b58f;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:13px;display:flex;gap:10px;align-items:center}
+.art-hinweis span{flex:1}
 .warn{color:#8a5a00;font-weight:600}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <header>
-  <h1>BerichtKit</h1>
+  <h1>BerichtKit<span id="kopfArt" class="kopf-art" hidden></span></h1>
   <span class="projekt" id="kopfProjekt">kein Projekt geöffnet</span>
   <div class="rechts">
     <span class="version" id="version"></span>
@@ -179,6 +182,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     <span id="lueckenListe" class="nur-vorleser"></span>
     <div id="fehler" class="fehler" hidden></div>
     <div id="meldungen" class="meldungen" role="status" hidden><ul id="meldungenListe"></ul><button type="button" class="klein-knopf" id="btnMeldungenWeg" title="Hinweise ausblenden">Ausblenden</button></div>
+    <div id="artHinweis" class="art-hinweis" role="status" hidden><span id="artHinweisText"></span><button type="button" class="klein-knopf" id="btnZumBrand" title="Dieses Projekt als Brandbericht öffnen – BerichtKit merkt sich die Wahl für das Projekt">Zum Brandbericht</button></div>
     <div class="karte">
       <h2>Bericht</h2>
       <div class="feld"><label for="fDatum">Berichtsdatum</label><input type="date" id="fDatum"></div>
@@ -201,7 +205,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     </div>
     <div class="karte" id="karteBrand" hidden>
       <h2>Brandbericht</h2>
-      <p class="klein" id="brandVorschau" style="margin:0 0 8px"><span id="brandVorschauText"></span><button type="button" class="klein-knopf" id="btnZumAsbest" title="Dieses Projekt als Asbestbericht öffnen">Zum Asbestbericht</button></p>
+      <p class="klein" id="brandVorschau" style="margin:0 0 8px"><span id="brandVorschauText"></span><button type="button" class="klein-knopf" id="btnZumAsbest" title="Dieses Projekt als Asbestbericht öffnen – BerichtKit merkt sich die Wahl für das Projekt">Zum Asbestbericht</button></p>
       <div class="feld"><span class="lbl">Titel</span><div class="radio zwei" role="radiogroup" aria-label="Titel des Berichts">
         <label><input type="radio" name="brTitel" value="Sanierungsvorschlag"> Sanierungsvorschlag</label>
         <label title="Ohne Sanierungskonzept: 6. heißt „Schlussfolgerungen“, kein Abschnitt 8"><input type="radio" name="brTitel" value="Untersuchungsbericht"> Untersuchungsbericht</label></div></div>
@@ -281,7 +285,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
   <span class="status" id="status"></span>
   <button id="btnLaden" title="Word-Datei herunterladen statt im Projektordner zu speichern">Herunterladen</button>
   <button class="primary" id="btnErstellen">Word-Bericht in „Mitteilungen“ speichern</button>
-  <a class="knopf" id="btnUebergabe" hidden title="Projektzentrale öffnen – Word-Datei und Prüfberichte sind für die Übergabe vorbelegt">Ans Büro übergeben →</a>
+  <a class="knopf" id="btnUebergabe" hidden target="projektzentrale" title="Öffnet die Projektzentrale (eigenes Fenster) – Word-Datei und Prüfberichte sind für die Übergabe vorbelegt">Ans Büro übergeben →</a>
 </div>
 
 <dialog id="dlgEinstellungen">

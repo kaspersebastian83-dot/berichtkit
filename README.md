@@ -6,7 +6,12 @@ Ab 1.14.0 auch den **Brandbericht** („Sanierungsvorschlag“ / „Untersuchung
 Kopf, 1.–4., 5. Befund (5.1 Freitext, 5.2–5.7 aus den Laborwerten), 6. Sanierungsmaßnahmen bzw. Schlussfolgerungen, 7., 8. Zusammenfassung,
 Unterschriften, Anlagen – Freitextfelder mit Fotos aus FotoKit (bis 1.13.0 nur als Vorschau mit `&vorschau=1`, Speichern gesperrt).
 
-Adresse: `https://kaspersebastian83-dot.github.io/berichtkit/` · aus der Projektzentrale: `…/berichtkit/#projekt=<Ordnername>`
+Adresse: `https://kaspersebastian83-dot.github.io/berichtkit/` · aus der Projektzentrale: `…/berichtkit/#projekt=<Ordnername>&art=asbest|brand`
+
+**Berichtsart ohne `&art=`** (ab 1.15.0, z. B. aus der Spektron-Leiste): gemerkte Berichtsart des Projekts (`_BerichtKit.json`, Feld `art`;
+Dateien bis 1.14.0: Art des zuletzt gespeicherten Berichts) → LabelKit-Proben wie Projektzentrale `Stufen.berichtsart` (Chlorid inkl.
+Bohrmehl, PAK, Brandgeruch → Brand; nur Asbest → Asbest) → Asbestbericht. Gemerkt wird nur ausdrückliches `&art=`, Umschalten und
+Speichern; danach steht `&art=` immer in der Adresse. Regel: `bericht-vorgaben.js` `artWaehlen`, Test `tests/leiste.cjs`.
 
 ## Was woher kommt
 

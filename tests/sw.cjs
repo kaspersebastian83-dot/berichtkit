@@ -9,7 +9,7 @@ for (const m of html.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) i
 // Leiste byte-gleich mit LabelKit (falls daneben ausgecheckt)
 const lk = path.join(root, '..', 'labelkit', 'index.html');
 if (fs.existsSync(lk)) {
-  const block = t => t.slice(t.indexOf('/* ===== MOSAIK-LEISTE v1'), t.indexOf('/* ===== Ende MOSAIK-LEISTE v1 ===== */'));
+  const block = t => t.slice(t.indexOf('/* ===== MOSAIK-LEISTE v2'), t.indexOf('/* ===== Ende MOSAIK-LEISTE v2 ===== */'));
   assert.equal(block(fs.readFileSync(path.join(root, 'mosaik-leiste.js'), 'utf8')), block(fs.readFileSync(lk, 'utf8')), 'Leiste wie in LabelKit');
 }
 console.log(`Service Worker: ${assets.length} Dateien, alle vorhanden` + (fs.existsSync(lk) ? '; Leiste gleich wie LabelKit' : ''));
