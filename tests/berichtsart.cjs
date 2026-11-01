@@ -33,6 +33,24 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     assert.equal(T.berichtsart({ art: ' Brand ' }), 'brand');
   });
 
+  await fall('Berichte-Baum (1.17.0): Formen des Brandberichts = Titel des Moduls, erste Form = Vorgabe; Einträge vollständig', () => {
+    for (const a of T.BERICHTSARTEN) {
+      assert.ok(a.art && a.name && a.symbol, `${a.art}: art, name, symbol`);
+      if (a.bald) assert.ok(!a.bereit && !a.modul, `${a.art}: „kommt bald“ ist nie wählbar`);
+      if (!a.form) continue;
+      assert.ok(a.form.feld && a.form.formen.length >= 2, `${a.art}: Formen`);
+      assert.equal(new Set(a.form.formen.map(x => x.id)).size, a.form.formen.length, `${a.art}: Formen eindeutig`);
+      for (const x of a.form.formen) assert.ok(x.name && x.hinweis, `${a.art}/${x.id}: Name und Hinweis`);
+    }
+    const brand = T.BERICHTSARTEN.find(a => a.art === 'brand');
+    assert.equal(brand.form.feld, 'titel'); assert.equal(T.brandVorgabe().titel, brand.form.formen[0].id, 'erste Form = Vorgabe des Moduls');
+    for (const x of brand.form.formen) {
+      const b = T.bericht(eingabe(form({ art: 'brand', brand: { titel: x.id } })));
+      assert.equal(b.brand.titel, x.id, `Form ${x.id} kommt im Modell an`); assert.match(b.deckblatt.titel, new RegExp('^' + x.id + ' vom '));
+    }
+    assert.ok(!T.BERICHTSARTEN.find(a => a.art === 'asbest').form, 'Asbestbericht ohne zweite Stufe');
+  });
+
   await fall('bericht(): ohne art = art „asbest“ = Asbestmodul direkt', () => {
     const ohne = T.bericht(eingabe(form())), mit = T.bericht(eingabe(form({ art: 'asbest' }))), direkt = A.bericht(eingabe(form()));
     assert.deepEqual(mit, ohne); assert.deepEqual(direkt, ohne);

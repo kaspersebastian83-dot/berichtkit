@@ -26,7 +26,9 @@ jobs:
       - name: Projektzentrale daneben holen (spektron-ordner.js byte-gleich prüfen)
         env:
           ZWEIG: ${{ github.head_ref }}
-        run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/projektzentrale.git ../projektzentrale 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/projektzentrale.git ../projektzentrale
+          BASIS: ${{ github.base_ref }}
+        # gleichnamiger Zweig, sonst der Basiszweig des PRs (gestapelte PRs), sonst main
+        run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/projektzentrale.git ../projektzentrale 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/projektzentrale.git ../projektzentrale 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/projektzentrale.git ../projektzentrale
       - run: node tests/spektron-ordner.cjs
         env:
           SPEKTRON_ORDNER_PFLICHT: '1'
@@ -51,10 +53,12 @@ jobs:
       - name: LabelKit daneben holen (Spektron-Leiste byte-gleich prüfen)
         env:
           ZWEIG: ${{ github.head_ref }}
-        run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit
+          BASIS: ${{ github.base_ref }}
+        # gleichnamiger Zweig, sonst der Basiszweig des PRs (gestapelte PRs), sonst main
+        run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit
       - name: Offline-Dateien und Leiste
         run: node tests/sw.cjs
-      - name: Leiste v2 und Berichtsart ohne art (gemerkt / Proben / asbest), Haken, Weiter
+      - name: Leiste v3, Spektron-Look und Berichtsart ohne art (gemerkt / Proben / asbest), Haken, Weiter
         run: node tests/leiste.cjs
 
   browser-tests:

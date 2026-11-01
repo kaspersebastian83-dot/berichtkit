@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.16.0';
+const APP_VERSION = '1.17.0';
 const APP_DATE = '01.11.2026';
 const CHANGELOG = [
+  ['1.17.0', '01.11.2026', 'Berichtswahl und Spektron-Look: Direkt unter dem Kopfband stehen jetzt zwei Kachelreihen – „Welcher Bericht?“ (Asbestbericht · Brandbericht) und beim Brandbericht „Welche Form?“ (Sanierungsvorschlag · Untersuchungsbericht, daneben, was die Form ändert). Die gewählte Kachel ist weiß mit Rahmen in der BerichtKit-Farbe; daneben steht, ob die Berichtsart für das Projekt gemerkt ist und ob sie zu den LabelKit-Proben passt (die passende andere Kachel trägt „passt zu den Proben“). Ist für das Projekt schon ein Bericht der offenen Art gespeichert, fragt BerichtKit vor dem Umschalten einmal nach. Die Kacheln kommen aus einem Berichte-Baum (bericht-text.js) – weitere Berichtsarten und Formen sind dort je ein Eintrag. Dafür entfallen der Titel-Schalter in „Bericht & Auftrag“, „Als … öffnen“ unter „Mehr …“ und der Hinweis „Zum Brandbericht“. Aussehen wie in den Entwürfen (gemeinsamer Block SPEKTRON-LOOK v1 für alle Apps): Schrift Segoe UI, ruhiges Grau statt Blau, Karten mit runden Ecken, die offene Karte mit Rahmen in BerichtKit-Farbe, der Zähler offener Stellen als gelbe Pille, große Knöpfe unten.'],
   ['1.16.0', '01.11.2026', 'Einfachere Oberfläche (Spektron Schritt 2): Oben steht das neue Kopfband der Spektron-Leiste – das Projekt groß, darunter Objekt, Nutzung, Schadendatum und Zuständig, die sechs Schritte als Kacheln mit Symbol (Proben, Fotos, Labor, Plan, Brandbericht/Asbestbericht, Abrechnung) und ein großes „Weiter: … →“ mit Grund. Die eigene Kopfzeile ist weg. Das Formular hat vier Karten in der Reihenfolge des Berichts – Bericht & Auftrag · Vor Ort & Proben · Befund & Texte (nur Brandbericht) · Anlagen & Unterschrift –, zugeklappt mit einer Zeile Zusammenfassung und „n offen“; aufgeklappt ist beim Öffnen die erste Karte mit offenen Stellen. Der Zähler „n Stellen noch offen“ klappt die richtige Karte auf und springt ins Feld. Die Hinweise stehen als eine aufklappbare Zeile unter dem Zähler (Sperren immer offen und rot). Unten genau eine Hauptaktion: „Brandbericht als Word speichern →“, gesperrt „Entwurf herunterladen →“, nach dem Speichern „Ans Büro übergeben →“ (daneben „Erneut speichern“). Alles andere unter „Mehr …“ unten links: Als Asbest-/Brandbericht öffnen, Word nur herunterladen, Einstellungen, anderen Projektordner wählen, Über BerichtKit (Version), Handbuch, Rückmeldung, Alle Projekte. Bericht, Speichern, Dateien und Verbindung zu den anderen Apps unverändert.'],
   ['1.15.0', '01.11.2026', 'Berichtsart durchgängig: Ohne Angabe in der Adresse (Leiste, „Zuletzt geöffnet“, Lesezeichen) öffnet BerichtKit die für das Projekt gemerkte Berichtsart – sonst die, die zu den LabelKit-Proben passt (Chlorid, Bohrmehl, PAK oder Brandgeruch → Brandbericht, nur Asbest → Asbestbericht), sonst den Asbestbericht. Gemerkt (in _BerichtKit.json) wird nur, was ausdrücklich gewählt wurde: Knopf in der Projektzentrale, „Zum Asbestbericht“/„Zum Brandbericht“ und Speichern. Die Adresse zeigt danach immer &art= (mit &auto=1, sobald gemerkt oder automatisch gewählt – Neu laden und Links der Leiste wählen dann wieder nach der Regel und überschreiben nichts, was ein Kollege inzwischen gemerkt hat; das wird gemeldet). Kopf und Fenstertitel nennen die Berichtsart (Tooltip: gemerkt oder nach den Proben gewählt). Im Asbestbericht steht ein Hinweis mit „Zum Brandbericht“, wenn die Proben nach Brandschaden aussehen. „Projekt wählen“ übernimmt die Berichtsart des vorigen Projekts nicht mehr. „Ans Büro übergeben →“ öffnet die Projektzentrale im eigenen Fenster (BerichtKit bleibt offen). Spektron-Leiste v2: Schritt „BerichtKit · Brandbericht“ (mit gemerkter Art), Haken nur für einen gespeicherten Bericht dieser Art, dessen Datei noch in „Mitteilungen“ liegt, nach dem gespeicherten Bericht „Weiter: Ans Büro übergeben →“, „Weiter“ nennt Ziel und Grund im Tooltip, keine Nummern mehr an den Schritten, „Aktuelles Projekt“ im Projektmenü lädt nicht mehr neu.'],
   ['1.14.0', '01.11.2026', 'Brandbericht fertig – Speichern in „Mitteilungen“ freigegeben: Aus der Projektzentrale mit #…&art=brand öffnet BerichtKit den Brandbericht direkt (ohne „kommt bald“ und ohne Sperre „noch im Aufbau“); Prüfungen, Lücken-Rückfrage, Ersetzen-Dialog und „Ans Büro übergeben“ wie beim Asbestbericht. Schritt 5 – Freitextfelder (am Asbestbericht ändert sich nichts): Neue Karte „Brandbericht – Texte“ mit 5.1 Brandlast und Schadenbild (vorbelegt „Der Brand ereignete sich “, darüber Schadenereignis und Brandgut aus der Projektzentrale als Hilfe), 6. Sanierungsmaßnahmen – ein Feld je angehaktem Umfang (Gebäude, technische Einrichtung, Warenvorräte; mehrere Haken → 6.1, 6.2 …, einer → ohne Nummer), mit dem Einleitungssatz „Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:“ –, beim Untersuchungsbericht stattdessen „6. Schlussfolgerungen“, 7. Zusatz (optional) und 8. Zusammenfassung Sanierungsmaßnahmen (eigener Abschnitt nach 7., vor der Unterschrift; je Zeile „Bereich: Maßnahme“ mit fettem Bereich; entfällt beim Untersuchungsbericht). Schreibweise in jedem Feld: neue Zeile = Absatz, „- “ Aufzählung, „## Titel“ kursiver Zwischentitel ohne Nummer (z. B. ein Raum), **fett**, [Etwas ergänzen] bleibt eine gelbe Lücke. Fotos: unter jedem Feld „+ Foto einfügen …“ mit allen Fotos aus FotoKit – setzt „[Abb: Datei]“ ein, im Bericht mit „Abb. n:“ und der Beschreibung aus FotoKit als Bildunterschrift (eigene mit „[Abb: Datei | Text]“). Die Fotos der Asbest-/KMF-Proben kommen jetzt wie im Asbestbericht in den Brandbericht (Auswahl in der Probenliste, Abbildungen am Ende von 4.); die Abbildungen sind durch den ganzen Bericht nummeriert. 7.: Feld „Bereich“ (z. B. „im Obergeschoss“) und ein zweiter Bereich mit eigenem Gefahrenbereich (z. B. OG GB 1, EG GB 0). Leere Felder stehen als gelbe Lücke mit Anweisung im Bericht, der Zähler „Stellen noch offen“ springt zum Feld.'],
@@ -143,6 +144,7 @@ async function start() {
 }
 const START = { titel: $('startTitel').textContent, text: $('startText').textContent };
 function zeigeStart(text, zugriff) {
+  S.artWechsel = false; $('berichtswahl').removeAttribute('aria-busy');
   $('start').hidden = false; $('app').hidden = true; $('leisteAktionen').hidden = true;
   $('startTitel').textContent = START.titel; $('startText').textContent = text || START.text;
   $('btnZugriff').hidden = !zugriff; $('btnWaehlen').hidden = false; $('btnAsbest').hidden = true; $('btnArtVorschau').hidden = true;
@@ -160,8 +162,6 @@ function zeigeBald(a) {
 function zurVorschau() { VORSCHAU_URL.setzen(true); start(); }
 /** „Asbestbericht öffnen“: Angabe aus der Adresse nehmen; ein schon offenes Projekt wieder zeigen, sonst wie beim Start öffnen */
 function zumAsbestbericht() { zurBerichtsart('asbest'); }
-/** „Zum Brandbericht“ (Hinweis im Asbestbericht) */
-function zumBrandbericht() { zurBerichtsart('brand'); }
 /** Umschalten: ausdrücklich gewählt → steht in der Adresse und wird für das Projekt gemerkt (formStart) */
 function zurBerichtsart(art) {
   ART_URL.setzen(art); VORSCHAU_URL.setzen(false); S.bald = '';
@@ -172,13 +172,90 @@ function zurBerichtsart(art) {
 const ART_NAME = a => (T.BERICHTSARTEN.find(x => x.art === a) || {}).name || 'Bericht';
 /** Kopf und Fenstertitel nennen die Berichtsart (ohne geöffnetes Projekt nur „BerichtKit“) */
 function titelSetzen() {
-  const offen = !!S.dir && !$('app').hidden, name = ART_NAME(S.art), w = S.artWahl;
+  const offen = !!S.dir && !$('app').hidden, name = ART_NAME(S.art);
   $('kopfArt').hidden = !offen; $('kopfArt').textContent = offen ? name : '';
-  $('kopfArt').title = !offen || !w ? '' : w.quelle === 'adresse' ? `${name} – so gewählt, für dieses Projekt gemerkt`
-    : w.quelle === 'gemerkt' ? `${name} – für dieses Projekt gemerkt` : w.quelle === 'fremd' ? `${name} – ein Kollege hat inzwischen eine andere Berichtsart gemerkt (siehe Hinweis)` : w.quelle === 'proben' ? `${name} – passt zu den LabelKit-Proben (${w.grund}); noch nicht gemerkt`
-    : `${name} – keine gemerkte Berichtsart und keine Brand-Proben; noch nicht gemerkt`;
   document.title = offen ? `${name} · ${S.dir.name} · BerichtKit ${APP_VERSION}` : `BerichtKit ${APP_VERSION} · Spektron`;
 }
+
+/* ---------- Berichtswahl (ab 1.17.0): „Welcher Bericht?“ / „Welche Form?“ als Kacheln aus dem Berichte-Baum ----------
+   bericht-text.js BERICHTSARTEN: Stufe 1 Berichtsart, Stufe 2 Form (form.feld unter form[art]). Umschalten der Berichtsart wie
+   bisher über zurBerichtsart (Adresse, gemerkt in _BerichtKit.json); gibt es schon einen gespeicherten Bericht der offenen Art,
+   fragt BerichtKit einmal in der Karte nach. Die Form ist eine eigene Angabe (form.brand.titel) – kein Neuladen. */
+const WAHL_SYMBOL = {   // Kachelbilder (feste Pfade, kein Nutzertext)
+  asbest: '<path d="M4 18 14 8M6 20 16 10M9 21 20 10M3 15 13 5"/>',
+  brand: '<path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 1-3s0 2 2 2c0-3 2-5 2-8z"/>',
+  bericht: '<path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5"/>',
+};
+const wahlSvg = s => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${WAHL_SYMBOL[s] || WAHL_SYMBOL.bericht}</svg>`;
+/** Kacheln der Berichtsarten einmal bauen (Reihenfolge = Baum); Zustand setzt wahlZeigen */
+function wahlBauen() {
+  $('wahlArt').innerHTML = T.BERICHTSARTEN.map(a => `<button type="button" class="sp-kachel" data-art="${esc(a.art)}" aria-pressed="false"${a.bald ? ' disabled' : ''}>`
+    + `${wahlSvg(a.symbol)}<span>${esc(a.name)}</span>${a.bald ? '<small>kommt bald</small>' : ''}<span class="sp-tag" hidden>passt zu den Proben</span></button>`).join('');
+}
+/** Gespeicherte Berichte der offenen Berichtsart (Protokoll in _BerichtKit.json; ohne art = Asbestbericht wie bis 1.11.0) */
+const gespeicherteDerArt = () => ((S.zustand && S.zustand.berichte) || []).filter(b => b && (b.art || 'asbest') === S.art);
+function wahlZeigen(m) {
+  const p = V.artAusProben(S.lk), w = S.artWahl || {};
+  for (const b of $('wahlArt').querySelectorAll('.sp-kachel')) {
+    const a = T.BERICHTSARTEN.find(x => x.art === b.dataset.art) || {}, hier = a.art === S.art, vorschlag = !hier && !a.bald && p.art === a.art;
+    b.setAttribute('aria-pressed', String(hier));
+    b.querySelector('.sp-tag').hidden = !vorschlag;
+    b.title = a.bald ? `${a.name} – kommt bald` : hier ? `${a.name} – für dieses Projekt offen` : `Dieses Projekt als ${a.name} öffnen – BerichtKit merkt sich die Wahl`
+      + (vorschlag ? ` (passt zu den Proben: ${p.grund})` : '');
+  }
+  // gemerkt: was jetzt in _BerichtKit.json steht (auch nach dem Speichern) bzw. gleich geschrieben wird (ausdrückliche Wahl)
+  const z = S.zustand || {}, inDatei = z.artNeu || V.artGemerkt({ art: z.art, berichte: z.berichte });
+  const gemerkt = inDatei === S.art || (w.quelle === 'adresse' && w.merken) ? 'Gemerkt für dieses Projekt.'
+    : inDatei ? `Für dieses Projekt ist der ${ART_NAME(inDatei)} gemerkt – beim Speichern gilt dieser hier.` : 'Noch nicht gemerkt – wird beim Speichern gemerkt.';
+  const notiz = esc(gemerkt) + (p.art === S.art ? ` <b class="sp-ok">Passt zu den Proben</b> (${esc(p.grund)}).`
+    : p.art ? ` Die Proben sprechen für den ${esc(ART_NAME(p.art))} (${esc(p.grund)}).` : '');
+  if ($('wahlArtNotiz').innerHTML !== notiz) $('wahlArtNotiz').innerHTML = notiz;   // nur bei Änderung (Vorleser sagen sie sonst bei jedem Zeichnen neu an)
+  // Rückfrage vor dem Umschalten
+  const ziel = S.wahlFrage && S.wahlFrage !== S.art && T.BERICHTSARTEN.find(x => x.art === S.wahlFrage);
+  $('wahlRueckfrage').hidden = !ziel;
+  if (ziel) {
+    const nr = [...new Set(gespeicherteDerArt().map(b => +b.mitteilung || 0).filter(Boolean))].sort((a, b) => a - b);
+    const liste = nr.map(n => n + '.'), mehrere = nr.length > 1;   // „1., 2. und 3. Mitteilung“
+    const nrText = nr.length ? ` (${mehrere ? liste.slice(0, -1).join(', ') + ' und ' + liste[liste.length - 1] : liste[0]} Mitteilung)` : '';
+    $('wahlRueckfrageText').textContent = `Für dieses Projekt ist schon ein ${ART_NAME(S.art)} gespeichert${nrText}. Trotzdem als ${ziel.name} weiterarbeiten? `
+      + (mehrere ? 'Die gespeicherten Berichte bleiben in „Mitteilungen“.' : 'Der gespeicherte Bericht bleibt in „Mitteilungen“.');
+    $('btnWahlJa').textContent = `Ja, ${ziel.name}`;
+  }
+  // Stufe 2: Formen der offenen Berichtsart
+  const a = T.BERICHTSARTEN.find(x => x.art === S.art), fo = a && a.form;
+  $('zeileForm').hidden = !fo;
+  if (!fo) return;
+  if ($('wahlForm').dataset.art !== S.art) {
+    $('wahlForm').dataset.art = S.art;
+    $('wahlForm').innerHTML = fo.formen.map(x => `<button type="button" class="sp-kachel flach" data-form="${esc(x.id)}" aria-pressed="false" title="${esc(x.name)}: ${esc(x.hinweis)}"><span>${esc(x.name)}</span></button>`).join('');
+  }
+  const wert = ((m && m[S.art]) || {})[fo.feld] || ((S.form && S.form[S.art]) || {})[fo.feld], gew = fo.formen.find(x => x.id === wert) || fo.formen[0];
+  for (const b of $('wahlForm').querySelectorAll('.sp-kachel')) b.setAttribute('aria-pressed', String(b.dataset.form === gew.id));
+  const formNotiz = `${gew.name}: ${gew.hinweis}`; if ($('wahlFormNotiz').textContent !== formNotiz) $('wahlFormNotiz').textContent = formNotiz;
+}
+/** Klick auf eine Berichtsart: gleich umschalten – oder erst nachfragen, wenn ein Bericht der offenen Art schon gespeichert ist */
+function wahlArtKlick(art) {
+  if (!art || !S.dir || S.laedt || S.artWechsel) return;   // während des Umschaltens: keine zweite Runde (Doppelklick)
+  if (art === S.art) { if (S.wahlFrage) wahlNein(); return; }
+  // Rückfrage: bestätigt wird nur mit „Ja, …“ – ein zweiter Klick auf die Kachel lässt die Frage offen
+  if (gespeicherteDerArt().length) { if (S.wahlFrage !== art) { S.wahlFrage = art; render(); } $('btnWahlJa').focus(); return; }
+  wahlWechseln(art);
+}
+/** Umschalten starten: Kacheln gesperrt bis das Projekt in der neuen Art offen ist, danach Fokus auf die neue Kachel (oeffnen) */
+function wahlWechseln(art) {
+  S.wahlFrage = ''; S.artWechsel = true; $('berichtswahl').setAttribute('aria-busy', 'true');
+  zurBerichtsart(art);
+}
+function wahlFertig() {
+  if (!S.artWechsel) return;
+  S.artWechsel = false; $('berichtswahl').removeAttribute('aria-busy');
+  const b = !$('app').hidden && $('wahlArt').querySelector('[aria-pressed="true"]'); if (b) b.focus();
+}
+function wahlNein() {
+  S.wahlFrage = ''; render();
+  const b = $('wahlArt').querySelector('[aria-pressed="true"]'); if (b) b.focus();
+}
+
 async function projektAusArchiv(name) {
   let dir = null;
   try { dir = await S.archiv.getDirectoryHandle(name); } catch (e) { zeigeStart(`Projektordner „${name}“ nicht im Archivordner gefunden.`, false); return; }
@@ -205,7 +282,7 @@ async function waehlen() {
 async function oeffnen(dir) {
   await zustandAbschliessen();
   S.laedt = true;
-  S.dir = dir; S.kartenGesetzt = false; S.sperreOffen = false;   // Karten beim ersten vollständigen Zeichnen nach den offenen Stellen auf-/zuklappen
+  S.dir = dir; S.kartenGesetzt = false; S.sperreOffen = false; S.wahlFrage = '';   // Karten beim ersten vollständigen Zeichnen nach den offenen Stellen auf-/zuklappen
   $('start').hidden = true; $('app').hidden = false; $('leisteAktionen').hidden = false;
   fehler('');
   const nr = (/^(\d{2})\.(\d{4})/.exec(dir.name) || []).slice(1).join('.');
@@ -233,6 +310,7 @@ async function oeffnen(dir) {
   S.laedt = false;
   titelSetzen();
   render();
+  wahlFertig();
   if (window.MosaikLeiste) MosaikLeiste.aktualisieren();
 }
 async function archivLesen() {
@@ -614,7 +692,7 @@ function artVonKollege(z, d) {
   if (typeof d.art !== 'string' || z.artNeu || d.art === z.art) return;
   z.art = d.art;
   if (d.art && d.art !== S.art && S.zustand === z) {
-    meldung(`${d.geaendertVon || 'Ein Kollege'} hat für dieses Projekt den ${ART_NAME(d.art)} gemerkt – hier ist der ${ART_NAME(S.art)} offen. Umschalten unter „Mehr …“ › „Als ${ART_NAME(d.art)} öffnen“, sonst gilt beim nächsten Speichern wieder der ${ART_NAME(S.art)}.`);
+    meldung(`${d.geaendertVon || 'Ein Kollege'} hat für dieses Projekt den ${ART_NAME(d.art)} gemerkt – hier ist der ${ART_NAME(S.art)} offen. Umschalten oben bei „Welcher Bericht?“, sonst gilt beim nächsten Speichern wieder der ${ART_NAME(S.art)}.`);
     if (S.artWahl) S.artWahl = { ...S.artWahl, quelle: 'fremd' };
     titelSetzen(); render();
   }
@@ -650,10 +728,7 @@ function render() {
   $('fDatum').value = f.datum || ''; $('fMitteilung').value = f.mitteilung || 1;
   document.querySelectorAll('input[name=variante]').forEach(r => { r.checked = r.value === (f.variante || 'eigen'); });
   const brand = !!m.brand, zug = !brand && f.variante === 'zugestellt';   // Brandbericht: immer eigene Probenahme
-  { // Asbestbericht, aber die Proben sehen nach Brand aus: Hinweis + „Zum Brandbericht“ (gleiche Regel wie die Projektzentrale)
-    const p = brand ? null : V.artAusProben(S.lk), zeigen = !!p && p.art === 'brand';
-    $('artHinweis').hidden = !zeigen;
-    if (zeigen) $('artHinweisText').textContent = `Die LabelKit-Proben sehen nach einem Brandschaden aus (${p.grund}). Dafür gibt es den Brandbericht – die Asbestproben stehen dort in einem eigenen Abschnitt unter 5. Befund.`; }
+  wahlZeigen(m);   // Berichtswahl oben: „Welcher Bericht?“ / „Welche Form?“
   $('zeileVariante').hidden = brand; document.querySelectorAll('#app .nur-brand').forEach(el => { el.hidden = !brand; }); if (brand) brandZeigen(m, f);
   $('kopfUnter').textContent = brand && m.brand ? m.brand.titel || '' : '';
   $('zeileEingang').hidden = !zug; $('fEingang').value = f.eingangsdatum || '';
@@ -736,11 +811,10 @@ function render() {
   else (S.statusFest = null, $('status')).textContent = gesperrt ? `Speichern gesperrt (${m.sperren.length}) – siehe Hinweise. „Entwurf herunterladen“ geht.`
     : `Speichert als Mitteilungen/${m.dateiname}` + (lz.length ? ` · ${lz.length} Lücke(n) gelb markiert` : '');
 }
-/** Brand-Seite füllen (nur Brandbericht): Titel, Umfang, Brandort im Satz, Anwesende, zweite Person, Gefahrenbereich; darunter
+/** Brand-Seite füllen (nur Brandbericht): Umfang, Brandort im Satz, Anwesende, zweite Person, Gefahrenbereich; darunter
     Angaben der Projektzentrale und Probenzahlen als Hilfe (nicht im Bericht) */
 function brandZeigen(m, f) {
   const b = f.brand || {}, mb = m.brand || {}, z = mb.zahlen || {};
-  document.querySelectorAll('input[name=brTitel]').forEach(r => { r.checked = r.value === mb.titel; });
   document.querySelectorAll('#fbUmfang input[data-umfang]').forEach(el => { el.checked = !!(b.umfang || {})[el.dataset.umfang]; });
   $('fbBrandort').value = b.brandort || ''; $('fbBrandort').placeholder = mb.objektartVorgabe || '';
   const ort = b.brandort || mb.objektartVorgabe;
@@ -771,7 +845,7 @@ function brandZeigen(m, f) {
     mb.schadenereignis && `Schadenereignis: ${mb.schadenereignis}`, mb.brandgut && `Brandgut: ${mb.brandgut}`].filter(Boolean).join(' · ') + ' (Projektzentrale/LabelKit, nur zur Hilfe)';
   const art = T.BERICHTSARTEN.find(a => a.art === 'brand');
   $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht.';
-  $('brandVorschau').hidden = !$('brandVorschauText').textContent;   // „Als Asbestbericht öffnen“ steht unter „Mehr …“
+  $('brandVorschau').hidden = !$('brandVorschauText').textContent;   // Berichtsart: oben in der Berichtswahl
 }
 /** Wert setzen, aber nicht in ein Feld, in dem gerade getippt wird (sonst springt der Cursor bei jedem Neuzeichnen) */
 function wertOhneFokus(el, v) { if (el && document.activeElement !== el) el.value = v == null ? '' : v; }
@@ -855,7 +929,7 @@ const auswahlText = sel => { const o = sel && sel.selectedOptions && sel.selecte
 function kartenZeigen(m, f) {
   const brand = !!m.brand, b = f.brand || {}, mb = m.brand || {};
   const zus = {
-    1: [`Mitteilung ${f.mitteilung || 1}`, f.datum ? T.datumDE(f.datum) : '', brand && mb.titel, m.versicherungsfall ? 'mit Versicherung' : 'ohne Versicherung'],
+    1: [`Mitteilung ${f.mitteilung || 1}`, f.datum ? T.datumDE(f.datum) : '', m.versicherungsfall ? 'mit Versicherung' : 'ohne Versicherung'],
     2: [auswahlText($('fPn')) && `Probenahme: ${auswahlText($('fPn'))}`, brand && b.person2 && auswahlText($('fbPerson2')), $('probenInfo').textContent && `${$('probenTitel').textContent}: ${$('probenInfo').textContent}`],
     3: brand ? [b.gb ? `GB ${b.gb}${b.bereich ? ' ' + b.bereich : ''}` : 'Gefahrenbereich fehlt', `${BRAND_TEXTE.filter(([id, k]) => !versteckt($(id)) && String(b[k] || '').trim()).length} von ${BRAND_TEXTE.filter(([id]) => !versteckt($(id))).length} Textfeldern ausgefüllt`] : [],
     4: [`${(m.anlagenListe || []).length} Anlage${(m.anlagenListe || []).length === 1 ? '' : 'n'}`, auswahlText($('fSv')) && `${auswahlText($('fSv'))} als ${$('fR1').value === 'mt' ? 'MT' : 'SV'}`, f.mt && auswahlText($('fMt')), f.labor],
@@ -887,10 +961,8 @@ function aktionenZeigen() {
 }
 /** „Mehr …“ unten links: alles, was nicht auf den ersten Blick muss (Handbuch, Rückmeldung, Alle Projekte hängt die Leiste an) */
 function mehrOeffnen() {
-  const offen = !!S.dir && !$('app').hidden, brand = S.art === 'brand';
+  const offen = !!S.dir && !$('app').hidden;   // Berichtsart und Form: oben in der Berichtswahl (ab 1.17.0)
   const eintraege = [
-    { id: 'mehrArt', text: brand ? 'Als Asbestbericht öffnen' : 'Als Brandbericht öffnen', hidden: !offen, onclick: brand ? zumAsbestbericht : zumBrandbericht,
-      title: `Dieses Projekt als ${brand ? 'Asbestbericht' : 'Brandbericht'} öffnen – BerichtKit merkt sich die Wahl für das Projekt` },
     { id: 'mehrLaden', text: 'Word nur herunterladen', hidden: !offen || !!S.gesperrt, onclick: herunterladen, title: 'Word-Datei herunterladen statt im Projektordner zu speichern' },
     { trenner: true },
     { id: 'mehrEinstellungen', text: 'Einstellungen (Personen, Rollen, Labor) …', onclick: einstellungenOeffnen, title: 'Gilt für das ganze Büro' },
@@ -1228,7 +1300,7 @@ async function einstellungenSpeichern() {
 /* ---------- Eingaben ---------- */
 function setze(k, v) { S.form[k] = v; formMerken(k); render(); }
 function verbinden() {
-  $('btnWaehlen').onclick = waehlen; $('btnAsbest').onclick = zumAsbestbericht; $('btnArtVorschau').onclick = zurVorschau; $('btnZumBrand').onclick = zumBrandbericht; $('btnUebergabe').onclick = uebergabeKlick;
+  $('btnWaehlen').onclick = waehlen; $('btnAsbest').onclick = zumAsbestbericht; $('btnArtVorschau').onclick = zurVorschau; $('btnUebergabe').onclick = uebergabeKlick;
   $('btnMehr').onclick = mehrOeffnen; $('ueberZu').onclick = () => $('dlgUeber').close();
   $('eAbbrechen').onclick = () => $('dlgEinstellungen').close(); $('eSpeichern').onclick = einstellungenSpeichern;
   $('btnErstellen').onclick = speichern; $('btnLaden').onclick = herunterladen;
@@ -1264,7 +1336,17 @@ function verbinden() {
   document.querySelectorAll('input[name=einbau]').forEach(r => { r.onchange = () => setze('einbau', r.value); });
   // Brand-Seite: je Feld eine eigene Angabe in form.brand (bleibt bei Änderungen der Kollegen an anderen Feldern erhalten)
   const setzeBrand = (werte) => { S.form.brand = { ...(S.form.brand || {}), ...werte }; formMerken(...Object.keys(werte).map(k => ['brand', k])); render(); };
-  document.querySelectorAll('input[name=brTitel]').forEach(r => { r.onchange = () => setzeBrand({ titel: r.value }); });
+  // Berichtswahl: Berichtsart (umschalten, ggf. mit Rückfrage) und Form (eigene Angabe unter form[art][feld])
+  wahlBauen();
+  $('wahlArt').addEventListener('click', e => { const b = e.target.closest('.sp-kachel'); if (b && !b.disabled) wahlArtKlick(b.dataset.art); });
+  $('wahlForm').addEventListener('click', e => {
+    const b = e.target.closest('.sp-kachel'), a = T.BERICHTSARTEN.find(x => x.art === S.art), fo = a && a.form;
+    if (!b || !fo || S.laedt || S.artWechsel || b.getAttribute('aria-pressed') === 'true') return;
+    S.form[S.art] = { ...(S.form[S.art] || {}), [fo.feld]: b.dataset.form }; formMerken([S.art, fo.feld]); render();
+  });
+  $('btnWahlJa').onclick = () => { const art = S.wahlFrage; if (art && !S.laedt && !S.artWechsel) wahlWechseln(art); };
+  $('btnWahlNein').onclick = wahlNein;
+  $('wahlRueckfrage').addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); wahlNein(); } });
   $('fbUmfang').addEventListener('change', e => { const k = e.target.dataset.umfang; if (k) setzeBrand({ umfang: { ...((S.form.brand || {}).umfang || {}), [k]: e.target.checked } }); });
   $('fbBrandort').onchange = e => setzeBrand({ brandort: e.target.value.trim() });
   document.querySelectorAll('input[name=brAnw]').forEach(r => { r.onchange = () => setzeBrand({ nurBuero: r.value === 'buero', teilnehmerliste: r.value === 'teilnehmer' }); });
