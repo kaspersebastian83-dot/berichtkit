@@ -109,6 +109,8 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   assert.equal(name(l.schritt('BerichtKit')), 'BerichtKit');
   assert.match(l.schritt('BerichtKit').attr.class, /\bdone\b/);
   assert.equal(l.schritt('BerichtKit').attr.href, '../berichtkit/#projekt=26.0100%20Testweg%20Teststadt');
+  l = await leiste('plan', projekt(P, { mitteilungen: ['1__Mitteilung.docx'] }));
+  assert.match(l.weiter.attr.href, /&uebergabe=Mitteilungen%2F1__Mitteilung\.docx$/, 'ohne _BerichtKit.json: Übergabe mit der Mitteilung (Codex)');
   // e) _BerichtKit.json ohne art und ohne gespeicherten Bericht (nur Angaben) → wie v1, Haken nach Dateiname
   l = await leiste('plan', projekt(P, { mitteilungen: [], bk: { berichte: [] } }));
   assert.equal(name(l.schritt('BerichtKit')), 'BerichtKit');
