@@ -89,7 +89,7 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   assert.ok(l.steps.length === 6 && l.steps.every(s => !/\d/.test(s.kinder[0].textContent)), 'keine Nummern an den Schritten (nur ✓ oder leer)');
   assert.ok(l.weiter, 'Weiter da');
   assert.equal(l.weiter.textContent, 'Weiter: BerichtKit · Brandbericht→', 'aus PlanKit weiter zum Brandbericht, nicht zu BelegKit');
-  assert.match(l.weiter.attr.href, /^\.\.\/berichtkit\/#projekt=26\.0100%20Testweg%20Teststadt&art=brand$/);
+  assert.match(l.weiter.attr.href, /^\.\.\/berichtkit\/#projekt=26\.0100%20Testweg%20Teststadt&art=brand&auto=1$/, 'gemerkt: &auto=1 – BerichtKit merkt nicht neu');
   assert.equal(l.weiter.attr.target, 'berichtkit');
   assert.match(l.weiter.attr.title, /^Weiter zu BerichtKit · Brandbericht: noch kein Brandbericht gespeichert/);
   // b) Brandbericht gespeichert, Datei da → Haken, Weiter „Ans Büro übergeben“
@@ -103,6 +103,7 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   // c) gespeichert, aber die Datei ist weg → kein Haken
   l = await leiste('plan', projekt(P, { mitteilungen: [], bk: { art: 'brand', berichte: [{ datei: '2._Mitteilung_26.0100.docx', art: 'brand' }] } }));
   assert.ok(!/\bdone\b/.test(l.schritt('BerichtKit').attr.class), 'Datei gelöscht: kein Haken');
+  assert.match(l.weiter.attr.title, /Brandbericht „2\._Mitteilung_26\.0100\.docx“ ist nicht mehr in „Mitteilungen“/);
   // d) ohne _BerichtKit.json: wie v1 nach dem Dateinamen, Schritt nur „BerichtKit“, Link ohne art
   l = await leiste('label', projekt(P, { mitteilungen: ['1__Mitteilung.docx'] }));
   assert.equal(name(l.schritt('BerichtKit')), 'BerichtKit');
@@ -113,6 +114,9 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   assert.equal(name(l.schritt('BerichtKit')), 'BerichtKit');
   assert.equal(l.weiter.textContent, 'Weiter: BerichtKit→');
   assert.match(l.weiter.attr.title, /BerichtKit wählt die Berichtsart nach den Proben/);
+  // e2) _BerichtKit.json nur mit Angaben, aber eine Mitteilung von Hand → kein Haken (Dateiname zählt nur ohne _BerichtKit.json)
+  l = await leiste('plan', projekt(P, { mitteilungen: ['1__Mitteilung.docx'], bk: { berichte: [] } }));
+  assert.ok(!/\bdone\b/.test(l.schritt('BerichtKit').attr.class)); assert.equal(l.weiter.textContent, 'Weiter: BerichtKit→');
   // f) Bericht gespeichert und BelegKit-Stand da → kein „Ans Büro übergeben“ mehr
   l = await leiste('plan', projekt(P, { mitteilungen: ['1._Mitteilung_26.0100.docx'], bk: { art: 'asbest', berichte: [{ datei: '1._Mitteilung_26.0100.docx', art: 'asbest' }] }, beleg: true }));
   assert.equal(name(l.schritt('BerichtKit')), 'BerichtKit · Asbestbericht');

@@ -7,7 +7,7 @@
 const APP_VERSION = '1.15.0';
 const APP_DATE = '01.11.2026';
 const CHANGELOG = [
-  ['1.15.0', '01.11.2026', 'Berichtsart durchgängig: Ohne Angabe in der Adresse (Leiste, „Zuletzt geöffnet“, Lesezeichen) öffnet BerichtKit die für das Projekt gemerkte Berichtsart – sonst die, die zu den LabelKit-Proben passt (Chlorid, Bohrmehl, PAK oder Brandgeruch → Brandbericht, nur Asbest → Asbestbericht), sonst den Asbestbericht. Gemerkt (in _BerichtKit.json) wird nur, was ausdrücklich gewählt wurde: Knopf in der Projektzentrale, „Zum Asbestbericht“/„Zum Brandbericht“ und Speichern. Die Adresse zeigt danach immer &art=. Kopf und Fenstertitel nennen die Berichtsart (Tooltip: gemerkt oder nach den Proben gewählt). Im Asbestbericht steht ein Hinweis mit „Zum Brandbericht“, wenn die Proben nach Brandschaden aussehen. „Projekt wählen“ übernimmt die Berichtsart des vorigen Projekts nicht mehr. „Ans Büro übergeben →“ öffnet die Projektzentrale im eigenen Fenster (BerichtKit bleibt offen). Spektron-Leiste v2: Schritt „BerichtKit · Brandbericht“ (mit gemerkter Art), Haken nur für einen gespeicherten Bericht dieser Art, dessen Datei noch in „Mitteilungen“ liegt, nach dem gespeicherten Bericht „Weiter: Ans Büro übergeben →“, „Weiter“ nennt Ziel und Grund im Tooltip, keine Nummern mehr an den Schritten, „Aktuelles Projekt“ im Projektmenü lädt nicht mehr neu.'],
+  ['1.15.0', '01.11.2026', 'Berichtsart durchgängig: Ohne Angabe in der Adresse (Leiste, „Zuletzt geöffnet“, Lesezeichen) öffnet BerichtKit die für das Projekt gemerkte Berichtsart – sonst die, die zu den LabelKit-Proben passt (Chlorid, Bohrmehl, PAK oder Brandgeruch → Brandbericht, nur Asbest → Asbestbericht), sonst den Asbestbericht. Gemerkt (in _BerichtKit.json) wird nur, was ausdrücklich gewählt wurde: Knopf in der Projektzentrale, „Zum Asbestbericht“/„Zum Brandbericht“ und Speichern. Die Adresse zeigt danach immer &art= (mit &auto=1, sobald gemerkt oder automatisch gewählt – Neu laden und Links der Leiste wählen dann wieder nach der Regel und überschreiben nichts, was ein Kollege inzwischen gemerkt hat; das wird gemeldet). Kopf und Fenstertitel nennen die Berichtsart (Tooltip: gemerkt oder nach den Proben gewählt). Im Asbestbericht steht ein Hinweis mit „Zum Brandbericht“, wenn die Proben nach Brandschaden aussehen. „Projekt wählen“ übernimmt die Berichtsart des vorigen Projekts nicht mehr. „Ans Büro übergeben →“ öffnet die Projektzentrale im eigenen Fenster (BerichtKit bleibt offen). Spektron-Leiste v2: Schritt „BerichtKit · Brandbericht“ (mit gemerkter Art), Haken nur für einen gespeicherten Bericht dieser Art, dessen Datei noch in „Mitteilungen“ liegt, nach dem gespeicherten Bericht „Weiter: Ans Büro übergeben →“, „Weiter“ nennt Ziel und Grund im Tooltip, keine Nummern mehr an den Schritten, „Aktuelles Projekt“ im Projektmenü lädt nicht mehr neu.'],
   ['1.14.0', '01.11.2026', 'Brandbericht fertig – Speichern in „Mitteilungen“ freigegeben: Aus der Projektzentrale mit #…&art=brand öffnet BerichtKit den Brandbericht direkt (ohne „kommt bald“ und ohne Sperre „noch im Aufbau“); Prüfungen, Lücken-Rückfrage, Ersetzen-Dialog und „Ans Büro übergeben“ wie beim Asbestbericht. Schritt 5 – Freitextfelder (am Asbestbericht ändert sich nichts): Neue Karte „Brandbericht – Texte“ mit 5.1 Brandlast und Schadenbild (vorbelegt „Der Brand ereignete sich “, darüber Schadenereignis und Brandgut aus der Projektzentrale als Hilfe), 6. Sanierungsmaßnahmen – ein Feld je angehaktem Umfang (Gebäude, technische Einrichtung, Warenvorräte; mehrere Haken → 6.1, 6.2 …, einer → ohne Nummer), mit dem Einleitungssatz „Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:“ –, beim Untersuchungsbericht stattdessen „6. Schlussfolgerungen“, 7. Zusatz (optional) und 8. Zusammenfassung Sanierungsmaßnahmen (eigener Abschnitt nach 7., vor der Unterschrift; je Zeile „Bereich: Maßnahme“ mit fettem Bereich; entfällt beim Untersuchungsbericht). Schreibweise in jedem Feld: neue Zeile = Absatz, „- “ Aufzählung, „## Titel“ kursiver Zwischentitel ohne Nummer (z. B. ein Raum), **fett**, [Etwas ergänzen] bleibt eine gelbe Lücke. Fotos: unter jedem Feld „+ Foto einfügen …“ mit allen Fotos aus FotoKit – setzt „[Abb: Datei]“ ein, im Bericht mit „Abb. n:“ und der Beschreibung aus FotoKit als Bildunterschrift (eigene mit „[Abb: Datei | Text]“). Die Fotos der Asbest-/KMF-Proben kommen jetzt wie im Asbestbericht in den Brandbericht (Auswahl in der Probenliste, Abbildungen am Ende von 4.); die Abbildungen sind durch den ganzen Bericht nummeriert. 7.: Feld „Bereich“ (z. B. „im Obergeschoss“) und ein zweiter Bereich mit eigenem Gefahrenbereich (z. B. OG GB 1, EG GB 0). Leere Felder stehen als gelbe Lücke mit Anweisung im Bericht, der Zähler „Stellen noch offen“ springt zum Feld.'],
   ['1.13.0', '31.10.2026', 'Brandbericht Schritt 4 – 5. Befund, weiter als Vorschau (am Asbestbericht ändert sich nichts): Unter „5. Befund“ steht 5.1 „Brandlast und Schadenbild“ noch als gelbe Lücke (Freitext folgt), danach – nur, wozu es Ergebnisse gibt, fortlaufend nummeriert – 5.2 Korrosionsschäden (Chlorid), 5.3 Organische Schadstoffe (PAK), 5.4 Künstliche Mineralfaserwolle, 5.5 Asbest, 5.6 Sensorische Prüfung auf Brandgeruch und 5.7 Weitere Untersuchungen. Chlorid und PAK: fester Text, Spanne der Werte, Zähl-Absatz (wie viele Wischproben oberhalb/im Bereich/unterhalb von 5–10 µg/cm² bzw. über/unter der Hintergrundreferenz), höchster Wert mit Probe und Entnahmestelle, Proben ohne Nachweis über der Bestimmungsgrenze, Referenzproben („REF“/„Referenz“) und Freimessungen („F-…“) in eigenen Sätzen. Laborwerte stehen wie im Prüfbericht; eingeordnet wird mit denselben Grenzen wie in ResultKit (Chlorid in mg/m² umgerechnet). Neu unter „Brandbericht“: Haken „Ergebnistabellen“ (Chlorid/PAK als Tabelle, sonst Verweis auf den Prüfbericht; Asbest-Tabelle immer), Hintergrundreferenz PAK 10/100 µg/m² (Vorbelegung aus der Nutzung) mit optionaler Begründung. Asbest mit Methode nach VDI 3866 Blatt 5 (Anhang B aus der Nachweisgrenze des Prüfberichts), KMF wie im Asbestbericht, Brandgeruch mit Ergebnis-Satz je Probe aus den fünf Bewertungen (verdeckt/unvollständig → Lücke). Chlorid-Materialproben, Chlorid-Bohrmehl und weitere Proben aus LabelKit „Sonstige“ stehen jetzt in 4. und 5. (Werte im Satz, Bewertung als Lücke); Prüfberichte der weiteren Proben werden Anlage. Vorsichtig, wo die Daten nicht reichen: Höchstwert und Spanne werden in einer Einheit verglichen (µg/cm² bzw. µg/m²); gibt es Werte unter der Bestimmungsgrenze, heißt es „Die oberhalb der Bestimmungsgrenze ermittelten …“; der Chlorid-Abschluss A/B kommt nur aus regulär eingeordneten Proben, sonst eine Lücke; eine Probe in mehreren Prüfberichten nimmt wie ResultKit den Wert je Fläche. Hinweis, wenn in PlanKit für Chlorid/PAK eine eigene Skala oder eine andere Nutzung der Ergebniskarte eingestellt ist.'],
   ['1.12.0', '31.10.2026', 'Brandbericht Schritt 3 – Gerüst, als Vorschau (am Asbestbericht ändert sich nichts): Aus der „kommt bald“-Karte oder mit #…&art=brand&vorschau=1 öffnet BerichtKit den Brandbericht mit eigener Formularkarte „Brandbericht“ – Titel (Sanierungsvorschlag / Untersuchungsbericht), Umfang (Gebäude, technische Einrichtung, Warenvorräte), Brandort im Satz (Vorbelegung nach der Nutzung), Anwesende (eintragen / nur unser Büro / Teilnehmerliste), zweite Person vor Ort, Gefahrenbereich GB 0–3, Satz zu den übrigen Wohnungen/Bereichen. Der Bericht: Deckblatt mit „Schaden vom:“ bzw. „Brandschaden“ (Datum unbekannt) statt Betreff, Schaden-Nr. mehrzeilig; Kopfzeile „Brandschaden vom …“; 1. Veranlassung (Korrosionsabsätze nur mit Chlorid-Proben), 2. Aufgabenstellung, 3. Ortsbesichtigung (Ortstermin aus der Projektzentrale, sonst Probenahmedatum aus LabelKit), 4. Probenahme (Chlorid, PAK, Asbest mit Materialien, KMF, Brandgeruch; Zahlwort bis zwölf; gemeinsamer Prüfbericht Chlorid/PAK), 7. Arbeitsschutzmaßnahmen (GB 0 eigener Satz, TRGS 521/519), Unterschriften und Anlagen (Prüfberichte Chlorid, PAK, Asbest/KMF, Bilddokumentation, Probenplan, Brandgeruch aus der Projektzentrale – mit Stand über das Anlagen-Protokoll und Abgleich der Anlagen-Nr.). 5. Befund, 6. Sanierungsmaßnahmen/Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit gelber Lücke da (folgt in Schritt 4/5). Solange der Brandbericht nicht fertig ist, ist Speichern in „Mitteilungen“ gesperrt – „Entwurf herunterladen“ geht. Eigene Angaben der Brand-Seite stehen in _BerichtKit.json unter „brand“; das Protokoll der gespeicherten Berichte merkt sich die Berichtsart.'],
@@ -64,11 +64,15 @@ const PROJEKT_URL = {
    Vorgabe (form.art), nie eine eigene Angabe. */
 const ART_URL = {
   lesen: () => String(new URLSearchParams(location.hash.slice(1)).get('art') ?? new URLSearchParams(location.search).get('art') ?? '').trim().toLowerCase(),
+  /** &auto=1: die Berichtsart wurde nicht ausdrücklich gewählt (gemerkt, nach den Proben, Link der Leiste) – BerichtKit wählt dann
+      beim Öffnen selbst und merkt nichts. Ohne auto ist es eine ausdrückliche Wahl (Projektzentrale, Umschalten). */
+  auto: () => /^1$/.test(String(new URLSearchParams(location.hash.slice(1)).get('auto') ?? '')),
   /** art='' entfernt die Angabe */
-  setzen(art) {
+  setzen(art, auto) {
     const url = new URL(location.href);
-    const teile = url.hash.slice(1).split('&').filter(t => t && !new URLSearchParams(t).has('art'));
+    const teile = url.hash.slice(1).split('&').filter(t => t && !new URLSearchParams(t).has('art') && !new URLSearchParams(t).has('auto'));
     if (art) teile.push('art=' + encodeURIComponent(art));
+    if (art && auto) teile.push('auto=1');
     url.searchParams.delete('art'); url.hash = teile.join('&');
     if (url.href !== location.href) try { history.replaceState(history.state, '', url); } catch (e) { /* file:// */ }
   },
@@ -170,7 +174,7 @@ function titelSetzen() {
   const offen = !!S.dir && !$('app').hidden, name = ART_NAME(S.art), w = S.artWahl;
   $('kopfArt').hidden = !offen; $('kopfArt').textContent = offen ? name : '';
   $('kopfArt').title = !offen || !w ? '' : w.quelle === 'adresse' ? `${name} – so gewählt, für dieses Projekt gemerkt`
-    : w.quelle === 'gemerkt' ? `${name} – für dieses Projekt gemerkt` : w.quelle === 'proben' ? `${name} – passt zu den LabelKit-Proben (${w.grund}); noch nicht gemerkt`
+    : w.quelle === 'gemerkt' ? `${name} – für dieses Projekt gemerkt` : w.quelle === 'fremd' ? `${name} – ein Kollege hat inzwischen eine andere Berichtsart gemerkt (siehe Hinweis)` : w.quelle === 'proben' ? `${name} – passt zu den LabelKit-Proben (${w.grund}); noch nicht gemerkt`
     : `${name} – keine gemerkte Berichtsart und keine Brand-Proben; noch nicht gemerkt`;
   document.title = offen ? `${name} · ${S.dir.name} · BerichtKit ${APP_VERSION}` : `BerichtKit ${APP_VERSION} · Spektron`;
 }
@@ -189,10 +193,10 @@ async function waehlen() {
     if (pfad && pfad.length) { S.archivOk = true; if (pfad.length > 1) dir = await S.archiv.getDirectoryHandle(pfad[0]); }
     else if (await dir.isSameEntry(S.archiv)) { alert('Das ist der Archivordner – bitte einen Projektordner darin wählen.'); return; }
   }
+  // Anderes Projekt als in der Adresse: die Berichtsart gehört zum vorigen – BerichtKit entscheidet neu (gemerkt → Proben → Asbest).
+  // Aus „kommt bald“ heraus gewählt: ebenso. Dasselbe Projekt (z. B. ohne Archivzugriff gewählt): Berichtsart bleibt.
+  if (PROJEKT_URL.lesen() !== dir.name || !artAusAdresse().zeigen) { ART_URL.setzen(''); VORSCHAU_URL.setzen(false); S.bald = ''; }
   PROJEKT_URL.setzen(dir.name);
-  // Anderes Projekt: die Berichtsart der Adresse gehört zum vorigen – BerichtKit entscheidet neu (gemerkt → Proben → Asbest).
-  // Aus „kommt bald“ heraus gewählt: ebenso.
-  if (!S.dir || S.dir.name !== dir.name || !artAusAdresse().zeigen) { ART_URL.setzen(''); VORSCHAU_URL.setzen(false); S.bald = ''; }
   await oeffnen(dir);
 }
 
@@ -481,16 +485,20 @@ async function formStart() {
   S.formKey = key; S.zustand = { text: null, geplant: 0, pruef: 0, berichte: [], offen: new Set() };
   const geteilt = await zustandLesen().catch(e => { S.quellen.push({ ok: false, text: 'Angaben zum Bericht nicht lesbar: ' + (e && e.message || e) }); return null; });
   // Berichtsart: Adresse → gemerkt → Proben → Asbest; steht danach immer in der Adresse, gemerkt nur bei ausdrücklicher Wahl
-  const w = V.artWaehlen({ adresse: ART_URL.lesen(), datei: geteilt ? geteilt.datei : null, lk: S.lk });
-  S.art = w.art; S.artWahl = w; ART_URL.setzen(w.art);
+  // &auto=1 (Leiste, Neu laden nach automatischer Wahl): wie ohne Angabe – so überschreibt ein alter Link nichts, was ein Kollege gemerkt hat
+  const w = V.artWaehlen({ adresse: ART_URL.auto() ? '' : ART_URL.lesen(), datei: geteilt ? geteilt.datei : null, lk: S.lk });
+  S.art = w.art; S.artWahl = w;
+  ART_URL.setzen(w.art, true);   // ab jetzt gemerkt bzw. automatisch: Neu laden wählt wieder nach der Regel
   S.vorgabe = vorgabenBerechnen();
-  if (w.merken && w.art !== S.zustand.art) { S.zustand.artNeu = w.art; zustandPlanen(); }
+  const artMerken = w.merken && w.art !== S.zustand.art;
   if (geteilt) S.quellen.push({ ok: true, text: 'Angaben zum Bericht aus dem Projektordner' + (geteilt.von ? ` (zuletzt ${geteilt.von})` : '') });
   // Eigene Angaben: aus dem Projektordner, sonst aus diesem Browser. Bis 1.6.1 stand dort das ganze Formular (alt) – siehe bericht-vorgaben.js.
   const lokalNeu = !!(lokal && lokal.v === 2 && lokal.form && typeof lokal.form === 'object');
   const roh = geteilt ? geteilt.form : lokalNeu ? lokal.form : (lokal && typeof lokal === 'object' ? lokal : {});
   const r = V.formBereinigen(roh, bereinigenCtx(geteilt ? geteilt.alt : !lokalNeu, S.zustand.berichte));
   S.eigen = r.form; formNeu();
+  // Ausdrücklich gewählte Berichtsart sofort schreiben (nicht erst nach 900 ms – das Fenster könnte gleich wieder zugehen)
+  if (artMerken) { S.zustand.artNeu = w.art; zustandSchreiben().catch(e => fehler('Berichtsart nicht gemerkt: ' + (e && e.message || e))); }
   for (const h of r.hinweise) S.meldungen.push(h);
   if (geteilt) {
     // Weggefallenes auch aus der Datei nehmen; eine Datei ohne Kennzeichen „nurEigene“ einmal neu schreiben
@@ -571,8 +579,10 @@ async function zustandSchreiben(bericht) {
     const text = JSON.stringify(daten, null, 1);
     const fh = await o.dir.getFileHandle(ZUSTAND_DATEI, { create: true }), w = await fh.createWritable(); await w.write(text); await w.close();
     if (await (await fh.getFile()).text() !== text) throw new Error('Zurücklesen stimmt nicht.');
-    const artAlt = z.art; z.text = text; z.berichte = berichte; z.art = art; if (z.artNeu === artNeu) z.artNeu = '';
-    if (art !== artAlt && !bericht && window.MosaikLeiste) MosaikLeiste.aktualisieren();   // Leiste: „BerichtKit · <Art>“
+    const artAlt = z.art; z.text = text; z.berichte = berichte;
+    if (!artNeu && datei) artVonKollege(z, datei); else z.art = art;   // ohne eigene Wahl: was ein Kollege gemerkt hat, wird gemeldet
+    if (z.artNeu === artNeu) z.artNeu = '';
+    if (z.art !== artAlt && !bericht && window.MosaikLeiste) MosaikLeiste.aktualisieren();   // Leiste: „BerichtKit · <Art>“
     const geschrieben = new Map(offen.map(p => [p, json(pfadWert(form, p))]));
     if (S.zustand === z && fremd && !V.gleich(form, S.eigen)) {   // Änderungen eines Kollegen sind jetzt auch hier
       S.eigen = mischen(form, S.eigen, [...z.offen]); formNeu(); formLokal(); render();   // während des Schreibens Getipptes bleibt
@@ -594,8 +604,18 @@ async function zustandPruefen(dir, z, geschrieben) {
   }
   if (jetzt.text !== z.text && S.zustand === z) {
     if (ueberdeckt.length) { $('status').textContent = 'Ein Kollege hat gleichzeitig gespeichert – Ihre Änderungen werden erneut gesichert.'; zustandPlanen(); }
-    else { z.text = jetzt.text; z.berichte = berichteVereinen(Array.isArray(d.berichte) ? d.berichte : [], z.berichte); if (typeof d.art === 'string' && !z.artNeu) z.art = d.art;
+    else { z.text = jetzt.text; z.berichte = berichteVereinen(Array.isArray(d.berichte) ? d.berichte : [], z.berichte); artVonKollege(z, d);
       const form = mischen(dateiForm(d), S.eigen, [...z.offen]); if (!V.gleich(form, S.eigen)) { S.eigen = form; formNeu(); formLokal(); render(); } }
+  }
+}
+/** Ein Kollege hat in der Zwischenzeit eine andere Berichtsart gemerkt: nicht still überdecken, sondern melden */
+function artVonKollege(z, d) {
+  if (typeof d.art !== 'string' || z.artNeu || d.art === z.art) return;
+  z.art = d.art;
+  if (d.art && d.art !== S.art && S.zustand === z) {
+    meldung(`${d.geaendertVon || 'Ein Kollege'} hat für dieses Projekt den ${ART_NAME(d.art)} gemerkt – hier ist der ${ART_NAME(S.art)} offen. Umschalten mit „${d.art === 'brand' ? 'Zum Brandbericht' : 'Zum Asbestbericht'}“, sonst gilt beim nächsten Speichern wieder der ${ART_NAME(S.art)}.`);
+    if (S.artWahl) S.artWahl = { ...S.artWahl, quelle: 'fremd' };
+    titelSetzen(); render();
   }
 }
 /** Vor dem Projektwechsel: geplantes Speichern sofort ausführen, nichts landet im falschen Projekt. */
@@ -632,7 +652,7 @@ function render() {
   { // Asbestbericht, aber die Proben sehen nach Brand aus: Hinweis + „Zum Brandbericht“ (gleiche Regel wie die Projektzentrale)
     const p = brand ? null : V.artAusProben(S.lk), zeigen = !!p && p.art === 'brand';
     $('artHinweis').hidden = !zeigen;
-    if (zeigen) $('artHinweisText').textContent = `Die LabelKit-Proben sehen nach einem Brandschaden aus (${p.grund}). Dafür gibt es den Brandbericht – Asbestproben stehen dort in 5.5.`; }
+    if (zeigen) $('artHinweisText').textContent = `Die LabelKit-Proben sehen nach einem Brandschaden aus (${p.grund}). Dafür gibt es den Brandbericht – die Asbestproben stehen dort in einem eigenen Abschnitt unter 5. Befund.`; }
   $('zeileVariante').hidden = brand; $('karteBrand').hidden = $('karteBrandTexte').hidden = !brand; if (brand) brandZeigen(m, f);
   $('zeileEingang').hidden = !zug; $('fEingang').value = f.eingangsdatum || '';
   $('fAuftrag').value = f.auftragsdatum || ''; $('fAuftrag').closest('.feld').hidden = zug;
@@ -1222,7 +1242,7 @@ function verbinden() {
     // Von „kommt bald“ zurück zu einer bereiten Berichtsart (Link aus der Projektzentrale, Zurück im Browser): Bericht wieder zeigen
     if (S.bald && a.zeigen && S.dir && (!n || n === S.dir.name) && a.art === S.art) { S.bald = ''; $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; titelSetzen(); return; }
     if ((n && (!S.dir || n !== S.dir.name)) || !a.zeigen || S.bald || (S.dir && a.art !== S.art)) start();
-    else if (S.dir && !ART_URL.lesen()) ART_URL.setzen(S.art);   // Berichtsart steht immer in der Adresse
+    else if (S.dir && !ART_URL.lesen()) ART_URL.setzen(S.art, true);   // Berichtsart steht immer in der Adresse
   });
 }
 verbinden();

@@ -395,7 +395,7 @@ const daten = {
     await startZeigt('Bericht', /Die Berichtsart „pak“ kennt BerichtKit nicht/);
     assert.ok(await page.isHidden('#btnArtVorschau'), 'ohne Modul keine Vorschau');
     await page.click('#btnAsbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
-    assert.match(page.url(), /&art=asbest$/, 'ab 1.15.0 steht die Berichtsart immer in der Adresse'); assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom/);
+    await page.waitForFunction(() => /&art=asbest&auto=1$/.test(location.href));   // ab 1.15.0 steht die Berichtsart immer in der Adresse (nach dem Merken mit auto=1) assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom/);
     await page.waitForFunction(() => document.getElementById('kopfArt').textContent === 'Asbestbericht'); assert.match(await page.title(), /^Asbestbericht · 99\.9001/);
     // Projekt offen: wieder art=pak, dann zurück (Zurück-Knopf) und per Link art=asbest → der Bericht ist wieder da
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await startZeigt('Bericht', /kennt BerichtKit nicht/);
@@ -499,13 +499,13 @@ const daten = {
     await page.click('#btnZumAsbest');
     await page.waitForSelector('#karteBrand', { state: 'hidden' }); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.match(await page.textContent('#vorschau'), /Betreff|Untersuchung auf Asbest/);
-    assert.match(page.url(), /&art=asbest$/); assert.doesNotMatch(page.url(), /vorschau=/); assert.ok(await page.isHidden('#karteBrand')); assert.ok(await page.isEnabled('#btnErstellen'));
+    assert.match(page.url(), /&art=asbest&auto=1$/); assert.doesNotMatch(page.url(), /vorschau=/); assert.ok(await page.isHidden('#karteBrand')); assert.ok(await page.isEnabled('#btnErstellen'));
     // Umschalten wird gemerkt (_BerichtKit.json „art“) – ohne &art= öffnet BerichtKit danach wieder den Asbestbericht
     let mitArt = null;
     for (let i = 0; i < 40 && !(mitArt && mitArt.art === 'asbest'); i++) { await page.waitForTimeout(150); mitArt = JSON.parse(await projektDatei(bkPfad)); }
     assert.equal(mitArt.art, 'asbest', 'Umschalten gemerkt');
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT)); await page.reload(); await page.waitForSelector('#app:not([hidden]) .blatt');
-    assert.match(page.url(), /&art=asbest$/, 'ohne art: gemerkte Berichtsart'); assert.ok(await page.isHidden('#karteBrand'));
+    assert.match(page.url(), /&art=asbest&auto=1$/, 'ohne art: gemerkte Berichtsart'); assert.ok(await page.isHidden('#karteBrand'));
     assert.match(await page.getAttribute('#kopfArt', 'title'), /für dieses Projekt gemerkt/);
     assert.doesNotMatch(await page.textContent('#vorschau'), /Gefahrenbereich|Sanierungsvorschlag|Untersuchungsbericht vom[\s\S]*Schlussfolgerungen[\s\S]*Arbeitsschutz/);
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest');
