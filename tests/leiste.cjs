@@ -175,7 +175,7 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   const eigen = block(fs.readFileSync(path.join(ROOT, 'mosaik-leiste.js'), 'utf8'));
   assert.ok(eigen && eigen.startsWith('/* ===== MOSAIK-LEISTE v3'), 'Block v3');
   const andere = { LabelKit: 'labelkit/index.html', FotoKit: 'bildumbenenner/index.html', ResultKit: 'resultkit/src/suite-bar.ts', PlanKit: 'probenplan/src/suite-bar.ts', BelegKit: 'aufwandkit/index.html' };
-  const V3 = ['LabelKit'];   // tragen v3 schon (müssen gleich sein); die anderen ziehen mit ihrem Umbau nach
+  const V3 = ['LabelKit', 'FotoKit'];   // tragen v3 schon (müssen gleich sein); die anderen ziehen mit ihrem Umbau nach (FotoKit ab 2.0.0)
   const geprueft = [], nochV2 = [];
   for (const [app, rel] of Object.entries(andere)) {
     const f = path.join(ROOT, '..', rel); if (!fs.existsSync(f)) continue;

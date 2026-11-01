@@ -1,4 +1,4 @@
-/* Spektron-Leiste (MOSAIK-LEISTE v3) – der Block unten ist byte-gleich mit LabelKit; FotoKit, ResultKit, PlanKit und BelegKit tragen noch v2 (gleiche Optik ohne Kopfband). */
+/* Spektron-Leiste (MOSAIK-LEISTE v3) – der Block unten ist byte-gleich mit LabelKit und FotoKit (ab 2.0.0); ResultKit, PlanKit und BelegKit tragen noch v2 (gleiche Optik ohne Kopfband). */
 /* ===== MOSAIK-LEISTE v3 – in allen Apps der Familie identisch halten (LabelKit, FotoKit, ResultKit, PlanKit, BerichtKit, BelegKit) =====
    Links steht der Name der App-Suite „Spektron“ (Arbeitsname war „Mosaik“; interne Kennungen bleiben).
    Schmale Leiste oben: Projekt (mit Wechsel zu den zuletzt benutzten), die sechs Arbeitsschritte mit Haken und nächstem Schritt,

@@ -56,6 +56,12 @@ jobs:
           BASIS: ${{ github.base_ref }}
         # gleichnamiger Zweig, sonst der Basiszweig des PRs (gestapelte PRs), sonst main
         run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/labelkit.git ../labelkit
+      - name: FotoKit daneben holen (Spektron-Leiste und Spektron-Look byte-gleich prüfen)
+        env:
+          ZWEIG: ${{ github.head_ref }}
+          BASIS: ${{ github.base_ref }}
+        # gleichnamiger Zweig, sonst der Basiszweig des PRs, sonst main
+        run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/bildumbenenner.git ../bildumbenenner 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/bildumbenenner.git ../bildumbenenner 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/bildumbenenner.git ../bildumbenenner
       - name: Offline-Dateien und Leiste
         run: node tests/sw.cjs
       - name: Leiste v3, Spektron-Look und Berichtsart ohne art (gemerkt / Proben / asbest), Haken, Weiter
