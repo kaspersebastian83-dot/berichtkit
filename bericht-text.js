@@ -13,10 +13,18 @@ if (!G || !ARTEN.asbest || !ARTEN.brand) throw new Error('BerichtKit: bericht-ge
     aber immer mit Sperre: nur als Entwurf herunterladen, nie in „Mitteilungen“. brand ist bereit ab 1.14.0 (nach Schritt 5;
     eigener Commit, damit er sich notfalls einzeln zurücknehmen lässt). */
 const BEREIT = { asbest: true, brand: true };
+/** Berichte-Baum (ab 1.17.0) – daraus baut app.js die Berichtswahl oben („Welcher Bericht?“ / „Welche Form?“).
+    Stufe 1 = Berichtsart: art, name, symbol (Kachelbild in app.js). Stufe 2 = Form, nur wenn es sie gibt:
+    form: { feld, formen: [{ id, name, hinweis }] } – gespeichert wird die id unter form[art][feld] (eigene Angabe), die erste
+    Form ist die Vorgabe. bald: true → Kachel „kommt bald“, nicht wählbar (z. B. eine geplante Berichtsart ohne Modul).
+    Neue Berichtsart: hier ein Eintrag + Modul in ARTEN (+ BEREIT, wenn fertig). */
 const BERICHTSARTEN = [
-  { art: 'asbest', name: 'Asbestbericht' },
-  { art: 'brand', name: 'Brandbericht' },
-].map(a => ({ ...a, bereit: !!ARTEN[a.art] && !!BEREIT[a.art], modul: !!ARTEN[a.art] }));
+  { art: 'asbest', name: 'Asbestbericht', symbol: 'asbest' },
+  { art: 'brand', name: 'Brandbericht', symbol: 'brand', form: { feld: 'titel', formen: [
+    { id: 'Sanierungsvorschlag', name: 'Sanierungsvorschlag', hinweis: 'mit Sanierungskonzept – 6. Sanierungsmaßnahmen und 8. Zusammenfassung.' },
+    { id: 'Untersuchungsbericht', name: 'Untersuchungsbericht', hinweis: 'ohne Sanierungskonzept – 6. heißt „Schlussfolgerungen“, kein Abschnitt 8.' },
+  ] } },
+].map(a => ({ ...a, bald: !!a.bald, bereit: !a.bald && !!ARTEN[a.art] && !!BEREIT[a.art], modul: !a.bald && !!ARTEN[a.art] }));
 const IM_AUFBAU = { brand: 'Der Brandbericht ist noch im Aufbau – nur als Entwurf herunterladen, nicht in „Mitteilungen“ speichern.' };
 /** form.art → Berichtsart; leer oder fehlend = 'asbest' (alle Berichte bis 1.9.0). Unbekannte Werte bleiben unbekannt. */
 const berichtsart = form => G.s(form && form.art).toLowerCase() || 'asbest';

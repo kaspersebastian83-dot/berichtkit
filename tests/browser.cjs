@@ -377,10 +377,24 @@ const daten = {
     assert.match(await page.textContent('#mosaikLeiste .ml-proj'), /^99\.9001 · Musterweg Musterstadt/);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'kein waagrechtes Scrollen');
     await page.emulateMedia({ media: 'print' }); assert.ok(await page.isHidden('#mosaikLeiste'), 'Kopfband nicht im Druck'); await page.emulateMedia({ media: 'screen' });
+    // Berichtswahl (1.17.0): Kacheln aus dem Berichte-Baum, Asbestbericht gewählt, ohne zweite Stufe; Notiz gemerkt + Proben
+    assert.deepEqual(await page.$$eval('#wahlArt .sp-kachel', bs => bs.map(b => [b.dataset.art, b.getAttribute('aria-pressed')])), [['asbest', 'true'], ['brand', 'false']]);
+    assert.ok(await page.isHidden('#zeileForm'), 'Asbestbericht: keine „Welche Form?“');
+    assert.match(await page.textContent('#wahlArtNotiz'), /Gemerkt für dieses Projekt\..*Passt zu den Proben/);
+    assert.ok(await page.isHidden('#wahlArt [data-art=brand] .sp-tag'), 'Brand-Kachel ohne „passt zu den Proben“');
+    { const r = await page.evaluate(() => { const a = document.getElementById('wahlArt').getBoundingClientRect(), b = document.querySelector('.formular').getBoundingClientRect(); return [a.top < b.top, document.querySelector('#wahlArt [aria-pressed=true]').offsetHeight]; });
+      assert.ok(r[0], 'Berichtswahl über dem Formular'); assert.ok(r[1] >= 60, 'Kachel groß (64 px)'); }
+    // Schon ein Asbestbericht gespeichert: Brandbericht wählen fragt erst nach – „Abbrechen“ lässt alles, wie es ist
+    await page.click('#wahlArt [data-art=brand]'); await page.waitForSelector('#wahlRueckfrage:not([hidden])');
+    assert.match(await page.textContent('#wahlRueckfrageText'), /schon ein Asbestbericht gespeichert \(1\. und 2\. Mitteilung\)\. Trotzdem als Brandbericht weiterarbeiten\? Die gespeicherten Berichte bleiben/);
+    assert.equal(await page.textContent('#btnWahlJa'), 'Ja, Brandbericht'); assert.equal(await page.evaluate(() => document.activeElement.id), 'btnWahlJa');
+    await page.keyboard.press('Escape'); await page.waitForSelector('#wahlRueckfrage', { state: 'hidden' });
+    assert.match(page.url(), /art=asbest/); assert.equal(await page.getAttribute('#wahlArt [data-art=asbest]', 'aria-pressed'), 'true');
+    await page.emulateMedia({ media: 'print' }); assert.ok(await page.isHidden('#berichtswahl'), 'Berichtswahl nicht im Druck'); await page.emulateMedia({ media: 'screen' });
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
     await page.click('#btnMehr'); await page.waitForSelector('#mosaikMehrPop');
-    assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Als Brandbericht öffnen', 'Word nur herunterladen',
-      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.16.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
+    assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Word nur herunterladen',
+      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.17.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
     assert.equal(await page.getAttribute('#mosaikMehrPop a[target=aidkit]', 'href'), '../aidkit/#app-berichtkit');
     await page.keyboard.press('Escape'); await page.waitForSelector('#mosaikMehrPop', { state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'btnMehr', 'Esc: Fokus zurück auf „Mehr …“');
@@ -441,7 +455,10 @@ const daten = {
     assert.ok(await page.isVisible('#karteBrand')); assert.ok(await page.isHidden('#zeileVariante'));
     assert.equal(await page.textContent('#kopfArt'), 'Brandbericht'); assert.equal(await page.textContent('#kopfUnter'), 'Sanierungsvorschlag');
     assert.equal(await page.textContent('#brandVorschauText'), '', 'kein Hinweis „noch im Aufbau“'); assert.ok(await page.isHidden('#brandVorschau'));
-    await page.click('#btnMehr'); assert.equal(await page.textContent('#mehrArt'), 'Als Asbestbericht öffnen'); await page.keyboard.press('Escape');
+    assert.deepEqual(await page.$$eval('#wahlArt .sp-kachel', bs => bs.map(b => b.getAttribute('aria-pressed'))), ['false', 'true'], 'Brandbericht gewählt');
+    assert.ok(await page.isVisible('#zeileForm')); assert.equal(await page.getAttribute('#wahlForm [data-form=Sanierungsvorschlag]', 'aria-pressed'), 'true');
+    assert.match(await page.textContent('#wahlFormNotiz'), /^Sanierungsvorschlag: mit Sanierungskonzept/);
+    assert.ok(await page.isVisible('#wahlArt [data-art=asbest] .sp-tag'), 'Proben sprechen für den Asbestbericht – Kachel sagt es');
     assert.match(await page.textContent('#vorschau'), /Sanierungsvorschlag vom/); assert.match(await page.textContent('#vorschau'), /7\. Arbeitsschutzmaßnahmen/);
     // 5. Befund (ab 1.13.0): 5.1 als Lücke (nur Vorbelegung), Asbest-Abschnitt mit Methode und Tabelle; ohne Chlorid/PAK keine Felder für Tabellen/Referenz
     assert.match(await page.textContent('#vorschau'), /5\.1 Brandlast und Schadenbild[\s\S]*\[Brandlast und Schadenbild beschreiben\][\s\S]*5\.\d Asbest[\s\S]*VDI 3866 Blatt 5/);
@@ -513,7 +530,8 @@ const daten = {
     for (let i = 0; i < 40 && !(protokoll && (protokoll.berichte || []).some(b => b.art === 'brand')); i++) { await page.waitForTimeout(150); protokoll = JSON.parse(await projektDatei(bkPfad)); }
     assert.ok(protokoll.berichte.some(b => b.art === 'brand' && /3\._Mitteilung_99\.9001\.docx$/.test(b.datei)), 'Protokoll: art brand');
     assert.ok(await page.isVisible('#btnUebergabe'), '„Ans Büro übergeben →“');
-    await page.check('input[name=brTitel][value=Untersuchungsbericht]');
+    await page.click('#wahlForm [data-form=Untersuchungsbericht]');   // „Welche Form?“ statt Titel-Schalter (1.17.0)
+    assert.equal(await page.getAttribute('#wahlForm [data-form=Untersuchungsbericht]', 'aria-pressed'), 'true'); assert.equal(await page.textContent('#kopfUnter'), 'Untersuchungsbericht');
     // Untersuchungsbericht: ein Feld „Schlussfolgerungen“, keine Sanierungsfelder, kein 8.
     assert.ok(await page.isVisible('#fbSchluss')); assert.ok(await page.isHidden('#fbSanGebaeude')); assert.ok(await page.isHidden('#fbZusammenfassung'));
     assert.doesNotMatch(await page.textContent('#vorschau'), /8\. Zusammenfassung/);
@@ -525,8 +543,10 @@ const daten = {
       umfang: { gebaeude: true, technik: true, waren: false }, sanGebaeude: '## Keller\n- Feinreinigung', bereich2: 'im Erdgeschoss', gb2: '0', bereich: 'im Keller',
       zusatz: 'Zusatz zum Arbeitsschutz.', zusammenfassung: 'Keller: Feinreinigung', titel: 'Untersuchungsbericht' }, 'Freitext feldweise in form.brand');
     assert.ok(!('art' in mitBrand.form));
-    // „Zum Asbestbericht“ in der Brand-Karte: dasselbe Projekt als Asbestbericht, Brand-Angaben bleiben draußen
-    await mehr('mehrArt');
+    // „Asbestbericht“ in der Berichtswahl (nach Rückfrage): dasselbe Projekt als Asbestbericht, Brand-Angaben bleiben draußen
+    await page.click('#wahlArt [data-art=asbest]'); await page.waitForSelector('#wahlRueckfrage:not([hidden])');   // Brandbericht gespeichert → Rückfrage
+    assert.match(await page.textContent('#wahlRueckfrageText'), /schon ein Brandbericht gespeichert \(3\. Mitteilung\)/);
+    await page.click('#btnWahlJa');
     await page.waitForFunction(() => document.getElementById('karteBrand').hidden); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.match(await page.textContent('#vorschau'), /Betreff|Untersuchung auf Asbest/);
     assert.match(page.url(), /&art=asbest&auto=1$/); assert.doesNotMatch(page.url(), /vorschau=/); assert.ok(await page.evaluate(() => document.getElementById('karteBrand').hidden && document.getElementById('karteBrandTexte').hidden)); assert.ok(await page.isEnabled('#btnErstellen'));

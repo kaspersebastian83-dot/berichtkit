@@ -184,4 +184,20 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
     assert.equal(b, eigen, `Leiste in ${app} (${rel}) nicht byte-gleich`); geprueft.push(app);
   }
   console.log(`Leiste v3: Regel ohne art, Haken/Weiter/Büro, Kopfband, „Mehr …“ – ok; byte-gleich mit ${geprueft.join(', ') || '(keine App daneben)'}${nochV2.length ? ` · noch v2: ${nochV2.join(', ')}` : ''}`);
+
+  /* ---------- 4. SPEKTRON-LOOK v1 (ab BerichtKit 1.17.0): ein Block, ohne App-Farbe, byte-gleich in Apps, die ihn schon tragen ---------- */
+  const look = t => { const a = t.indexOf('/* ===== SPEKTRON-LOOK v'), e = t.indexOf('/* ===== Ende SPEKTRON-LOOK v'); return a < 0 || e < 0 ? null : t.slice(a, e); };
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'), lookEigen = look(html);
+  assert.ok(lookEigen && lookEigen.startsWith('/* ===== SPEKTRON-LOOK v1'), 'Look-Block v1 in index.html');
+  assert.equal(html.split('/* ===== SPEKTRON-LOOK v').length, 2, 'Look-Block genau einmal');
+  const appFarben = ['#5469b8', '#2f87a6', '#7a5ca8', '#4179b2', '#b0683c', '#9c5a32', '#2f7d6d'];
+  for (const c of appFarben) assert.ok(!lookEigen.toLowerCase().includes(c), `keine App-Farbe ${c} im Look-Block`);
+  assert.match(html.slice(html.indexOf('/* ===== Ende SPEKTRON-LOOK v')), /--sp-app:#b0683c;\s*--sp-app-dunkel:#9c5a32/, 'BerichtKit setzt seine Leistenfarbe nach dem Block');
+  const mitLook = [];
+  for (const [app, rel] of Object.entries(andere)) {
+    const f = path.join(ROOT, '..', rel); if (!fs.existsSync(f)) continue;
+    const b = look(fs.readFileSync(f, 'utf8')); if (!b) continue;
+    assert.equal(b, lookEigen, `Spektron-Look in ${app} (${rel}) nicht byte-gleich`); mitLook.push(app);
+  }
+  console.log(`Spektron-Look v1: Block ok${mitLook.length ? `; byte-gleich mit ${mitLook.join(', ')}` : ' (noch keine andere App mit dem Block daneben)'}`);
 })().catch(e => { console.error(e); process.exit(1); });
