@@ -2202,12 +2202,12 @@
   "offen": [],
   "storniert": [],
   "hinweise": [
-   "Nutzung fehlt in der Projektzentrale – in 1. steht „in dem Objekt“. Nutzung eintragen oder unter „Brandbericht“ den Brandort im Satz angeben.",
+   "Nutzung fehlt in der Projektzentrale – in 1. steht „in dem Objekt“. Nutzung eintragen oder unter „Vor Ort & Proben“ den Brandort im Satz angeben.",
    "Bilddokumentation trägt „Anlage 3“, im Bericht ist sie Anlage 4 – in FotoKit die Anlagen-Nr. ändern und die PDF neu erstellen.",
    "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.",
    "Sensorische Prüfung auf Brandgeruch nicht gefunden – nicht im Bericht. In Projektzentrale erstellen.",
    "Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für die Anlage in LabelKit „Ergebnisse aufdecken“ und speichern.",
-   "Hintergrundreferenz PAK fehlt (Nutzung in der Projektzentrale nicht eingetragen) – unter „Brandbericht“ 10 oder 100 µg/m² wählen.",
+   "Hintergrundreferenz PAK fehlt (Nutzung in der Projektzentrale nicht eingetragen) – unter „Befund & Texte“ 10 oder 100 µg/m² wählen.",
    "Prüfbericht AR-999-2026-000303-01: PDF nicht in „Laborergebnisse“ – für die Anlage bitte ablegen."
   ],
   "hinweisAktionen": {

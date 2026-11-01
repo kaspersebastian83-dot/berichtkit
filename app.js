@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.15.0';
+const APP_VERSION = '1.16.0';
 const APP_DATE = '01.11.2026';
 const CHANGELOG = [
+  ['1.16.0', '01.11.2026', 'Einfachere Oberfläche (Spektron Schritt 2): Oben steht das neue Kopfband der Spektron-Leiste – das Projekt groß, darunter Objekt, Nutzung, Schadendatum und Zuständig, die sechs Schritte als Kacheln mit Symbol (Proben, Fotos, Labor, Plan, Brandbericht/Asbestbericht, Abrechnung) und ein großes „Weiter: … →“ mit Grund. Die eigene Kopfzeile ist weg. Das Formular hat vier Karten in der Reihenfolge des Berichts – Bericht & Auftrag · Vor Ort & Proben · Befund & Texte (nur Brandbericht) · Anlagen & Unterschrift –, zugeklappt mit einer Zeile Zusammenfassung und „n offen“; aufgeklappt ist beim Öffnen die erste Karte mit offenen Stellen. Der Zähler „n Stellen noch offen“ klappt die richtige Karte auf und springt ins Feld. Die Hinweise stehen als eine aufklappbare Zeile unter dem Zähler (Sperren immer offen und rot). Unten genau eine Hauptaktion: „Brandbericht als Word speichern →“, gesperrt „Entwurf herunterladen →“, nach dem Speichern „Ans Büro übergeben →“ (daneben „Erneut speichern“). Alles andere unter „Mehr …“ unten links: Als Asbest-/Brandbericht öffnen, Word nur herunterladen, Einstellungen, anderen Projektordner wählen, Über BerichtKit (Version), Handbuch, Rückmeldung, Alle Projekte. Bericht, Speichern, Dateien und Verbindung zu den anderen Apps unverändert.'],
   ['1.15.0', '01.11.2026', 'Berichtsart durchgängig: Ohne Angabe in der Adresse (Leiste, „Zuletzt geöffnet“, Lesezeichen) öffnet BerichtKit die für das Projekt gemerkte Berichtsart – sonst die, die zu den LabelKit-Proben passt (Chlorid, Bohrmehl, PAK oder Brandgeruch → Brandbericht, nur Asbest → Asbestbericht), sonst den Asbestbericht. Gemerkt (in _BerichtKit.json) wird nur, was ausdrücklich gewählt wurde: Knopf in der Projektzentrale, „Zum Asbestbericht“/„Zum Brandbericht“ und Speichern. Die Adresse zeigt danach immer &art= (mit &auto=1, sobald gemerkt oder automatisch gewählt – Neu laden und Links der Leiste wählen dann wieder nach der Regel und überschreiben nichts, was ein Kollege inzwischen gemerkt hat; das wird gemeldet). Kopf und Fenstertitel nennen die Berichtsart (Tooltip: gemerkt oder nach den Proben gewählt). Im Asbestbericht steht ein Hinweis mit „Zum Brandbericht“, wenn die Proben nach Brandschaden aussehen. „Projekt wählen“ übernimmt die Berichtsart des vorigen Projekts nicht mehr. „Ans Büro übergeben →“ öffnet die Projektzentrale im eigenen Fenster (BerichtKit bleibt offen). Spektron-Leiste v2: Schritt „BerichtKit · Brandbericht“ (mit gemerkter Art), Haken nur für einen gespeicherten Bericht dieser Art, dessen Datei noch in „Mitteilungen“ liegt, nach dem gespeicherten Bericht „Weiter: Ans Büro übergeben →“, „Weiter“ nennt Ziel und Grund im Tooltip, keine Nummern mehr an den Schritten, „Aktuelles Projekt“ im Projektmenü lädt nicht mehr neu.'],
   ['1.14.0', '01.11.2026', 'Brandbericht fertig – Speichern in „Mitteilungen“ freigegeben: Aus der Projektzentrale mit #…&art=brand öffnet BerichtKit den Brandbericht direkt (ohne „kommt bald“ und ohne Sperre „noch im Aufbau“); Prüfungen, Lücken-Rückfrage, Ersetzen-Dialog und „Ans Büro übergeben“ wie beim Asbestbericht. Schritt 5 – Freitextfelder (am Asbestbericht ändert sich nichts): Neue Karte „Brandbericht – Texte“ mit 5.1 Brandlast und Schadenbild (vorbelegt „Der Brand ereignete sich “, darüber Schadenereignis und Brandgut aus der Projektzentrale als Hilfe), 6. Sanierungsmaßnahmen – ein Feld je angehaktem Umfang (Gebäude, technische Einrichtung, Warenvorräte; mehrere Haken → 6.1, 6.2 …, einer → ohne Nummer), mit dem Einleitungssatz „Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:“ –, beim Untersuchungsbericht stattdessen „6. Schlussfolgerungen“, 7. Zusatz (optional) und 8. Zusammenfassung Sanierungsmaßnahmen (eigener Abschnitt nach 7., vor der Unterschrift; je Zeile „Bereich: Maßnahme“ mit fettem Bereich; entfällt beim Untersuchungsbericht). Schreibweise in jedem Feld: neue Zeile = Absatz, „- “ Aufzählung, „## Titel“ kursiver Zwischentitel ohne Nummer (z. B. ein Raum), **fett**, [Etwas ergänzen] bleibt eine gelbe Lücke. Fotos: unter jedem Feld „+ Foto einfügen …“ mit allen Fotos aus FotoKit – setzt „[Abb: Datei]“ ein, im Bericht mit „Abb. n:“ und der Beschreibung aus FotoKit als Bildunterschrift (eigene mit „[Abb: Datei | Text]“). Die Fotos der Asbest-/KMF-Proben kommen jetzt wie im Asbestbericht in den Brandbericht (Auswahl in der Probenliste, Abbildungen am Ende von 4.); die Abbildungen sind durch den ganzen Bericht nummeriert. 7.: Feld „Bereich“ (z. B. „im Obergeschoss“) und ein zweiter Bereich mit eigenem Gefahrenbereich (z. B. OG GB 1, EG GB 0). Leere Felder stehen als gelbe Lücke mit Anweisung im Bericht, der Zähler „Stellen noch offen“ springt zum Feld.'],
   ['1.13.0', '31.10.2026', 'Brandbericht Schritt 4 – 5. Befund, weiter als Vorschau (am Asbestbericht ändert sich nichts): Unter „5. Befund“ steht 5.1 „Brandlast und Schadenbild“ noch als gelbe Lücke (Freitext folgt), danach – nur, wozu es Ergebnisse gibt, fortlaufend nummeriert – 5.2 Korrosionsschäden (Chlorid), 5.3 Organische Schadstoffe (PAK), 5.4 Künstliche Mineralfaserwolle, 5.5 Asbest, 5.6 Sensorische Prüfung auf Brandgeruch und 5.7 Weitere Untersuchungen. Chlorid und PAK: fester Text, Spanne der Werte, Zähl-Absatz (wie viele Wischproben oberhalb/im Bereich/unterhalb von 5–10 µg/cm² bzw. über/unter der Hintergrundreferenz), höchster Wert mit Probe und Entnahmestelle, Proben ohne Nachweis über der Bestimmungsgrenze, Referenzproben („REF“/„Referenz“) und Freimessungen („F-…“) in eigenen Sätzen. Laborwerte stehen wie im Prüfbericht; eingeordnet wird mit denselben Grenzen wie in ResultKit (Chlorid in mg/m² umgerechnet). Neu unter „Brandbericht“: Haken „Ergebnistabellen“ (Chlorid/PAK als Tabelle, sonst Verweis auf den Prüfbericht; Asbest-Tabelle immer), Hintergrundreferenz PAK 10/100 µg/m² (Vorbelegung aus der Nutzung) mit optionaler Begründung. Asbest mit Methode nach VDI 3866 Blatt 5 (Anhang B aus der Nachweisgrenze des Prüfberichts), KMF wie im Asbestbericht, Brandgeruch mit Ergebnis-Satz je Probe aus den fünf Bewertungen (verdeckt/unvollständig → Lücke). Chlorid-Materialproben, Chlorid-Bohrmehl und weitere Proben aus LabelKit „Sonstige“ stehen jetzt in 4. und 5. (Werte im Satz, Bewertung als Lücke); Prüfberichte der weiteren Proben werden Anlage. Vorsichtig, wo die Daten nicht reichen: Höchstwert und Spanne werden in einer Einheit verglichen (µg/cm² bzw. µg/m²); gibt es Werte unter der Bestimmungsgrenze, heißt es „Die oberhalb der Bestimmungsgrenze ermittelten …“; der Chlorid-Abschluss A/B kommt nur aus regulär eingeordneten Proben, sonst eine Lücke; eine Probe in mehreren Prüfberichten nimmt wie ResultKit den Wert je Fläche. Hinweis, wenn in PlanKit für Chlorid/PAK eine eigene Skala oder eine andere Nutzung der Ergebniskarte eingestellt ist.'],
@@ -120,11 +121,11 @@ async function start() {
   $('version').textContent = 'v' + APP_VERSION;
   if (!start.einmal) {
     start.einmal = true;
-    if (window.MosaikLeiste) MosaikLeiste.start('bericht', { version: APP_VERSION });
+    if (window.MosaikLeiste) MosaikLeiste.start('bericht', { version: APP_VERSION, kopfband: true });   // Kopfband (Leiste v3)
     // offline nutzbar wie die Projektzentrale; nicht beim lokalen Testserver (127.0.0.1), damit Tests immer die aktuelle Fassung laden
     if (/^https?:$/.test(location.protocol) && location.hostname !== '127.0.0.1' && 'serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
-  $('version').title = CHANGELOG.map(c => `${c[0]} (${c[1]}): ${c[2]}`).join('\n');
+  $('ueberListe').innerHTML = CHANGELOG.map(c => `<li><b>${esc(c[0])}</b> (${esc(c[1])}): ${esc(c[2])}</li>`).join('');
   titelSetzen();
   if (!('showDirectoryPicker' in window)) { zeigeStart('BerichtKit braucht Edge oder Chrome (Zugriff auf Ordner).', false); $('btnWaehlen').disabled = true; return; }
   S.archiv = await SUITE.get('archiv').catch(() => null) || null;   // vor der Berichtsart: auch aus „kommt bald“ heraus wird ein Projekt gewählt
@@ -142,7 +143,7 @@ async function start() {
 }
 const START = { titel: $('startTitel').textContent, text: $('startText').textContent };
 function zeigeStart(text, zugriff) {
-  $('start').hidden = false; $('app').hidden = true; $('leiste').hidden = true;
+  $('start').hidden = false; $('app').hidden = true; $('leisteAktionen').hidden = true;
   $('startTitel').textContent = START.titel; $('startText').textContent = text || START.text;
   $('btnZugriff').hidden = !zugriff; $('btnWaehlen').hidden = false; $('btnAsbest').hidden = true; $('btnArtVorschau').hidden = true;
   titelSetzen();
@@ -204,8 +205,8 @@ async function waehlen() {
 async function oeffnen(dir) {
   await zustandAbschliessen();
   S.laedt = true;
-  S.dir = dir; $('kopfProjekt').textContent = dir.name; $('kopfProjekt').title = dir.name;
-  $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false;
+  S.dir = dir; S.kartenGesetzt = false; S.sperreOffen = false;   // Karten beim ersten vollständigen Zeichnen nach den offenen Stellen auf-/zuklappen
+  $('start').hidden = true; $('app').hidden = false; $('leisteAktionen').hidden = false;
   fehler('');
   const nr = (/^(\d{2})\.(\d{4})/.exec(dir.name) || []).slice(1).join('.');
   S.ordner = { name: dir.name, nr, kuerzel: '' };
@@ -613,7 +614,7 @@ function artVonKollege(z, d) {
   if (typeof d.art !== 'string' || z.artNeu || d.art === z.art) return;
   z.art = d.art;
   if (d.art && d.art !== S.art && S.zustand === z) {
-    meldung(`${d.geaendertVon || 'Ein Kollege'} hat für dieses Projekt den ${ART_NAME(d.art)} gemerkt – hier ist der ${ART_NAME(S.art)} offen. Umschalten mit „${d.art === 'brand' ? 'Zum Brandbericht' : 'Zum Asbestbericht'}“, sonst gilt beim nächsten Speichern wieder der ${ART_NAME(S.art)}.`);
+    meldung(`${d.geaendertVon || 'Ein Kollege'} hat für dieses Projekt den ${ART_NAME(d.art)} gemerkt – hier ist der ${ART_NAME(S.art)} offen. Umschalten unter „Mehr …“ › „Als ${ART_NAME(d.art)} öffnen“, sonst gilt beim nächsten Speichern wieder der ${ART_NAME(S.art)}.`);
     if (S.artWahl) S.artWahl = { ...S.artWahl, quelle: 'fremd' };
     titelSetzen(); render();
   }
@@ -653,7 +654,8 @@ function render() {
     const p = brand ? null : V.artAusProben(S.lk), zeigen = !!p && p.art === 'brand';
     $('artHinweis').hidden = !zeigen;
     if (zeigen) $('artHinweisText').textContent = `Die LabelKit-Proben sehen nach einem Brandschaden aus (${p.grund}). Dafür gibt es den Brandbericht – die Asbestproben stehen dort in einem eigenen Abschnitt unter 5. Befund.`; }
-  $('zeileVariante').hidden = brand; $('karteBrand').hidden = $('karteBrandTexte').hidden = !brand; if (brand) brandZeigen(m, f);
+  $('zeileVariante').hidden = brand; document.querySelectorAll('#app .nur-brand').forEach(el => { el.hidden = !brand; }); if (brand) brandZeigen(m, f);
+  $('kopfUnter').textContent = brand && m.brand ? m.brand.titel || '' : '';
   $('zeileEingang').hidden = !zug; $('fEingang').value = f.eingangsdatum || '';
   $('fAuftrag').value = f.auftragsdatum || ''; $('fAuftrag').closest('.feld').hidden = zug;
   $('qAuftrag').textContent = P.auftragsdatum ? (f.auftragsdatum === P.auftragsdatum ? 'aus der Projektzentrale' : `Projektzentrale: ${T.datumDE(P.auftragsdatum)}`) : 'in der Projektzentrale nicht eingetragen';
@@ -720,12 +722,16 @@ function render() {
     ...[...S.quellenDaten, ...S.quellen].map(q => `<li class="${q.ok ? 'ok' : ''}">${q.ok ? '✓ ' : ''}${esc(q.text)}</li>`),
     ...(S.cfgOrt === 'lokal' ? ['<li>Archivordner nicht verbunden: Einstellungen gelten nur in diesem Browser.</li>'] : []),
   ].join('');
+  hinweisBoxZeigen(m);
+  // Annahmen gehören zu einer Karte (Versicherer → Auftrag, Probenehmer → Vor Ort, Unterschrift → Anlagen & Unterschrift)
+  S.annahmenKarten = m.annahmen.map(a => ANNAHME_KARTE[a.id]).filter(Boolean);
   lueckenZeigen(lz);
+  kartenZeigen(m, f);
   const gesperrt = m.sperren.length > 0;
   vorschau(gesperrt ? T.alsEntwurf(m) : m);
   $('btnErstellen').disabled = gesperrt;
-  $('btnErstellen').title = gesperrt ? 'Gesperrt: ' + m.sperren.join(' · ') : '';
-  $('btnLaden').textContent = gesperrt ? 'Entwurf herunterladen' : 'Herunterladen';
+  $('btnErstellen').title = gesperrt ? 'Gesperrt: ' + m.sperren.join(' · ') : 'Speichert die Word-Datei in „Mitteilungen“ des Projektordners';
+  S.gesperrt = gesperrt; aktionenZeigen();
   if (S.statusFest && Date.now() < S.statusFest.bis) $('status').innerHTML = S.statusFest.html;   // eben gemeldet – nicht gleich überschreiben
   else (S.statusFest = null, $('status')).textContent = gesperrt ? `Speichern gesperrt (${m.sperren.length}) – siehe Hinweise. „Entwurf herunterladen“ geht.`
     : `Speichert als Mitteilungen/${m.dateiname}` + (lz.length ? ` · ${lz.length} Lücke(n) gelb markiert` : '');
@@ -764,8 +770,8 @@ function brandZeigen(m, f) {
     mb.schadendatum === 'unbekannt' ? 'Schadendatum: nicht bekannt' : mb.schadendatum === 'leer' ? 'Schadendatum: in der Projektzentrale nicht eingetragen' : '',
     mb.schadenereignis && `Schadenereignis: ${mb.schadenereignis}`, mb.brandgut && `Brandgut: ${mb.brandgut}`].filter(Boolean).join(' · ') + ' (Projektzentrale/LabelKit, nur zur Hilfe)';
   const art = T.BERICHTSARTEN.find(a => a.art === 'brand');
-  $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht. ';
-  $('brandVorschau').hidden = false;   // „Zum Asbestbericht“ bleibt – der Hinweistext nur, solange der Brandbericht nicht bereit ist
+  $('brandVorschauText').textContent = art && art.bereit ? '' : 'Vorschau – der Brandbericht ist noch im Aufbau. Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht.';
+  $('brandVorschau').hidden = !$('brandVorschauText').textContent;   // „Als Asbestbericht öffnen“ steht unter „Mehr …“
 }
 /** Wert setzen, aber nicht in ein Feld, in dem gerade getippt wird (sonst springt der Cursor bei jedem Neuzeichnen) */
 function wertOhneFokus(el, v) { if (el && document.activeElement !== el) el.value = v == null ? '' : v; }
@@ -809,7 +815,9 @@ function abbEinfuegen(ta, datei) {
    Zähler springt zum Feld der ersten Stelle – jeder weitere Klick zur nächsten. Welche Lücke welches Feld füllt, steht nur in
    bericht-luecken.js. Gefüllte Felder (Lücke kommt dann aus der Projektzentrale, z. B. Auftraggeber auf dem Deckblatt) und
    versteckte Felder sind kein Sprungziel; Lücken ohne Feld in BerichtKit stehen mit „wo“ in den Hinweisen (letztes Sprungziel). */
-const sichtbar = el => !!el && !el.disabled && el.getClientRects().length > 0;
+/** Ausgeblendet ist nur, was (oder dessen Vorfahr) hidden trägt – ein Feld in einer zugeklappten Karte zählt als sichtbar (der Sprung klappt sie auf) */
+const versteckt = el => !el || !!el.closest('[hidden]');
+const sichtbar = el => !!el && !el.disabled && !versteckt(el);
 const istLeer = el => !String(el.value == null ? '' : el.value).trim();
 /** Wiedererkennbar über ein Neuzeichnen hinweg (die Probenliste wird bei jeder Eingabe neu gebaut) */
 const zielKey = el => el.id || (el.dataset && el.dataset.art ? `${el.dataset.art}:${el.dataset.l}` : '');
@@ -823,6 +831,73 @@ function lueckenZeigen(z) {
   b.setAttribute('aria-label', n ? `${BerichtLuecken.zaehlerText(n)} – zur nächsten Stelle springen` : 'Keine offenen Stellen im Bericht');
   b.title = n ? z.map(x => `${x.luecke} – ${x.wo}`).join('\n') + '\n\nKlick: zur nächsten Stelle im Formular' : '';
   $('lueckenListe').textContent = z.map(x => `${x.luecke} – ${x.wo}`).join('; ');
+  // „n offen“ je Karte: Lücken, deren Feld (oder Ziel) in der Karte liegt, und offene Annahmen der Karte
+  const je = {};
+  for (const x of z) {
+    // wie lueckenZiele: ein leeres, sichtbares Feld, sonst das Ziel – eine Lücke mit gefülltem Feld (kommt z. B. aus der Projektzentrale) gehört zu keiner Karte
+    const el = (x.feld ? [...document.querySelectorAll(x.feld)].find(e => sichtbar(e) && istLeer(e)) : null) || (x.ziel ? document.querySelector(x.ziel) : null);
+    const k = el && !versteckt(el) && el.closest('details.karte'); if (k) je[k.id] = (je[k.id] || 0) + 1;
+  }
+  for (const id of S.annahmenKarten || []) je[id] = (je[id] || 0) + 1;
+  S.kartenOffen = je;
+  for (const [id, nr] of KARTEN) {
+    const n = je[id] || 0, o = $('offen' + nr);
+    o.hidden = !n; o.textContent = n ? `${n} offen` : '';
+    $(id).classList.toggle('fertig', !n);
+  }
+}
+/* ---------- Karten des Formulars ---------- */
+const KARTEN = [['karte1', 1], ['karte2', 2], ['karteBrandTexte', 3], ['karte4', 4]];
+const ANNAHME_KARTE = { versicherer: 'karte1', probenehmer: 'karte2', sv: 'karte4' };
+/** Text der gewählten Option (Personen-Auswahl) ohne „(Kürzel)“ */
+const auswahlText = sel => { const o = sel && sel.selectedOptions && sel.selectedOptions[0]; return o && o.value ? o.textContent.replace(/\s*\([^)]*\)\s*$/, '') : ''; };
+/** Zusammenfassung je Karte (eine Zeile, zugeklappt) und beim ersten Zeichnen nach dem Öffnen: die erste Karte mit offenen Stellen auf, die anderen zu */
+function kartenZeigen(m, f) {
+  const brand = !!m.brand, b = f.brand || {}, mb = m.brand || {};
+  const zus = {
+    1: [`Mitteilung ${f.mitteilung || 1}`, f.datum ? T.datumDE(f.datum) : '', brand && mb.titel, m.versicherungsfall ? 'mit Versicherung' : 'ohne Versicherung'],
+    2: [auswahlText($('fPn')) && `Probenahme: ${auswahlText($('fPn'))}`, brand && b.person2 && auswahlText($('fbPerson2')), $('probenInfo').textContent && `${$('probenTitel').textContent}: ${$('probenInfo').textContent}`],
+    3: brand ? [b.gb ? `GB ${b.gb}${b.bereich ? ' ' + b.bereich : ''}` : 'Gefahrenbereich fehlt', `${BRAND_TEXTE.filter(([id, k]) => !versteckt($(id)) && String(b[k] || '').trim()).length} von ${BRAND_TEXTE.filter(([id]) => !versteckt($(id))).length} Textfeldern ausgefüllt`] : [],
+    4: [`${(m.anlagenListe || []).length} Anlage${(m.anlagenListe || []).length === 1 ? '' : 'n'}`, auswahlText($('fSv')) && `${auswahlText($('fSv'))} als ${$('fR1').value === 'mt' ? 'MT' : 'SV'}`, f.mt && auswahlText($('fMt')), f.labor],
+  };
+  for (const [, nr] of KARTEN) { const t = (zus[nr] || []).filter(Boolean).join(' · '); $('zus' + nr).textContent = t; $('zus' + nr).title = t; }
+  if (!S.kartenGesetzt) {
+    S.kartenGesetzt = true;
+    const erste = KARTEN.map(([id]) => id).find(id => !$(id).hidden && (S.kartenOffen || {})[id] > 0);
+    for (const [id] of KARTEN) $(id).open = id === erste;
+  }
+}
+/** Hinweise als eine Zeile unter dem Zähler: Sperren, Annahmen, Hinweise gezählt; mit Sperre immer offen und rot */
+function hinweisBoxZeigen(m) {
+  const box = $('hinweisBox'), sp = m.sperren.length, an = m.annahmen.length, hi = m.hinweise.length;
+  box.classList.toggle('sperre', sp > 0);
+  if (sp && !S.sperreOffen) box.open = true;   // neu gesperrt → aufklappen (danach darf man zuklappen)
+  S.sperreOffen = sp > 0;
+  $('hinweisZus').textContent = [sp && `Gesperrt (${sp}) – nur Entwurf möglich`, an && `${an} Annahme${an === 1 ? '' : 'n'} prüfen`, hi && `${hi} Hinweis${hi === 1 ? '' : 'e'}`].filter(Boolean).join(' · ')
+    || 'Hinweise und Datenquellen';
+}
+/** Fußleiste: genau eine Hauptaktion – Speichern, gesperrt „Entwurf herunterladen“, nach dem Speichern „Ans Büro übergeben“ */
+function aktionenZeigen() {
+  const ueb = !$('btnUebergabe').hidden, gesperrt = !!S.gesperrt;
+  $('btnErstellen').hidden = gesperrt;
+  $('btnErstellen').classList.toggle('haupt', !ueb);
+  $('btnErstellen').textContent = ueb ? 'Erneut speichern' : `${ART_NAME(S.art)} als Word speichern →`;
+  $('btnLaden').hidden = !gesperrt; $('btnLaden').classList.toggle('haupt', gesperrt);
+  $('btnUebergabe').classList.toggle('haupt', ueb && !gesperrt);
+}
+/** „Mehr …“ unten links: alles, was nicht auf den ersten Blick muss (Handbuch, Rückmeldung, Alle Projekte hängt die Leiste an) */
+function mehrOeffnen() {
+  const offen = !!S.dir && !$('app').hidden, brand = S.art === 'brand';
+  const eintraege = [
+    { id: 'mehrArt', text: brand ? 'Als Asbestbericht öffnen' : 'Als Brandbericht öffnen', hidden: !offen, onclick: brand ? zumAsbestbericht : zumBrandbericht,
+      title: `Dieses Projekt als ${brand ? 'Asbestbericht' : 'Brandbericht'} öffnen – BerichtKit merkt sich die Wahl für das Projekt` },
+    { id: 'mehrLaden', text: 'Word nur herunterladen', hidden: !offen || !!S.gesperrt, onclick: herunterladen, title: 'Word-Datei herunterladen statt im Projektordner zu speichern' },
+    { trenner: true },
+    { id: 'mehrEinstellungen', text: 'Einstellungen (Personen, Rollen, Labor) …', onclick: einstellungenOeffnen, title: 'Gilt für das ganze Büro' },
+    { id: 'mehrOrdner', text: 'Anderen Projektordner wählen …', onclick: waehlen, title: 'Projektordner direkt wählen (sonst über die Projektzentrale oder das Projekt-Menü oben)' },
+    { id: 'mehrUeber', text: `Über BerichtKit · Version ${APP_VERSION}`, onclick: () => $('dlgUeber').showModal() },
+  ];
+  if (window.MosaikLeiste && MosaikLeiste.mehr) MosaikLeiste.mehr($('btnMehr'), eintraege);
 }
 /** Sprungziele in Berichtsreihenfolge, jedes einmal: das erste leere, sichtbare Feld der Lücke, sonst ihr Ziel (z. B. die
     Probenliste); Lücken ohne beides (Projektzentrale, in Word) → zuletzt die Hinweisliste, wo sie mit „wo“ stehen */
@@ -831,7 +906,7 @@ function lueckenZiele() {
   for (const x of S.luecken || []) {
     const feld = x.feld ? [...document.querySelectorAll(x.feld)].find(el => sichtbar(el) && istLeer(el)) : null;
     const el = feld || (x.ziel ? document.querySelector(x.ziel) : null);
-    if (el && el.getClientRects().length) { if (!ziele.includes(el)) ziele.push(el); } else ohne = true;
+    if (el && !versteckt(el)) { if (!ziele.includes(el)) ziele.push(el); } else ohne = true;
   }
   if (ohne) ziele.push($('hinweise'));
   return ziele;
@@ -842,6 +917,7 @@ function zurLuecke() {
   const ziele = lueckenZiele(); if (!ziele.length) return;
   const i = S.lueckeLetzt ? ziele.findIndex(el => zielKey(el) === S.lueckeLetzt) : -1;
   const el = ziele[i < 0 ? 0 : (i + 1) % ziele.length]; S.lueckeLetzt = zielKey(el);
+  for (let d = el.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) d.open = true;   // Karte bzw. Hinweise aufklappen
   el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   el.focus({ preventScroll: true });   // Probenliste und Hinweise haben tabindex="-1" – auch dort landet der Tastaturfokus
   el.classList.remove('luecke-hier'); void el.offsetWidth; el.classList.add('luecke-hier');
@@ -1089,6 +1165,7 @@ function uebergabeZeigen(datei) {
   const a = $('btnUebergabe'); if (!a) return;
   a.hidden = !datei || !S.dir;
   a.href = datei && S.dir ? `../Projektzentrale/#projekt=${encodeURIComponent(S.dir.name)}&uebergabe=${encodeURIComponent('Mitteilungen/' + datei)}` : '#';
+  aktionenZeigen();
 }
 /** „Ans Büro übergeben →“: im Fenster „projektzentrale“ (wie ⌂ in der Leiste) – die Leiste lädt dort neu, auch wenn nur #… anders ist */
 function uebergabeKlick(ev) {
@@ -1151,8 +1228,8 @@ async function einstellungenSpeichern() {
 /* ---------- Eingaben ---------- */
 function setze(k, v) { S.form[k] = v; formMerken(k); render(); }
 function verbinden() {
-  $('btnWaehlen').onclick = waehlen; $('btnOrdner').onclick = waehlen; $('btnAsbest').onclick = zumAsbestbericht; $('btnArtVorschau').onclick = zurVorschau; $('btnZumAsbest').onclick = zumAsbestbericht; $('btnZumBrand').onclick = zumBrandbericht; $('btnUebergabe').onclick = uebergabeKlick;
-  $('btnEinstellungen').onclick = einstellungenOeffnen;
+  $('btnWaehlen').onclick = waehlen; $('btnAsbest').onclick = zumAsbestbericht; $('btnArtVorschau').onclick = zurVorschau; $('btnZumBrand').onclick = zumBrandbericht; $('btnUebergabe').onclick = uebergabeKlick;
+  $('btnMehr').onclick = mehrOeffnen; $('ueberZu').onclick = () => $('dlgUeber').close();
   $('eAbbrechen').onclick = () => $('dlgEinstellungen').close(); $('eSpeichern').onclick = einstellungenSpeichern;
   $('btnErstellen').onclick = speichern; $('btnLaden').onclick = herunterladen;
   $('lueckenZaehler').onclick = zurLuecke;
@@ -1240,7 +1317,7 @@ function verbinden() {
   window.addEventListener('hashchange', () => {
     const n = PROJEKT_URL.lesen(), a = artAusAdresse();
     // Von „kommt bald“ zurück zu einer bereiten Berichtsart (Link aus der Projektzentrale, Zurück im Browser): Bericht wieder zeigen
-    if (S.bald && a.zeigen && S.dir && (!n || n === S.dir.name) && a.art === S.art) { S.bald = ''; $('start').hidden = true; $('app').hidden = false; $('leiste').hidden = false; titelSetzen(); return; }
+    if (S.bald && a.zeigen && S.dir && (!n || n === S.dir.name) && a.art === S.art) { S.bald = ''; $('start').hidden = true; $('app').hidden = false; $('leisteAktionen').hidden = false; titelSetzen(); return; }
     if ((n && (!S.dir || n !== S.dir.name)) || !a.zeigen || S.bald || (S.dir && a.art !== S.art)) start();
     else if (S.dir && !ART_URL.lesen()) ART_URL.setzen(S.art, true);   // Berichtsart steht immer in der Adresse
   });

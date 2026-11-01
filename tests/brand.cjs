@@ -176,7 +176,7 @@ fall('Freitext-Schreibweise (bericht-gemeinsam.js freitext): Absätze, „- “ 
   const lf = {}; G.freitext('A [Zustand prüfen]\n[Abb: zz.jpg]', { fotoKit: {}, feld: '5.1', feldId: '#fbSchadenbild', lueckenFelder: lf });
   assert.deepEqual(lf, { '[Zustand prüfen]': { feld: '#fbSchadenbild', wo: '5.1' } }, '[Bildunterschrift ergänzen] hat ihren eigenen Eintrag');
   assert.deepEqual(L.zuordnen(['[Zustand prüfen]'], 'brand', lf)[0], { luecke: '[Zustand prüfen]', feld: '#fbSchadenbild', ziel: '#fbSchadenbild',
-    wo: 'Brandbericht › 5.1 (selbst eingetragene Lücke – im Feld oder in Word ausfüllen)', bekannt: true });
+    wo: 'Befund & Texte › 5.1 (selbst eingetragene Lücke – im Feld oder in Word ausfüllen)', bekannt: true });
   assert.deepEqual(hinweise, [
     'Foto „b.jpg“ (5.1): keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: b.jpg | Bildunterschrift]“ schreiben.',
     'Foto „c.jpg“ (5.1) ist in FotoKit aussortiert – trotzdem im Bericht.',
@@ -525,13 +525,13 @@ fall('5.3 PAK: fester Text, Referenz aus der Nutzung oder gewählt (mit Begründ
   assert.match(g[4], /nach ordnungsgemäßer Durchführung von Sanierungsarbeiten keine Gesundheitsgefährdung/, 'Untersuchungsbericht: vorläufig wie 7.');
   assert.ok(!modell(F.BR5_Gewerbe_Bohrmehl_Tabellen).hinweise.some(h => /weicht von der Nutzung/.test(h)), 'mit Begründung kein Hinweis');
   const ohneGrund = modell(mitForm(F.BR5_Gewerbe_Bohrmehl_Tabellen, { referenzGrund: '' }));
-  assert.ok(ohneGrund.hinweise.includes('Hintergrundreferenz 10 µg/m² weicht von der Nutzung „Gewerbe/Industrie“ (100 µg/m²) ab – Begründung unter „Brandbericht“ ergänzen?'));
+  assert.ok(ohneGrund.hinweise.includes('Hintergrundreferenz 10 µg/m² weicht von der Nutzung „Gewerbe/Industrie“ (100 µg/m²) ab – Begründung unter „Befund & Texte“ ergänzen?'));
   // Vorbelegung aus der Nutzung (Gewerbe → 100); keine Nutzung → Lücke im Referenzsatz und statt des Zähl-Satzes + Hinweis
   assert.match(utext(modell(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF), 'Organische Schadstoffe'), /Die PAK-Wischprobe \(Probe 2, Halle Regal 3\) ergab einen Summenwert von 410 µg\/m² und erreicht oder überschreitet damit die Hintergrundreferenz von ca\. 100 µg\/m²\./);
   const l = modell(F.BR3_Luecken), lt = utext(l, 'Organische Schadstoffe').split('\n');
   assert.match(lt[2], /vorliegen\. \[Hintergrundreferenz 10 oder 100 µg\/m²\]$/);
   assert.equal(lt[3], 'Die ermittelten Summenwerte (16 EPA-PAK) liegen zwischen 12 und 140 µg/m². [Hintergrundreferenz 10 oder 100 µg/m²] Der höchste Summenwert wurde mit 140 µg/m² in Probe 2 (EG Küche Decke) festgestellt. Die Einzelergebnisse sind den Prüfberichten (Anlagen 2 und 3) zu entnehmen.');
-  assert.ok(l.hinweise.includes('Hintergrundreferenz PAK fehlt (Nutzung in der Projektzentrale nicht eingetragen) – unter „Brandbericht“ 10 oder 100 µg/m² wählen.'));
+  assert.ok(l.hinweise.includes('Hintergrundreferenz PAK fehlt (Nutzung in der Projektzentrale nicht eingetragen) – unter „Befund & Texte“ 10 oder 100 µg/m² wählen.'));
   assert.equal(L.offene(l).filter(x => x === '[Hintergrundreferenz 10 oder 100 µg/m²]').length, 1, 'im Zähler einmal');
   // „1.250“ (Tausenderpunkt ohne Gebietsschema) bleibt wie ResultKit unbewertet: Tabelle „–“, nicht gezählt, Hinweis
   const amb = modell({ ...F.BR2_nur_PAK_ohne_Versicherung_GB0, erg: D.erg([{ nr: 'P-1', proben: [[1, D.W.pak('1.250'), 'PAK'], [2, D.W.pak('8'), 'PAK']] }]) });

@@ -31,8 +31,9 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
 
 ## In der Suite
 
-- **Projektzentrale:** Knopf „Asbestbericht“ in Stufe 4 (Gutachten) öffnet BerichtKit mit dem Projekt (`#projekt=<Ordnername>`).
-- **Spektron-Leiste** oben (`mosaik-leiste.js`, Block byte-gleich mit LabelKit, FotoKit, ResultKit, PlanKit, BelegKit): BerichtKit ist der Schritt nach PlanKit; Haken, sobald ein Bericht `<n>._Mitteilung_<Nr>.docx` in „Mitteilungen“ liegt.
+- **Projektzentrale:** Kachel „Bericht“ (bzw. „Jetzt dran“, unter „Mehr zum Projekt …“ auch „Asbestbericht/Brandbericht öffnen“) öffnet BerichtKit mit dem Projekt (`#projekt=<Ordnername>&art=…`).
+- **Kopfband** oben (`mosaik-leiste.js`, Block `MOSAIK-LEISTE v3`, byte-gleich mit LabelKit; FotoKit, ResultKit, PlanKit, BelegKit tragen noch v2): BerichtKit startet die Leiste mit `{kopfband: true}` – Projekt groß, sechs Kacheln (Proben, Fotos, Labor, Plan, Bericht mit Berichtsart, Abrechnung), „Weiter: … →“ mit Grund. Haken beim Bericht wie Leiste v2 (gespeicherter Bericht der gemerkten Art, ohne `_BerichtKit.json` nach dem Dateinamen).
+- **Oberfläche (ab 1.16.0):** vier Karten in Berichtsreihenfolge (`details.karte`: Bericht & Auftrag · Vor Ort & Proben · Befund & Texte nur Brand · Anlagen & Unterschrift), zugeklappt mit Zusammenfassung und „n offen“ (Lücken aus `bericht-luecken.js` nach der Karte ihres Feldes + offene Annahmen); beim Öffnen ist die erste Karte mit offenen Stellen auf. Hinweise als aufklappbare Zeile (Sperre → offen, rot). Fußleiste: links „Mehr …“ (`MosaikLeiste.mehr`: Als Asbest-/Brandbericht öffnen, Word nur herunterladen, Einstellungen, anderen Projektordner wählen, Über BerichtKit; darunter Handbuch, Rückmeldung, Alle Projekte), rechts genau eine Hauptaktion (Speichern · gesperrt „Entwurf herunterladen →“ · gespeichert „Ans Büro übergeben →“).
 - **Gemeinsame Angaben:** Was im Formular selbst geändert wird, liegt in `_BerichtKit.json` im Projekt und gilt für alle Kollegen. Hat jemand inzwischen gespeichert, lädt BerichtKit dessen Stand und meldet es – nichts wird stumm überschrieben. Dazu die Liste der gespeicherten Berichte (Datei, Zeit, Kürzel aus „Ich bin …“, Mitteilung-Nr., Berichtsdatum).
 - **Vorgaben werden nicht eingefroren** (`bericht-vorgaben.js`): Heutiges Datum, nächste freie Mitteilung, Auftragsdatum und Auftraggeber
   (Projektzentrale), Probenehmer (LabelKit), Labor (Einstellungen) werden bei jedem Öffnen neu berechnet; in der Datei stehen nur selbst
@@ -45,7 +46,7 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   in ResultKit) und vor dem Speichern/Herunterladen verglichen (Name, Größe, Änderungszeit) und bei Änderung neu gelesen – mit bleibendem Hinweis
   „Daten neu gelesen: …“. Vor dem Speichern hält BerichtKit dann an: erst die neue Vorschau ansehen, dann noch einmal klicken.
 - **Offline:** Service Worker „Netz zuerst“ wie in der Projektzentrale (`sw.js`).
-- **Handbuch:** Knopf „📘 Handbuch“ öffnet AidKit, Kapitel `#app-berichtkit` („BerichtKit Schritt für Schritt“).
+- **Handbuch:** „Mehr …“ › „📘 Handbuch ↗“ öffnet AidKit, Kapitel `#app-berichtkit` („BerichtKit Schritt für Schritt“).
 
 ## Regeln
 
@@ -170,4 +171,4 @@ node tests/render-beispiele.cjs <Ordner>   # Beispielberichte als .docx zum Anse
 
 ## Versionen
 
-Version und Änderungen stehen in `app.js` (`APP_VERSION`, `CHANGELOG`) und erscheinen oben rechts in der App.
+Version und Änderungen stehen in `app.js` (`APP_VERSION`, `CHANGELOG`) und erscheinen in der App unter „Mehr …“ › „Über BerichtKit“.

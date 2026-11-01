@@ -237,7 +237,7 @@ const VERSICHERER = /versicher|assekura|allianz|\baxa\b|\bergo\b|\bhuk\b|provinz
 const istVersicherer = name => VERSICHERER.test(s(name));
 /** Deckblatt „mit Versicherung“ (VN · Risiko · Versicherer) oder „ohne“ (Auftraggeber · Schadenort), wenn im Bericht nichts gewählt ist:
     Versicherer in der Projektzentrale → mit; kein VN → ohne; VN da: mit, wenn der Auftraggeber eine Versicherung ist, sonst ohne
-    (Hausverwaltung, Sanierer, Privatauftrag …). Im Bericht unter „Auftrag“ umstellbar (form.deckblatt). */
+    (Hausverwaltung, Sanierer, Privatauftrag …). Im Bericht unter „Bericht & Auftrag“ umstellbar (form.deckblatt). */
 function versicherungsfallAuto(vn, ag, versicherer) {
   if (versicherer) return { ja: true, grund: 'Versicherer in der Projektzentrale eingetragen' };
   if (!vn) return { ja: false, grund: 'kein VN in der Projektzentrale' };
@@ -281,7 +281,7 @@ function deckblattFelder(P, f, hinweise) {
   // Versicherer: Eingabe, dann Feld „Versicherer“ der Projektzentrale, sonst angenommen: Auftraggeber (der Arbeitszettel-Import
   // schreibt im Versicherungsfall die Versicherung dorthin) – aber nicht, wenn der Auftraggeber der VN selbst ist (→ Lücke).
   const vfall = f.deckblatt === 'versicherung' ? true : f.deckblatt === 'direkt' ? false : P.versicherungsfall;
-  if (!f.deckblatt && !vfall && P.vn) hinweise.push(`Deckblatt ohne Versicherung (${P.versicherungsfallGrund}) – ist doch eine Versicherung beteiligt, unter „Auftrag“ umstellen.`);
+  if (!f.deckblatt && !vfall && P.vn) hinweise.push(`Deckblatt ohne Versicherung (${P.versicherungsfallGrund}) – ist doch eine Versicherung beteiligt, unter „Bericht & Auftrag“ umstellen.`);
   const agIstVn = vfall && gleicherName(nameVon(P.ag), nameVon(P.vn));
   const versicherer = s(f.versicherer) || nameVon(P.versicherer) || (agIstVn ? '' : nameVon(P.ag));
   // Annahme „Auftraggeber = Versicherer“: eine Meldung (versichererQuelle), mit „✓ stimmt“ bestätigt (versOk = bestätigter Name –
