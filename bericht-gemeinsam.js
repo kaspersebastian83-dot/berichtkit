@@ -397,12 +397,75 @@ function luecken(m) {
   lauf([m.deckblatt, m.kopf, m.abschnitte, m.unterschriften, m.anlagen]);
   return [...out];
 }
-/** Runs → reiner Text (Lücken in eckigen Klammern) */
-const text = runs => (Array.isArray(runs) ? runs : [runs]).map(r => (r && typeof r === 'object' ? r.gap : String(r == null ? '' : r))).join('');
+/** Runs → reiner Text (Lücken in eckigen Klammern, Fettes ohne Auszeichnung) */
+const text = runs => (Array.isArray(runs) ? runs : [runs]).map(r => (r && typeof r === 'object' ? (r.gap != null ? r.gap : String(r.b == null ? '' : r.b)) : String(r == null ? '' : r))).join('');
+
+/* ---------- Freitext (Formularfelder, ab 1.14.0) ----------
+   Schreibweise im Feld, je Zeile:
+     Text            → Absatz (Zeilenumbruch = neuer Absatz, Leerzeilen zählen nicht)
+     - Text          → Aufzählungspunkt (auch „– “, „• “, „* “)
+     ## Titel        → kursiver Zwischentitel ohne Nummer (z. B. ein Raum)
+     [Abb: Datei]    → Foto mit „Abb. n: …“ (Bildunterschrift = Beschreibung aus FotoKit); [Abb: Datei | Text] = eigene Bildunterschrift
+   Im Text: **fett**; [Großbuchstabe …] wird eine Lücke (gelb + Kommentar) – genau das Muster, das die Projektzentrale findet.
+   o.label (8. Zusammenfassung): jede Zeile ein Aufzählungspunkt, „Bereich: Maßnahme“ → fettes „Bereich:“.
+   o.abb = { n } zählt die Abbildungen über den ganzen Bericht; o.fotoKit = FotoKit-Bilder ({ Datei: { beschreibung, aussortiert } })
+   nur für Bildunterschrift und Hinweise. Leeres Feld → [] (der Aufrufer setzt seine Lücke mit Anweisung).
+   Blöcke: p, li (Aufzählung), h2 mit stufe 2 (Zwischentitel), fig { label: 'foto:'+Datei, datei, caption (Text oder Runs) }. */
+const ABB_ZEILE = /^\[\s*Abb\.?\s*:\s*([^\]|]+?)\s*(?:\|\s*([^\]]*?)\s*)?\]$/i;
+const LUECKE_IM_TEXT = /(\[[A-ZÄÖÜ][^\]\n]*\])/;
+/** Text mit **fett** und [Lücke] → Runs; eine Lücke im Fetten wird eine fette Lücke ({ gap, b: true }) – sonst stünde sie
+    in Word ohne Gelb und Kommentar, die Projektzentrale fände sie trotzdem */
+function textRuns(t) {
+  const out = [];
+  String(t).split(/\*\*(.+?)\*\*/).forEach((teil, i) => {
+    if (!teil) return;
+    teil.split(LUECKE_IM_TEXT).forEach((x, j) => { if (x) out.push(j % 2 ? (i % 2 ? { gap: x, b: true } : { gap: x }) : (i % 2 ? { b: x } : x)); });
+  });
+  return out;
+}
+/** „Bereich: Maßnahme“ → [{ b: 'Bereich:' }, ' Maßnahme'] – nur bei kurzem Bereich vor dem ersten Doppelpunkt, ohne Satzende darin */
+function labelRuns(t) {
+  if (/^\*\*/.test(t)) return textRuns(t);
+  const m = /^([^:]{1,60}?):\s+(\S.*)$/.exec(t);
+  // kein Bereich, wenn vor dem Doppelpunkt ein ganzer Satz steht (Satzende + Großbuchstabe, mehr als vier Wörter) –
+  // Abkürzungen wie „Whg. 2:“, „Küche (ca. 12 m²):“ oder „z. B. Flur:“ bleiben ein Bereich
+  if (!m || (/[.!?]\s+[A-ZÄÖÜ]/.test(m[1]) && m[1].trim().split(/\s+/).length > 4) || LUECKE_IM_TEXT.test(m[1])) return textRuns(t);
+  return [{ b: m[1].trim() + ':' }, ' ', ...textRuns(m[2])];
+}
+function freitext(roh, o = {}) {
+  const abb = o.abb || { n: 0 }, hinweise = o.hinweise || [], fk = o.fotoKit && typeof o.fotoKit === 'object' ? o.fotoKit : null;
+  const wo = o.feld ? ` (${o.feld})` : '', out = [];
+  for (const zeile of String(roh == null ? '' : roh).split(/\r?\n/)) {
+    const z = zeile.trim(); if (!z) continue;
+    let m = /^#{2,}\s*(.*)$/.exec(z);
+    if (m) { if (s(m[1])) out.push({ t: 'h2', stufe: 2, runs: textRuns(s(m[1])) }); continue; }
+    if ((m = ABB_ZEILE.exec(z))) {
+      const datei = m[1], eigen = s(m[2]), info = fk ? fk[datei] : null, beschr = eigen || s(info && info.beschreibung), n = ++abb.n;
+      if (fk && !info) hinweise.push(`Foto „${datei}“${wo} ist in FotoKit nicht bekannt – Dateinamen prüfen.`);
+      else if (info && info.aussortiert) hinweise.push(`Foto „${datei}“${wo} ist in FotoKit aussortiert – trotzdem im Bericht.`);
+      if (!beschr) hinweise.push(`Foto „${datei}“${wo}: keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: ${datei} | Bildunterschrift]“ schreiben.`);
+      // Bildunterschrift wie Text gelesen: „[Brandraum]“ in einer FotoKit-Beschreibung ist sonst eine Lücke ohne Gelb und Kommentar
+      const cr = beschr ? textRuns(beschr) : [];
+      out.push({ t: 'fig', label: 'foto:' + datei, datei,
+        caption: !beschr ? [`Abb. ${n}: `, { gap: '[Bildunterschrift ergänzen]' }] : cr.every(r => typeof r === 'string') ? `Abb. ${n}: ${beschr}` : [`Abb. ${n}: `, ...cr] });
+      continue;
+    }
+    if (/^[-–•*]$/.test(z)) continue;   // leerer Aufzählungspunkt
+    const li = /^[-–•*]\s+(.*)$/.exec(z);
+    if (li || o.label) { const t = li ? s(li[1]) : z; if (t) out.push({ t: 'li', runs: o.label ? labelRuns(t) : textRuns(t) }); continue; }
+    out.push({ t: 'p', runs: textRuns(z) });
+  }
+  // Lücken, die jemand selbst ins Feld geschrieben hat: o.lueckenFelder[Lücke] = Formularfeld (Zähler springt dorthin, nicht „in Word“)
+  if (o.lueckenFelder && o.feldId) {
+    const lauf = x => { if (Array.isArray(x)) x.forEach(lauf); else if (x && typeof x === 'object') { if (x.gap != null) { if (x.gap !== '[Bildunterschrift ergänzen]' && !(x.gap in o.lueckenFelder)) o.lueckenFelder[x.gap] = { feld: o.feldId, wo: o.feld }; } else Object.values(x).forEach(lauf); } };
+    out.forEach(b => lauf(b.runs || b.caption));
+  }
+  return out;
+}
 
 const API = { VERSION: 1, ABGLEICH_SPERRT,
   // Helfer
-  s, L, datumDE, liste, zahlwort, zeilen, nameVon, PNR, gleicherName, text, luecken, alsEntwurf,
+  s, L, datumDE, liste, zahlwort, zeilen, nameVon, PNR, gleicherName, text, luecken, alsEntwurf, freitext, textRuns,
   // Proben und Befund
   tidy, beschreibungKey, beschreibungWeichtAb, asbestBefund, kmfWerte, IST_KMF, matrixMaterial, RAUM_KUERZEL, raumAusschreiben,
   istStorniert, labelkitAsbest, probenSammeln,

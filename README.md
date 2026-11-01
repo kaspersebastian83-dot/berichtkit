@@ -2,10 +2,9 @@
 
 Erstellt den **Asbest-Untersuchungsbericht** („1. Mitteilung“) als Word-Datei im Format des Büros – aus den Daten, die
 die anderen Spektron-Apps schon im Projektordner abgelegt haben. Läuft im Browser (Edge/Chrome), ohne Server, ohne Installation.
-Der **Brandbericht** („Sanierungsvorschlag“ / „Untersuchungsbericht“) ist im Aufbau: ab 1.12.0 als Vorschau mit
-`#projekt=<Ordner>&art=brand&vorschau=1` (Deckblatt, Kopf, 1.–4., ab 1.13.0 5. Befund mit 5.2–5.7, 7., Unterschriften, Anlagen;
-5.1, 6., 8. als Lücke) –
-Speichern in „Mitteilungen“ ist gesperrt, „Entwurf herunterladen“ geht.
+Ab 1.14.0 auch den **Brandbericht** („Sanierungsvorschlag“ / „Untersuchungsbericht“) mit `#projekt=<Ordner>&art=brand`: Deckblatt,
+Kopf, 1.–4., 5. Befund (5.1 Freitext, 5.2–5.7 aus den Laborwerten), 6. Sanierungsmaßnahmen bzw. Schlussfolgerungen, 7., 8. Zusammenfassung,
+Unterschriften, Anlagen – Freitextfelder mit Fotos aus FotoKit (bis 1.13.0 nur als Vorschau mit `&vorschau=1`, Speichern gesperrt).
 
 Adresse: `https://kaspersebastian83-dot.github.io/berichtkit/` · aus der Projektzentrale: `…/berichtkit/#projekt=<Ordnername>`
 
@@ -112,9 +111,9 @@ Aufbau (ab 1.10.0, Vorbereitung für weitere Berichtsarten):
 | Datei | Inhalt |
 |---|---|
 | `bericht-text.js` | Fassade für `app.js` und Tests (`BerichtText`): wählt die Berichtsart nach `form.art` (leer = `asbest`), `BERICHTSARTEN` mit `bereit` |
-| `bericht-gemeinsam.js` | Bausteine jeder Berichtsart: Helfer, Lücken, Personen/Rollen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund und Abgleich, Projektsicht, Deckblatt mit/ohne Versicherung, Kopfzeilen, Auftraggeber mit Artikel, Unterschriften, Anlagen |
+| `bericht-gemeinsam.js` | Bausteine jeder Berichtsart: Helfer, Lücken, Personen/Rollen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund und Abgleich, Projektsicht, Deckblatt mit/ohne Versicherung, Kopfzeilen, Auftraggeber mit Artikel, Unterschriften, Anlagen; ab 1.14.0 `freitext()` (Schreibweise der Freitextfelder, siehe unten) |
 | `bericht-asbest.js` | Berichtsart `asbest` – die Texte unten |
-| `bericht-brand.js` | Berichtsart `brand` (Doc „Textbausteine Brand-Sanierungsvorschlag“ + Entscheidungen aus fünf echten Mitteilungen) – ab 1.12.0 das Gerüst: Deckblatt („Schaden vom:“ / „Brandschaden“), Kopf, 1. Veranlassung, 2. Aufgabenstellung, 3. Ortsbesichtigung, 4. Probenahme (ab 1.13.0 mit Chlorid-Material/-Bohrmehl und weiteren Proben aus LabelKit „Sonstige“), 7. Arbeitsschutzmaßnahmen, Unterschriften, Anlagen; ab 1.13.0 5. Befund: 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest, 5.6 Brandgeruch, 5.7 weitere Untersuchungen (nur, was es gibt; Spanne, Zähl-Absatz, höchster Wert, < BG, Referenzprobe/Freimessung, Ergebnistabellen hinter dem Haken, Asbest-Tabelle immer); 5.1, 6., 8. als Überschrift mit Lücke. Eigene Angaben der Brand-Seite stehen in `form.brand` (in `_BerichtKit.json` unter `brand`, feldweise gemerkt) |
+| `bericht-brand.js` | Berichtsart `brand` (Doc „Textbausteine Brand-Sanierungsvorschlag“ + Entscheidungen aus fünf echten Mitteilungen) – ab 1.12.0 das Gerüst: Deckblatt („Schaden vom:“ / „Brandschaden“), Kopf, 1. Veranlassung, 2. Aufgabenstellung, 3. Ortsbesichtigung, 4. Probenahme (ab 1.13.0 mit Chlorid-Material/-Bohrmehl und weiteren Proben aus LabelKit „Sonstige“), 7. Arbeitsschutzmaßnahmen, Unterschriften, Anlagen; ab 1.13.0 5. Befund: 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest, 5.6 Brandgeruch, 5.7 weitere Untersuchungen (nur, was es gibt; Spanne, Zähl-Absatz, höchster Wert, < BG, Referenzprobe/Freimessung, Ergebnistabellen hinter dem Haken, Asbest-Tabelle immer); ab 1.14.0 Freitext: 5.1 Brandlast und Schadenbild, 6. Sanierungsmaßnahmen (Einleitungssatz, 6.1–6.3 nach den Umfang-Haken) bzw. Schlussfolgerungen, 7. Bereich/zweiter Bereich mit eigenem GB/Zusatz, 8. Zusammenfassung („Bereich: Maßnahme“), Asbest-/KMF-Fotos in 4. wie im Asbestbericht. Eigene Angaben der Brand-Seite stehen in `form.brand` (in `_BerichtKit.json` unter `brand`, feldweise gemerkt) |
 | `bericht-bewertung.js` | ab 1.13.0: Einordnung der Laborwerte für 5.2/5.3 – Zahlen lesen, BG/n. n., KORROSION-CHLORID v1 (5–10 µg/cm², Einheit umgerechnet) und VdS-Faktor Σ16 EPA-PAK **aus ResultKit `bewertung.ts`/`uebersicht.ts`**, Rolle Referenzprobe/Freimessung aus dem Datenarchiv der Projektzentrale, Anhang B (VDI 3866 Blatt 5) aus `nwg` – dort ändern, hier nachziehen (`tests/brand.cjs` vergleicht die Tabellen, wenn `../resultkit` daneben liegt, und `rolleAuto` mit `../projektzentrale` – in CI Pflicht) |
 | `bericht-luecken.js` | je Berichtsart: welche Lücke welches Formularfeld füllt (Zähler, Sprung, gelbe Umrandung) bzw. wo sie sonst zu füllen ist |
 
@@ -128,8 +127,16 @@ Veranlassung (Probenahme durch uns / zugestellte Probe mit Gewährleistungssatz)
 (immer, auch bei einer Probe), Schlussfolgerungen (TRGS 519; KMF nach TRGS 905 Fassung 2026 und TRGS 521), Unterschriften
 (Sachverständige(r) allein oder mit Messtechniker; zugestellt: nur Sachverständige(r)), Anlagenverzeichnis je Prüfbericht.
 Die Formatierung (A4, Arial 12, 1,5-zeilig, Deckblatt mit Logo, Kopfzeilen, „Seite X von Y“) baut `bericht-docx.js` – für jede
-Berichtsart gleich; alle Texte (auch der Titel) kommen aus dem Modell. Blöcke: Absatz `p`, Unterüberschrift `h2` (kursiv, z. B. „5.1 …“),
-Foto `fig`, Tabelle `tab` mit `spalten` (Breiten in twips, zusammen 9070; ohne Angabe gleich breit) und `ohneUmbruch` (z. B. Labor-Nr.).
+Berichtsart gleich; alle Texte (auch der Titel) kommen aus dem Modell. Blöcke: Absatz `p`, Unterüberschrift `h2` (kursiv, z. B. „5.1 …“;
+mit `stufe: 2` Zwischentitel ohne Nummer), Aufzählungspunkt `li` (Word-Liste), Foto `fig` (Bildunterschrift Text oder Runs), Tabelle `tab`
+mit `spalten` (Breiten in twips, zusammen 9070; ohne Angabe gleich breit) und `ohneUmbruch` (z. B. Labor-Nr.). Runs: Text, `{ gap }`, `{ b }` (fett).
+
+**Freitext-Schreibweise** (ab 1.14.0, alle Freitextfelder des Brandberichts): neue Zeile = neuer Absatz · `- Text` Aufzählung ·
+`## Titel` kursiver Zwischentitel ohne Nummer · `[Abb: Datei]` allein in einer Zeile = Foto mit „Abb. n: …“ (Bildunterschrift = Beschreibung
+aus FotoKit; eigene mit `[Abb: Datei | Text]`) · `**fett**` · `[Großbuchstabe …]` bleibt eine gelbe Lücke mit Kommentar. In
+„8. Zusammenfassung“ ist jede Zeile ein Aufzählungspunkt, „Bereich: Maßnahme“ setzt den Bereich fett. Abbildungen laufen durch den ganzen
+Bericht (erst die Asbest-/KMF-Fotos in 4., dann 5.1, 6., 7., 8.). Leeres Feld → Lücke mit Anweisung (5.1: auch, wenn nur die Vorbelegung
+„Der Brand ereignete sich “ dasteht); „Zusatz“ in 7. ist optional.
 Jede Lücke (`{ gap }`) wird gelb und bekommt ihren Kommentar in `bericht-docx.js` (außer in der Kopfzeile der Folgeseiten) – das
 Modell kennt keine Kommentare.
 

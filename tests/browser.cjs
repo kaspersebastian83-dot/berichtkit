@@ -385,47 +385,115 @@ const daten = {
     for (let i = 0; i < 40 && !(neuGeschrieben && neuGeschrieben.nurEigene); i++) { await page.waitForTimeout(150); neuGeschrieben = JSON.parse(await projektDatei(bkPfad)); }
     // Vorgaben und Leeres fallen weg; was von der heutigen Vorgabe abweicht (Probenehmer, zweite Unterschrift), bleibt als eigene Angabe
     assert.deepEqual(neuGeschrieben.form, { einbau: 'vor1996', probenehmer: 'Mes', mt: 'Mes' }, 'nur noch eigene Angaben in der Datei');
-    // Berichtsart aus der Projektzentrale (#…&art=): den Brandbericht gibt es noch nicht → „kommt bald“, kein Bericht der falschen Art
+    // Berichtsart aus der Projektzentrale (#…&art=): eine Berichtsart, die es nicht gibt → Hinweis mit Knopf zum Asbestbericht, kein Bericht der falschen Art
     const startZeigt = async (titel, text) => {
       await page.waitForSelector('#start:not([hidden])');
       assert.equal(await page.textContent('#startTitel'), titel); assert.match(await page.textContent('#startText'), text);
       assert.ok(await page.isHidden('#app')); assert.ok(await page.isHidden('#btnWaehlen')); assert.ok(await page.isVisible('#btnAsbest'));
     };
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand');   // nur die Adresse ändert sich, Projekt offen
-    await startZeigt('Brandbericht', /Der Brandbericht kommt bald\. Bisher erstellt BerichtKit den Asbestbericht\./);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak');   // nur die Adresse ändert sich, Projekt offen
+    await startZeigt('Bericht', /Die Berichtsart „pak“ kennt BerichtKit nicht/);
+    assert.ok(await page.isHidden('#btnArtVorschau'), 'ohne Modul keine Vorschau');
     await page.click('#btnAsbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
     assert.doesNotMatch(page.url(), /art=/); assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom/);
-    // Projekt offen: wieder art=brand, dann zurück (Zurück-Knopf) und per Link art=asbest → der Bericht ist wieder da
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await startZeigt('Brandbericht', /kommt bald/);
+    // Projekt offen: wieder art=pak, dann zurück (Zurück-Knopf) und per Link art=asbest → der Bericht ist wieder da
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await startZeigt('Bericht', /kennt BerichtKit nicht/);
     await page.goBack(); await page.waitForSelector('#app:not([hidden]) .blatt');
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await startZeigt('Brandbericht', /kommt bald/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await startZeigt('Bericht', /kennt BerichtKit nicht/);
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=asbest'); await page.waitForSelector('#app:not([hidden]) .blatt');
-    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await page.reload();   // frisch geöffnet
-    await startZeigt('Brandbericht', /kommt bald/);
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=pak'); await page.reload();   // frisch geöffnet
+    await startZeigt('Bericht', /kennt BerichtKit nicht/);
     // Archiv ist auch hier bekannt – „Projekt wählen“ im Kopf öffnet dann mit Mitarbeitern, Unterschriften, Einstellungen aus dem Archiv
     assert.ok(await page.evaluate(() => !!S.archiv), 'Archiv geladen');
-    // Brandbericht im Aufbau: „Vorschau ansehen“ öffnet das Formular mit der Brand-Seite – Speichern gesperrt, nur Entwurf
-    assert.ok(await page.isVisible('#btnArtVorschau'));
-    await page.click('#btnArtVorschau'); await page.waitForSelector('#app:not([hidden]) .blatt');
-    assert.match(page.url(), /art=brand/); assert.match(page.url(), /vorschau=1/);
+    // Brandbericht ab 1.14.0 bereit: #…&art=brand öffnet direkt das Formular mit der Brand-Seite – ohne „kommt bald“, ohne Sperre „im Aufbau“
+    await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT) + '&art=brand'); await page.reload();
+    await page.waitForSelector('#app:not([hidden]) .blatt'); await page.waitForSelector('#karteBrand:not([hidden])');
+    assert.match(page.url(), /art=brand/); assert.doesNotMatch(page.url(), /vorschau=/);
     assert.ok(await page.isVisible('#karteBrand')); assert.ok(await page.isHidden('#zeileVariante'));
+    assert.equal(await page.textContent('#brandVorschauText'), '', 'kein Hinweis „noch im Aufbau“'); assert.ok(await page.isVisible('#btnZumAsbest'));
     assert.match(await page.textContent('#vorschau'), /Sanierungsvorschlag vom/); assert.match(await page.textContent('#vorschau'), /7\. Arbeitsschutzmaßnahmen/);
-    // 5. Befund (ab 1.13.0): 5.1 als Lücke, Asbest-Abschnitt mit Methode und Tabelle; ohne Chlorid/PAK keine Felder für Tabellen/Referenz
+    // 5. Befund (ab 1.13.0): 5.1 als Lücke (nur Vorbelegung), Asbest-Abschnitt mit Methode und Tabelle; ohne Chlorid/PAK keine Felder für Tabellen/Referenz
     assert.match(await page.textContent('#vorschau'), /5\.1 Brandlast und Schadenbild[\s\S]*\[Brandlast und Schadenbild beschreiben\][\s\S]*5\.\d Asbest[\s\S]*VDI 3866 Blatt 5/);
     assert.ok(await page.isHidden('#zeileTabellen')); assert.ok(await page.isHidden('#zeileReferenz')); assert.ok(await page.isHidden('#zeileReferenzGrund'));
     assert.ok(await page.evaluate(() => BerichtBewertung.chloridStufe({ r: '60', u: 'mg/m²' }) === 1), 'bericht-bewertung.js geladen');
-    assert.ok(await page.isDisabled('#btnErstellen')); assert.equal(await page.textContent('#btnLaden'), 'Entwurf herunterladen');
-    assert.match(await page.textContent('#hinweise'), /Gesperrt: Der Brandbericht ist noch im Aufbau/);
+    assert.ok(await page.isEnabled('#btnErstellen')); assert.equal(await page.textContent('#btnLaden'), 'Herunterladen');
+    assert.doesNotMatch(await page.textContent('#hinweise'), /noch im Aufbau|Gesperrt/);
     assert.ok(await page.evaluate(() => S.luecken.some(x => x.luecke === '[Gefahrenbereich wählen]')));
     await page.selectOption('#fbGb', '2');
     assert.match(await page.textContent('#vorschau'), /Gefahrenbereich 2 \(GB 2\)/);
     assert.ok(await page.evaluate(() => !S.luecken.some(x => x.luecke === '[Gefahrenbereich wählen]')));
+    // Freitextfelder (ab 1.14.0): 5.1 mit Vorbelegung, Tippen zieht die Vorschau nach (Cursor bleibt im Feld), Foto einfügen aus FotoKit
+    assert.ok(await page.isVisible('#karteBrandTexte'));
+    assert.equal(await page.inputValue('#fbSchadenbild'), 'Der Brand ereignete sich ', 'Vorbelegung (Doc)');
+    assert.ok(await page.evaluate(() => S.luecken.some(x => x.luecke === '[Brandlast und Schadenbild beschreiben]')), 'nur die Vorbelegung = noch offen');
+    await page.click('#fbSchadenbild'); await page.keyboard.press('End');
+    await page.keyboard.type('im Keller.\n## Keller\n- Decke **stark** verrußt\n');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'fbSchadenbild', 'Fokus bleibt beim Tippen im Feld');
+    assert.match(await page.textContent('#vorschau'), /5\.1 Brandlast und Schadenbild\s*Der Brand ereignete sich im Keller\.\s*Keller\s*Decke stark verrußt/);
+    assert.equal(await page.textContent('#vorschau ul.punkte li b'), 'stark');
+    assert.ok(await page.evaluate(() => !S.luecken.some(x => x.luecke === '[Brandlast und Schadenbild beschreiben]')));
+    const fotoWahl = 'select.foto-einfuegen[data-fuer="fbSchadenbild"]';
+    assert.deepEqual(await page.$$eval(fotoWahl + ' option', os => os.map(o => o.value)), ['', '01_P1_Fliesenkleber.jpg'], 'aussortierte Fotos nicht in der Auswahl');
+    await page.selectOption(fotoWahl, '01_P1_Fliesenkleber.jpg');
+    assert.equal(await page.inputValue('#fbSchadenbild'), 'Der Brand ereignete sich im Keller.\n## Keller\n- Decke **stark** verrußt\n[Abb: 01_P1_Fliesenkleber.jpg]');
+    assert.equal(await page.inputValue(fotoWahl), '', 'Auswahl wieder zurück');
+    // Schreibmarke mitten in einer Zeile: das Foto kommt ans Zeilenende, der Satz bleibt ganz (Review)
+    await page.fill('#fbZusatz', 'Satz eins. Satz zwei.\nZweite Zeile.'); await page.dispatchEvent('#fbZusatz', 'change');
+    await page.evaluate(() => { const ta = document.getElementById('fbZusatz'); ta.focus(); ta.setSelectionRange(5, 5); });
+    await page.selectOption('select.foto-einfuegen[data-fuer="fbZusatz"]', '01_P1_Fliesenkleber.jpg');
+    assert.equal(await page.inputValue('#fbZusatz'), 'Satz eins. Satz zwei.\n[Abb: 01_P1_Fliesenkleber.jpg]\nZweite Zeile.');
+    await page.fill('#fbZusatz', ''); await page.dispatchEvent('#fbZusatz', 'change');
+    // Asbestfoto der Probe P1 in 4. (wie im Asbestbericht) ist Abb. 1, das Foto aus 5.1 Abb. 2 mit der Beschreibung aus FotoKit
+    assert.deepEqual(await page.$$eval('#vorschau figcaption', fs => fs.map(f => f.textContent)), ['Abb. 1: Fliesenkleber, Umkleide Schwimmbad', 'Abb. 2: Fliesenkleber']);
+    assert.match(await page.textContent('#vorschau'), /Probe 1 ist in Abbildung 1 dargestellt\./);
+    // 6.: Felder nach den Umfang-Haken – einer ohne Nummer, zwei mit 6.1/6.2; leeres Feld ist eine Stelle mit Sprungziel
+    assert.ok(await page.isVisible('#fbSanGebaeude')); assert.ok(await page.isHidden('#fbSanTechnik')); assert.ok(await page.isHidden('#fbSchluss'));
+    assert.equal(await page.textContent('#lbSanGebaeude'), '6. Sanierungsmaßnahmen Gebäude');
+    await page.check('#fbUmfang input[data-umfang="technik"]');
+    assert.equal(await page.textContent('#lbSanGebaeude'), '6.1 Sanierungsmaßnahmen Gebäude'); assert.equal(await page.textContent('#lbSanTechnik'), '6.2 Sanierungsmaßnahmen Technische Einrichtung');
+    assert.match(await page.textContent('#vorschau'), /empfohlen:\s*6\.1 Gebäude\s*\[Sanierungsmaßnahmen Gebäude beschreiben\]\s*6\.2 Technische Einrichtung\s*\[Sanierungsmaßnahmen technische Einrichtung beschreiben\]/);
+    assert.ok(await page.evaluate(() => ['fbSanGebaeude', 'fbSanTechnik'].every(id => document.getElementById(id).classList.contains('offen-feld'))), 'leere Freitextfelder gelb umrandet');
+    assert.ok(await page.evaluate(() => lueckenZiele().some(el => el.id === 'fbSanTechnik')), 'Sprungziel');
+    await page.fill('#fbSanGebaeude', '## Keller\n- Feinreinigung'); await page.dispatchEvent('#fbSanGebaeude', 'change');
+    // 7.: zweiter Bereich mit eigenem GB → erster Bereich fehlt als Lücke (Feld umrandet); Zusatz am Ende
+    await page.fill('#fbBereich2', 'im Erdgeschoss'); await page.dispatchEvent('#fbBereich2', 'change'); await page.selectOption('#fbGb2', '0');
+    assert.match(await page.textContent('#vorschau'), /Sanierungsmaßnahmen \[Bereich eintragen\] sind Arbeitsschutzmaßnahmen für den Gefahrenbereich 2 \(GB 2\)[\s\S]*Sanierungsmaßnahmen im Erdgeschoss sind aus chemischer Sicht keine/);
+    assert.ok(await page.evaluate(() => document.getElementById('fbBereich').classList.contains('offen-feld')));
+    await page.fill('#fbBereich', 'im Keller'); await page.dispatchEvent('#fbBereich', 'change');
+    await page.fill('#fbZusatz', 'Zusatz zum Arbeitsschutz.'); await page.dispatchEvent('#fbZusatz', 'change');
+    // 8.: „Bereich: Maßnahme“ → Aufzählung mit fettem Bereich
+    await page.fill('#fbZusammenfassung', 'Keller: Feinreinigung'); await page.dispatchEvent('#fbZusammenfassung', 'change');
+    assert.match(await page.textContent('#vorschau'), /Zusatz zum Arbeitsschutz\.\s*8\. Zusammenfassung Sanierungsmaßnahmen\s*Keller: Feinreinigung/);
+    assert.ok(await page.evaluate(() => [...document.querySelectorAll('#vorschau ul.punkte li b')].some(b => b.textContent === 'Keller:')));
+    // Word: Aufzählung als Word-Liste, kursiver Zwischentitel, zwei Fotos, fettes „Keller:“
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#btnLaden')]);
+    const wbuf = fs.readFileSync(await dl.path()), wxml = zipDatei(wbuf, 'word/document.xml');
+    assert.equal(dl.suggestedFilename(), '3._Mitteilung_99.9001.docx', 'kein Entwurf mehr');
+    assert.ok((wxml.match(/<w:numPr>/g) || []).length >= 3, 'Aufzählungspunkte als Word-Liste');
+    assert.equal((wxml.match(/<pic:pic /g) || []).length, 2, 'Asbestfoto und Foto aus 5.1');
+    assert.match(wxml, /<w:b\/>(?:(?!<\/w:r>)[\s\S])*<w:t[^>]*>Keller:<\/w:t>/, 'fettes „Keller:“');
+    assert.match(wxml, /<w:outlineLvl w:val="2"\/>(?:(?!<\/w:p>)[\s\S])*<w:i\/>(?:(?!<\/w:p>)[\s\S])*>Keller</, 'Zwischentitel kursiv ohne Nummer');
+    if (process.env.BERICHT_AUSGABE) fs.writeFileSync(path.join(process.env.BERICHT_AUSGABE, 'browser_brand.docx'), wbuf);
+    // Speichern in „Mitteilungen“ freigegeben (bereit): Lücken-Rückfrage wie beim Asbestbericht, dann die Datei, Protokoll mit art „brand“
+    await page.click('#btnErstellen'); await page.waitForSelector('#status .ok', { timeout: 15000 });
+    const gespeichert = await projektDatei('Mitteilungen/3._Mitteilung_99.9001.docx');
+    assert.ok(gespeichert && gespeichert.startsWith('PK'), 'Brandbericht in „Mitteilungen“ gespeichert');
+    let protokoll = null;
+    for (let i = 0; i < 40 && !(protokoll && (protokoll.berichte || []).some(b => b.art === 'brand')); i++) { await page.waitForTimeout(150); protokoll = JSON.parse(await projektDatei(bkPfad)); }
+    assert.ok(protokoll.berichte.some(b => b.art === 'brand' && /3\._Mitteilung_99\.9001\.docx$/.test(b.datei)), 'Protokoll: art brand');
+    assert.ok(await page.isVisible('#btnUebergabe'), '„Ans Büro übergeben →“');
     await page.check('input[name=brTitel][value=Untersuchungsbericht]');
+    // Untersuchungsbericht: ein Feld „Schlussfolgerungen“, keine Sanierungsfelder, kein 8.
+    assert.ok(await page.isVisible('#fbSchluss')); assert.ok(await page.isHidden('#fbSanGebaeude')); assert.ok(await page.isHidden('#fbZusammenfassung'));
+    assert.doesNotMatch(await page.textContent('#vorschau'), /8\. Zusammenfassung/);
     assert.match(await page.textContent('#vorschau'), /Untersuchungsbericht vom[\s\S]*6\. Schlussfolgerungen/);
     if (process.env.BERICHT_AUSGABE) { await page.setViewportSize({ width: 1440, height: 1400 }); await page.waitForTimeout(400); await page.locator('#karteBrand').scrollIntoViewIfNeeded(); await page.screenshot({ path: path.join(process.env.BERICHT_AUSGABE, 'brand.png') }); }
     let mitBrand = null;   // eigene Angaben der Brand-Seite feldweise unter „brand“, die Berichtsart nie
     for (let i = 0; i < 40 && !(mitBrand && mitBrand.form.brand && mitBrand.form.brand.titel); i++) { await page.waitForTimeout(150); mitBrand = JSON.parse(await projektDatei(bkPfad)); }
-    assert.deepEqual(mitBrand.form.brand, { gb: '2', titel: 'Untersuchungsbericht' }); assert.ok(!('art' in mitBrand.form));
+    assert.deepEqual(mitBrand.form.brand, { gb: '2', schadenbild: 'Der Brand ereignete sich im Keller.\n## Keller\n- Decke **stark** verrußt\n[Abb: 01_P1_Fliesenkleber.jpg]',
+      umfang: { gebaeude: true, technik: true, waren: false }, sanGebaeude: '## Keller\n- Feinreinigung', bereich2: 'im Erdgeschoss', gb2: '0', bereich: 'im Keller',
+      zusatz: 'Zusatz zum Arbeitsschutz.', zusammenfassung: 'Keller: Feinreinigung', titel: 'Untersuchungsbericht' }, 'Freitext feldweise in form.brand');
+    assert.ok(!('art' in mitBrand.form));
     // „Zum Asbestbericht“ in der Brand-Karte: dasselbe Projekt als Asbestbericht, Brand-Angaben bleiben draußen
     await page.click('#btnZumAsbest');
     await page.waitForSelector('#karteBrand', { state: 'hidden' }); await page.waitForSelector('#app:not([hidden]) .blatt');

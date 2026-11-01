@@ -1,5 +1,6 @@
 // Erfundene Brand-Testdaten (keine Kundendaten im Repository). Aufbau wie _Projekt.json (Projektzentrale), LabelKit *_Daten.json,
-// ResultKit _Ergebnisse.json – mit Chlorid-, PAK-, Asbest-, KMF- und Brandgeruch-Proben, Referenzprobe und Freimessung.
+// ResultKit _Ergebnisse.json – mit Chlorid-, PAK-, Asbest-, KMF- und Brandgeruch-Proben, Referenzprobe und Freimessung; ab 1.14.0
+// mit Freitext (5.1, 6., 7., 8.) und Fotos aus FotoKit (_Bildumbenenner.json „bilder“, Asbestfotos je Probe wie im Asbestbericht).
 // Genutzt von tests/brand.cjs, tests/brand-golden.cjs, tests/luecken-kommentare.cjs und render-beispiele.cjs.
 const A = require('../../anlagen.js'), B = require('./beispiel.cjs');
 const ORDNER = '99.9002 Brandweg Beispielstadt Tst';
@@ -51,6 +52,16 @@ function anlagen({ bilddokuAnlage = 'Anlage 3', brandgeruch = '99-9002_Anlage_Br
     labelkit: { name: '99.9002_Daten.json', t: t0 - 60000, sha: SHA_LK } });
 }
 
+/** FotoKit _Bildumbenenner.json „bilder“ (Dateiname → Beschreibung, Probe, aussortiert) und daraus die Fotos je Probe (wie app.js fotoListeBauen) */
+const FOTOKIT = {
+  'P9_Fliesenkleber_Kueche.jpg': { probe: 'P9', beschreibung: 'Fliesenkleber Küche' },
+  'IMG_0101.jpg': { beschreibung: 'EG, Küche (Brandraum)' },
+  'IMG_0102.jpg': { beschreibung: 'EG, Flur' },
+  'IMG_0103.jpg': { beschreibung: 'EG, Wohnzimmer', aussortiert: true },
+  'IMG_0201.jpg': { beschreibung: '' },
+};
+const fotosJeProbe = bilder => { const out = {}; for (const [datei, v] of Object.entries(bilder)) if (v.probe && !v.aussortiert) (out[v.probe] = out[v.probe] || []).push({ datei, beschreibung: v.beschreibung || '' }); return out; };
+
 const form = (brand = {}, o = {}) => ({ art: 'brand', datum: '2026-10-27', mitteilung: 1, probenehmer: 'Mes', sv: 'Tst', mt: 'Mes', brand, ...o });
 
 /* Beispiel-Brandberichte (Golden-Test, Word-Beispiele) */
@@ -68,8 +79,14 @@ const faelle = {
     erg: erg([{ nr: 'AR-999-2026-000101-01', proben: [[1, W.cl('12,3'), 'Chlorid'], [2, W.cl('4,1'), 'Chlorid'], [3, W.cl('< 0,5'), 'Chlorid'],
         [4, W.pak('2300'), 'PAK'], [5, W.pak('85'), 'PAK'], [6, W.pak('9'), 'PAK'], [7, W.pak('7'), 'PAK'], [8, W.pakMat('14'), 'PAK']] },
       { nr: 'AR-999-2026-000102-01', proben: [[9, W.chrysotil, 'Asbest'], [10, W.kein, 'Asbest'], [11, W.kmf, 'Asbest']] }]),
-    anlagen: anlagen(),
-    form: form({ umfang: { gebaeude: true, technik: true, waren: false }, anwesende: 'Herr Muster (VN) und Herr Beispiel (Sanierungsfirma Muster GmbH)', person2: 'Vom', gb: '2', uebrige: true, tabellen: true }),
+    anlagen: anlagen(), fotoKit: FOTOKIT, fotos: fotosJeProbe(FOTOKIT),
+    // Freitext mit allem: Absätze, **fett**, ## Zwischentitel, Aufzählung, Lücke im Text, Foto mit Beschreibung aus FotoKit und mit eigener
+    // Bildunterschrift; 6.2 leer (Lücke); 7. zwei Bereiche (EG GB 2, OG GB 0) und Zusatz; 8. „Bereich: Maßnahme“ mit Zwischentiteln
+    form: form({ umfang: { gebaeude: true, technik: true, waren: false }, anwesende: 'Herr Muster (VN) und Herr Beispiel (Sanierungsfirma Muster GmbH)', person2: 'Vom', gb: '2', uebrige: true, tabellen: true,
+      schadenbild: 'Der Brand ereignete sich in der Küche im Erdgeschoss. Brandlast waren im Wesentlichen die Einbauküche und **Kunststoffe** der Elektrogeräte.\n\n## Küche (Brandraum)\nDecke und Wände sind stark verrußt.\n[Abb: IMG_0101.jpg]\n## Flur\n- Wände leicht verrußt\n- Bodenbelag: [Zustand des Bodenbelags prüfen]',
+      sanGebaeude: '## Küche (Brandraum)\n- Rückbau der Deckenverkleidung und der Einbauküche\n- Feinreinigung aller Oberflächen, anschließend Freimessung\n[Abb: IMG_0102.jpg | EG, Flur nach der Grobreinigung]\n## Flur\nFeinreinigung der Wand- und Bodenflächen.',
+      bereich: 'im Erdgeschoss', bereich2: 'im Obergeschoss', gb2: '0', zusatz: 'Bei Arbeiten an der Mineralwolldämmung sind zusätzlich die Hinweise der **TRGS 521** zu beachten.',
+      zusammenfassung: '## Gebäude\nKüche (Brandraum): Rückbau der Deckenverkleidung, Feinreinigung, Freimessung\nFlur: Feinreinigung\n## Technische Einrichtung\nElektroinstallation Küche: Prüfung durch einen Elektrofachbetrieb' }),
   },
   // Nur PAK (wie 26.0513), ohne Versicherung (Hausverwaltung), Schadendatum „unbekannt“, Untersuchungsbericht, nur unser Büro vor Ort, GB 0
   'BR2_nur_PAK_ohne_Versicherung_GB0': {
@@ -77,7 +94,8 @@ const faelle = {
     lk: lk({ pak: [[1, '2026-10-14', 'EG Büro Decke', 'Wischprobe'], [2, '2026-10-14', 'EG Büro Wand', 'Wischprobe']] }),
     erg: erg([{ nr: 'AR-999-2026-000201-01', proben: [[1, W.pak('16'), 'PAK'], [2, W.pak('8'), 'PAK']] }]),
     anlagen: anlagen({ brandgeruch: '', bilddokuAnlage: 'Anlage 2' }),
-    form: form({ titel: 'Untersuchungsbericht', nurBuero: true, gb: '0' }, { mt: '' }),
+    form: form({ titel: 'Untersuchungsbericht', nurBuero: true, gb: '0',
+      schlussfolgerungen: 'Die PAK-Belastung liegt im Bereich der Hintergrundbelastung.\n- Eine Sanierung ist aus chemischer Sicht nicht erforderlich.' }, { mt: '' }),
   },
   // Lücken: kein Schadendatum, kein Ortstermin, Proben ohne Datum, kein Umfang, kein Gefahrenbereich, kein Labor, keine Anwesenden;
   // Chlorid und PAK in getrennten Berichten, PAK über zwei Prüfberichte; Brandgeruch ohne Prüfdatum, verdeckt, ohne Anlage
@@ -89,11 +107,13 @@ const faelle = {
       { nr: 'AR-999-2026-000302-01', proben: [[2, W.pak('140'), 'PAK'], [3, W.pak('35'), 'PAK']] },
       { nr: 'AR-999-2026-000303-01', ohnePdf: true, proben: [[4, W.pak('12'), 'PAK']] }]),
     anlagen: anlagen({ brandgeruch: '', plan: false }),
-    form: form({ umfang: { gebaeude: false, technik: false, waren: false } }, { labor: '', mt: '' }),
+    // 7.: zweiter Gefahrenbereich ohne beide Bereichsangaben → Lücken; 5.1 nur mit der Vorbelegung → Lücke
+    form: form({ umfang: { gebaeude: false, technik: false, waren: false }, gb2: '1' }, { labor: '', mt: '' }),
     cfg: { ...B.cfg, labor: '' },
   },
   // Gewerbe (Lager) mit Warenvorräten und technischer Einrichtung, eigener Brandort im Satz, Teilnehmerliste, vorläufiger Prüfbericht;
-  // Brandgeruch-Anlage mit falscher Nummer im Titel und LabelKit danach geändert (veraltet → nicht vorgehakt) → ENTWURF
+  // Brandgeruch-Anlage mit falscher Nummer im Titel und LabelKit danach geändert (veraltet → nicht vorgehakt); „ENTWURF“ im Namen aus
+  // 1.12.0, als der Brandbericht noch gesperrt war – seit 1.14.0 (bereit) ohne Sperre
   'BR4_Gewerbe_Teilnehmerliste_ENTWURF': {
     pj: pj({ nutzung: 'Gewerbe/Industrie', objekt: 'Industriestraße 3, 54321 Beispielstadt', versicherer: 'Andere Versicherung AG' }),
     lk: lk({ chlorid: [[1, '2026-10-15', 'Halle Regal 3', 'Wischprobe']], pak: [[2, '2026-10-15', 'Halle Regal 3', 'Wischprobe']],
@@ -102,7 +122,11 @@ const faelle = {
     erg: erg([{ nr: 'AR-999-2026-000401-01', vorlaeufig: true, proben: [[1, W.cl('22'), 'Chlorid'], [2, W.pak('410'), 'PAK']] },
       { nr: 'AR-999-2026-000402-01', proben: [[3, W.blei('120'), 'Sonstige']] }]),
     anlagen: anlagen({ brandgeruch: '99-9002_Anlage-7_Brandgeruch_2026-10-21.docx', protokollSha: SHA_ALT, bilddokuAnlage: 'Anlage 3' }),
-    form: form({ titel: 'Sanierungsvorschlag', umfang: { gebaeude: true, technik: true, waren: true }, brandort: 'in einer Lagerhalle der Muster Logistik GmbH,', teilnehmerliste: true, gb: '1' }, { mt: '' }),
+    // Freitext: 6.1 Gebäude leer (Lücke), 6.2/6.3 gefüllt, Foto ohne Beschreibung in FotoKit (Bildunterschrift als Lücke), 8. ohne Zwischentitel
+    fotoKit: FOTOKIT,
+    form: form({ titel: 'Sanierungsvorschlag', umfang: { gebaeude: true, technik: true, waren: true }, brandort: 'in einer Lagerhalle der Muster Logistik GmbH,', teilnehmerliste: true, gb: '1',
+      schadenbild: 'Der Brand ereignete sich im Regal 3 der Lagerhalle.', sanTechnik: 'Reinigung der Regalanlage.',
+      sanWaren: '## Regal 3\n- Entsorgung der verrußten Kartonagen\n[Abb: IMG_0201.jpg]', zusammenfassung: 'Halle: Feinreinigung\nWarenvorräte Regal 3: Entsorgung' }, { mt: '' }),
   },
   // Gewerbe (Lebensmittelmarkt) mit Referenz 10 µg/m² und Begründung (Befunde Nr. 5), Ergebnistabellen; Chlorid aus einem älteren
   // Prüfbericht in mg/m² (Einordnung umgerechnet, Wert wie im Bericht), Chlorid-Materialprobe und Chlorid-Bohrmehl (LabelKit „Sonstige“
@@ -125,4 +149,4 @@ const faelle = {
   },
 };
 
-module.exports = { ORDNER, SHA_LK, pj, lk, erg, W, anlagen, form, faelle };
+module.exports = { ORDNER, SHA_LK, pj, lk, erg, W, anlagen, form, faelle, FOTOKIT, fotosJeProbe };

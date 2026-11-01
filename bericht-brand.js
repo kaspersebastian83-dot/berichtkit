@@ -2,20 +2,26 @@
    Browserteile, in Node testbar. Grundlage: Doc „Textbausteine Brand-Sanierungsvorschlag“ (freigegeben 31.10.2026) und die
    Entscheidungen aus „berichtkit-brand-befunde-mitteilungen.md“ (gehen vor). Bausteine, die jede Berichtsart braucht (Deckblatt-
    Feldblock, Kopf, Personen, Unterschriften, Anlagen, Asbest-/KMF-Proben …), stehen in bericht-gemeinsam.js.
-   Stand Schritt 4 (1.13.0): Deckblatt, Kopf, 1.–4., 5. Befund (5.1 als Lücke, 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest,
-   5.6 Brandgeruch, 5.7 weitere Untersuchungen – nur, was es gibt, fortlaufend nummeriert), 7., Unterschriften, Anlagen.
-   6. Sanierungsmaßnahmen / Schlussfolgerungen und 8. Zusammenfassung stehen als Überschrift mit Lücke da – Inhalt folgt in Schritt 5.
+   Stand Schritt 5 (1.14.0): Deckblatt, Kopf, 1.–4. (Asbest-/KMF-Fotos wie im Asbestbericht), 5. Befund (5.1 Brandlast und
+   Schadenbild als Freitext, 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest, 5.6 Brandgeruch, 5.7 weitere Untersuchungen – nur, was es
+   gibt, fortlaufend nummeriert), 6. Sanierungsmaßnahmen (6.1–6.3 nach den Umfang-Haken) bzw. Schlussfolgerungen, 7. (zweiter
+   Bereich, Zusatz), 8. Zusammenfassung (nur Sanierungsvorschlag), Unterschriften, Anlagen. Freitext-Schreibweise (Absätze,
+   „- “, „## Titel“, „[Abb: Datei]“, **fett**) siehe bericht-gemeinsam.js freitext(); leeres Feld → Lücke mit Anweisung.
    Regeln wie im Asbestbericht: Laborwerte unverändert wie im Prüfbericht (umgerechnet wird nur für die Einordnung, siehe
    bericht-bewertung.js), fehlende Angaben als [Lücke], nichts erfinden.
 
    eingabe wie im Asbestbericht (bericht-asbest.js), dazu
      pj: schadendatum (JJJJ-MM-TT | „unbekannt“ | leer), ortstermin, nutzung, schadenereignis, brandgut (Projektzentrale),
+     fotoKit: FotoKit-Bilder (_Bildumbenenner.json bilder: { Datei: { beschreibung, aussortiert } }) für „[Abb: Datei]“ im Freitext,
      lk: proben[] (PAK), chloridProben[], sonstigeProben[] (im Modus „Chlorid-Bohrmehl“ = ui.bohrmehlAktiv: Bohrmehlproben auf
        Chlorid, sonst weitere Untersuchungen mit notiz = Untersuchungsparameter), brandgeruchProben[], brandgeruchDatum, bgBlind (LabelKit),
      form.brand: eigene Angaben der Brand-Seite (vorgabe() = Vorgaben): { titel, umfang:{gebaeude,technik,waren}, anwesende,
        nurBuero, teilnehmerliste, person2 (Kürzel, zweite Person vor Ort), brandort (ersetzt „in dem Wohngebäude“ …),
        gb ('0'–'3'), uebrige (Satz zu den übrigen Bereichen in 7.), tabellen (Ergebnistabellen Chlorid/PAK in 5., Vorbelegung aus),
-       referenz ('10' | '100' µg/m², Vorbelegung aus der Nutzung), referenzGrund (optionaler Begründungssatz in 5.3) }
+       referenz ('10' | '100' µg/m², Vorbelegung aus der Nutzung), referenzGrund (optionaler Begründungssatz in 5.3),
+       Freitext (ab 1.14.0): schadenbild (5.1, vorbelegt „Der Brand ereignete sich “), sanGebaeude / sanTechnik / sanWaren (6.1–6.3),
+       schlussfolgerungen (6. beim Untersuchungsbericht), zusammenfassung (8.), bereich / bereich2 / gb2 (7., zweiter Bereich mit
+       eigenem Gefahrenbereich), zusatz (7., optional) }
    Ergebnis wie im Asbestbericht, dazu brand: { titel, objektartVorgabe, nutzung, schadenereignis, brandgut, zahlen:{…} }. */
 (function (root) {
 'use strict';
@@ -38,6 +44,18 @@ const BUERO = ' (Sachverständigenbüro Dr. Heinz Schiffers & Partner)';
 /** Prüfbericht mit Chlorid- bzw. PAK-Werten (Gruppen wie ResultKit src/uebersicht.ts gruppeVon) */
 const CHLORID = /^Chlorid\b/i, SUMME_PAK = /^(?:Summe|Σ)\s*16\s*EPA[-– ]?PAK/i;
 const GB = ['0', '1', '2', '3'];
+/** 5.1: Vorbelegung im Formular (Doc) – steht nur sie da, ist das Feld noch leer (→ Lücke) */
+const SCHADENBILD_START = 'Der Brand ereignete sich ';
+/** 6. Sanierungsmaßnahmen: Einleitungssatz (Befunde-Doc, „Kleinere Abweichungen – entschieden“) und Unterabschnitte in der
+    Reihenfolge der Umfang-Haken: [Haken, Formularfeld, Titel, Lücke] */
+const EINLEITUNG_6 = 'Auf Grundlage der vorliegenden Befunde und der analytischen Untersuchungsergebnisse werden folgende Sanierungsmaßnahmen empfohlen:';
+const SAN = [['gebaeude', 'sanGebaeude', 'Gebäude', '[Sanierungsmaßnahmen Gebäude beschreiben]'],
+  ['technik', 'sanTechnik', 'Technische Einrichtung', '[Sanierungsmaßnahmen technische Einrichtung beschreiben]'],
+  ['waren', 'sanWaren', 'Warenvorräte', '[Sanierungsmaßnahmen Warenvorräte beschreiben]']];
+/** Freitextfelder der Brand-Seite (form.brand) – je Feld eine eigene Angabe */
+/** Formularfeld (index.html) je Sanierungsfeld */
+const SAN_FELD = { sanGebaeude: 'fbSanGebaeude', sanTechnik: 'fbSanTechnik', sanWaren: 'fbSanWaren' };
+const FREITEXT = ['schadenbild', 'sanGebaeude', 'sanTechnik', 'sanWaren', 'schlussfolgerungen', 'zusammenfassung', 'zusatz'];
 /** Hintergrundreferenz PAK nach der Nutzung (wie ResultKit usageFromNutzung): Wohn-/Bürobereiche 10, Gewerbe/Industrie 100 µg/m² */
 const REFERENZ_NUTZUNG = { 'Wohnen': '10', 'Büro': '10', 'Öffentlich': '10', 'Gesundheit & Labor': '10', 'Gewerbe/Industrie': '100', 'Landwirtschaft': '100' };
 const referenzVorgabe = nutzung => REFERENZ_NUTZUNG[s(nutzung)] || '';
@@ -58,7 +76,9 @@ const bgWert = v => { const t = s(v).replace(/[–−—]/g, '-').replace(/\s+/g
 function vorgabe(pj) {
   return { titel: 'Sanierungsvorschlag', umfang: { gebaeude: true, technik: false, waren: false }, anwesende: '', nurBuero: false,
     teilnehmerliste: false, person2: '', brandort: '', gb: '', uebrige: s(pj && pj.nutzung) === 'Wohnen',
-    tabellen: false, referenz: referenzVorgabe(pj && pj.nutzung), referenzGrund: '' };
+    tabellen: false, referenz: referenzVorgabe(pj && pj.nutzung), referenzGrund: '',
+    schadenbild: SCHADENBILD_START, sanGebaeude: '', sanTechnik: '', sanWaren: '', schlussfolgerungen: '', zusammenfassung: '',
+    bereich: '', bereich2: '', gb2: '', zusatz: '' };
 }
 
 /** „Schaden vom“: Datum, „unbekannt“ (Knopf „nicht bekannt“ der Projektzentrale) oder leer */
@@ -205,6 +225,10 @@ function bericht(eingabe) {
   const e = eingabe || {}, f = e.form || {}, P = projektSicht(e.pj, e.ordner);
   const fb = { ...vorgabe(e.pj), ...(f.brand && typeof f.brand === 'object' ? f.brand : {}) };
   const hinweise = [], sperren = [], hinweisAktionen = {};
+  /* Abbildungen laufen durch den ganzen Bericht: Asbest-/KMF-Fotos in 4., dann die Fotos der Freitextfelder (5.1, 6., 7., 8.) */
+  const abb = { n: 0 }, lueckenFelder = {};
+  /** Freitextfeld → Blöcke; feldId = Formularfeld (für selbst geschriebene Lücken: Zähler springt dorthin) */
+  const ftx = (text, feld, feldId, o = {}) => G.freitext(text, { abb, fotoKit: e.fotoKit, hinweise, feld, feldId, lueckenFelder, ...o });
   const sanierung = fb.titel !== 'Untersuchungsbericht';
   const titelArt = TITEL.includes(fb.titel) ? fb.titel : TITEL[0];
   const datum = datumDE(f.datum), mitteilung = `${+f.mitteilung || 1}. Mitteilung`, titel = `${titelArt} vom ${datum}`;
@@ -224,7 +248,8 @@ function bericht(eingabe) {
     p.ki = p.kmf.ki || s(f.ki && f.ki[p.label]);
     p.kiQuelle = p.kmf.ki ? 'labor' : (p.ki ? 'hand' : '');
     p.whoNachgewiesen = f.who && p.label in f.who ? !!f.who[p.label] : !!p.kmf.whoPositiv;
-    p.foto = '';   // Fotos im Brandbericht kommen mit den Freitextfeldern (Schritt 5)
+    // Foto wie im Asbestbericht: eigene Wahl in der Probenliste, sonst das erste FotoKit-Foto der Probe (ab 1.14.0)
+    p.foto = f.foto && p.label in f.foto ? f.foto[p.label] : ((e.fotos && e.fotos[p.label] && e.fotos[p.label][0] && e.fotos[p.label][0].datei) || '');
     if (p.vorlaeufig) hinweise.push(`Prüfbericht ${p.bericht} ist vorläufig – der Bericht bekommt die Kopfzeile „Vorläufig“.`);
     if (p.abgleich.ok === false) (ABGLEICH_SPERRT ? sperren : hinweise).push(`${p.ref || p.label}: Entnahmestelle passt nicht – LabelKit „${p.abgleich.labelkit}“, Prüfbericht ${p.bericht} „${p.abgleich.bericht}“ → in LabelKit oder beim Labor klären.`);
     if (p.befund && !p.befund.eindeutig) hinweise.push(`${p.ref || p.label}: Ergebnis „${p.befund.text}“ nicht eindeutig – bitte im Prüfbericht prüfen.`);
@@ -358,6 +383,15 @@ function bericht(eingabe) {
     if (kmfNr.length) r.push(kmfNr.length > 1 ? ' Die Ergebnisse sind in den Prüfberichten ' : kmf.length === 1 ? ' Das Ergebnis ist im Prüfbericht ' : ' Die Ergebnisse sind im Prüfbericht ', nrListe(kmfNr), ` dokumentiert ${anlNr(kmfNr)}.`);
     pr.push({ t: 'p', runs: r }); vorher = true;
   }
+  /* Fotos der Asbest-/KMF-Proben wie im Asbestbericht (ab 1.14.0): Satz mit den Probennummern und die Abbildungen am Ende von 4.
+     (nach dem Verweis auf Bilddokumentation/Probenplan) – mit Nummern, weil auch Brandgeruch-Proben „Materialproben“ heißen */
+  const imBericht = proben.filter(p => p.befund || p.istKmf), mitFoto = imBericht.filter(p => p.foto);
+  mitFoto.forEach(p => { p.abb = ++abb.n; });
+  const fotoSatz = !mitFoto.length ? '' : (() => {
+    const a0 = mitFoto[0].abb, a1 = mitFoto[mitFoto.length - 1].abb;
+    const wo = mitFoto.length === 1 ? `Abbildung ${a0}` : `den Abbildungen ${a0} ${mitFoto.length === 2 ? 'und' : 'bis'} ${a1}`;
+    return `${mitFoto.length === 1 ? '' : 'Die '}${probe(mitFoto.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} ${mitFoto.length === 1 ? 'ist' : 'sind'} in ${wo} dargestellt.`;
+  })();
   if (nBg) {
     pr.push({ t: 'p', runs: [`${zusatz()} ${nBg === 1 ? 'wurde eine Materialprobe' : `wurden ${zahlwort(nBg)} Materialproben`} entnommen und am `,
       L(datumDE(lk.bgDatum), 'Prüfdatum Brandgeruch'), ' sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ',
@@ -384,11 +418,15 @@ function bericht(eingabe) {
   if (verweis && nGesamt) pr.push({ t: 'p', runs: [verweis] });
   if (!nGesamt) { pr.push({ t: 'p', runs: [{ gap: '[Probenahme beschreiben]' }] }); hinweise.push('Keine Proben in LabelKit/ResultKit gefunden – 4. Probenahme bleibt eine Lücke.'); }
 
-  /* 5. Befund: 5.1 immer (Freitext folgt in Schritt 5 – bis dahin Lücke), dann nur, wozu es Ergebnisse gibt, fortlaufend nummeriert:
+  /* 5. Befund: 5.1 immer (Freitext, leer bzw. nur die Vorbelegung → Lücke), dann nur, wozu es Ergebnisse gibt, fortlaufend nummeriert:
      Chlorid, PAK, KMF, Asbest (Reihenfolge wie im Doc), Brandgeruch, weitere Untersuchungen. Laborwerte wie im Prüfbericht;
      eingeordnet wird mit den Grenzen aus ResultKit (bericht-bewertung.js). Referenzproben und Freimessungen stehen in der
      Tabelle gekennzeichnet und in eigenen Sätzen, im Zähl-Absatz zählen sie nicht. */
-  const befund = [{ t: 'h2', runs: ['5.1 Brandlast und Schadenbild'] }, { t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] }];
+  const sb = s(fb.schadenbild), sbBloecke = sb.replace(/\s+/g, ' ') === SCHADENBILD_START.trim() ? [] : ftx(sb, '5.1', '#fbSchadenbild');
+  // Vorbelegung stehen gelassen, darunter weitergeschrieben (z. B. nur ein Foto): der halbe Satz wird die Lücke
+  if (sbBloecke[0] && sbBloecke[0].t === 'p' && G.text(sbBloecke[0].runs).trim() === SCHADENBILD_START.trim())
+    sbBloecke[0] = { t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] };
+  const befund = [{ t: 'h2', runs: ['5.1 Brandlast und Schadenbild'] }, ...(sbBloecke.length ? sbBloecke : [{ t: 'p', runs: [{ gap: '[Brandlast und Schadenbild beschreiben]' }] }])];
   let unter = 1, tabNr = 0;
   const h2 = titel_ => befund.push({ t: 'h2', runs: [`5.${++unter} ${titel_}`] });
   const kuerzel = new Set();
@@ -397,6 +435,10 @@ function bericht(eingabe) {
   const stelle = roh => { const r = raumAusschreiben(roh); r.ersetzt.forEach(k => kuerzel.add(k)); return r.text; };
   [...clErg, ...pakErg].forEach(x => { x.stelle = stelle(x.roh); });
   proben.forEach(p => { p.stelleBericht = stelle(p.stelle); });
+  // Bildunterschrift ohne Punkt am Ende – wie die Fotos der Freitextfelder und die echten Brandberichte („Abb. 2: EG, Küche“)
+  if (fotoSatz) pr.push({ t: 'p', runs: [fotoSatz] });
+  mitFoto.forEach(p => pr.push({ t: 'fig', label: p.label, datei: p.foto,
+    caption: `Abb. ${p.abb}: ${p.material || p.ref}${p.stelleBericht ? ', ' + p.stelleBericht : ''}` }));
   const mitTabellen = !!fb.tabellen;
   const rolleZusatz = x => (x.rolle === 'referenz' ? ' (Referenz)' : x.rolle === 'frei' ? ' (Freimessung)' : '');
   /** Einzelergebnisse: Tabelle (Haken) oder Verweis auf den Prüfbericht */
@@ -639,16 +681,52 @@ function bericht(eingabe) {
       nrs.length > 1 ? 'den Prüfberichten ' : 'dem Prüfbericht ', nrListe(nrs), ` zu entnehmen ${anlNr(nrs)}. `, { gap: '[Bewertung der weiteren Untersuchungen ergänzen]' }] });
   }
   if (kuerzel.size) hinweise.push(`Entnahmestelle: Abkürzungen ausgeschrieben (${[...kuerzel].map(k => `${k} → ${RAUM_KUERZEL[k]}`).join(', ')}) – im Prüfbericht stehen die Kürzel; bitte prüfen.`);
-  const massnahmen = [{ t: 'p', runs: [{ gap: sanierung ? '[Sanierungsmaßnahmen ergänzen]' : '[Schlussfolgerungen ergänzen]' }] }];
+
+  /* 6. Sanierungsmaßnahmen: Einleitungssatz, darunter je angehaktem Umfang ein Freitext – mehrere Haken → 6.1, 6.2 … (fortlaufend,
+     feste Titel), ein Haken → ohne Unterabschnitt direkt unter dem Satz. Untersuchungsbericht: „6. Schlussfolgerungen“, ein Feld. */
+  const leerOder = (bloecke, luecke) => (bloecke.length ? bloecke : [{ t: 'p', runs: [{ gap: luecke }] }]);
+  const massnahmen = [];
+  if (sanierung) {
+    massnahmen.push({ t: 'p', runs: [EINLEITUNG_6] });
+    const teile = SAN.filter(([k]) => fb.umfang && fb.umfang[k]);
+    if (!teile.length) massnahmen.push({ t: 'p', runs: [{ gap: '[Sanierungsmaßnahmen ergänzen]' }] });
+    teile.forEach(([, feld, titel_, luecke], i) => {
+      if (teile.length > 1) massnahmen.push({ t: 'h2', runs: [`6.${i + 1} ${titel_}`] });
+      massnahmen.push(...leerOder(ftx(fb[feld], `6. ${titel_}`, '#' + SAN_FELD[feld]), luecke));
+    });
+    SAN.filter(([k, feld]) => !(fb.umfang && fb.umfang[k]) && s(fb[feld])).forEach(([, , titel_]) =>
+      hinweise.push(`Sanierungsmaßnahmen ${titel_}: Text eingetragen, aber „${titel_}“ ist unter Umfang nicht angehakt – steht nicht im Bericht.`));
+  } else massnahmen.push(...leerOder(ftx(fb.schlussfolgerungen, '6. Schlussfolgerungen', '#fbSchluss'), '[Schlussfolgerungen ergänzen]'));
+  // Titel umgestellt: Texte des anderen Titels bleiben gespeichert, stehen aber nicht im Bericht – sagen, statt still wegzulassen
+  const fremd = sanierung ? (s(fb.schlussfolgerungen) ? ['6. Schlussfolgerungen'] : [])
+    : [...SAN.filter(([, feld]) => s(fb[feld])).map(([, , t]) => `6. Sanierungsmaßnahmen ${t}`), ...(s(fb.zusammenfassung) ? ['8. Zusammenfassung'] : [])];
+  if (fremd.length) hinweise.push(`${liste(fremd)}: Text eingetragen, gehört aber zum Titel „${sanierung ? 'Untersuchungsbericht' : 'Sanierungsvorschlag'}“ – steht nicht im Bericht.`);
 
   /* 7. Arbeitsschutzmaßnahmen: GB 0 eigener Satz (Befunde Nr. 10), GB 1–3 ein Satz mit der Nummer; KMF (TRGS 521) und Asbest (TRGS 519) */
-  const gb = GB.includes(s(fb.gb)) ? s(fb.gb) : '';
-  // „Untersuchungsbericht“ hat keine Sanierungsmaßnahmen – vorläufige Formulierung, bis Basti einen Wortlaut gibt (PR #14)
-  const bei = sanierung ? 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen' : gb === '0' ? 'Bei Sanierungsarbeiten' : 'Bei Sanierungsarbeiten in den untersuchten Bereichen';
-  const as = [];
-  if (gb === '0') as.push({ t: 'p', runs: [`${bei} sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche sind ${VDS}, dem Gefahrenbereich 0 (GB 0) zuzuordnen.`] });
-  else as.push({ t: 'p', runs: [`${bei} sind Arbeitsschutzmaßnahmen für den Gefahrenbereich `, gb ? `${gb} (GB ${gb})` : { gap: '[Gefahrenbereich wählen]' }, ` ${VDS}, vorzunehmen.`] });
-  if (gb && gb !== '0' && fb.uebrige) as.push({ t: 'p', runs: [`Bei Arbeiten in den übrigen ${P.nutzung === 'Wohnen' ? 'Wohnungen' : 'Bereichen'} sind keine über den normalen Arbeitsschutz hinausgehenden Maßnahmen notwendig.`] });
+  const gb = GB.includes(s(fb.gb)) ? s(fb.gb) : '', gb2 = GB.includes(s(fb.gb2)) ? s(fb.gb2) : '';
+  /* Bereich (optional, z. B. „im Obergeschoss“) hinter „Sanierungsmaßnahmen“; ein zweiter Bereich mit eigenem Gefahrenbereich
+     (26.0517: OG GB 1, EG GB 0) braucht beide Bereichsangaben – fehlt eine, steht sie als Lücke da. */
+  const b1 = s(fb.bereich), b2 = s(fb.bereich2), zweiter = !!(b2 || gb2);
+  const anhaengen = (runs, t) => { if (typeof runs[runs.length - 1] === 'string') runs[runs.length - 1] += t; else runs.push(t); return runs; };
+  const gbSatz = (g, bereich, gbLuecke) => {
+    // „Untersuchungsbericht“ hat keine Sanierungsmaßnahmen – vorläufige Formulierung, bis Basti einen Wortlaut gibt (PR #14)
+    const bei = sanierung ? 'Bei Durchführung der oben angegebenen Sanierungsmaßnahmen' : bereich ? 'Bei Sanierungsarbeiten'
+      : g === '0' ? 'Bei Sanierungsarbeiten' : 'Bei Sanierungsarbeiten in den untersuchten Bereichen';
+    const runs = typeof bereich === 'string' ? [bereich ? `${bei} ${bereich}` : bei] : [bei + ' ', bereich];
+    if (g === '0') {
+      // mit Bereich „Die untersuchten Bereiche im Obergeschoss sind …“ – sonst widerspräche der Satz einem zweiten Bereich mit GB 1–3
+      anhaengen(runs, ' sind aus chemischer Sicht keine über die üblichen Arbeitsschutzmaßnahmen hinausgehenden besonderen Schutzmaßnahmen gegen brandbedingte Schadstoffe erforderlich. Die untersuchten Bereiche');
+      if (typeof bereich === 'string') anhaengen(runs, bereich ? ' ' + bereich : ''); else runs.push(' ', bereich);
+      return { t: 'p', runs: anhaengen(runs, ` sind ${VDS}, dem Gefahrenbereich 0 (GB 0) zuzuordnen.`) };
+    }
+    anhaengen(runs, ' sind Arbeitsschutzmaßnahmen für den Gefahrenbereich ');
+    if (g) anhaengen(runs, `${g} (GB ${g})`); else runs.push({ gap: gbLuecke });
+    runs.push(` ${VDS}, vorzunehmen.`);
+    return { t: 'p', runs };
+  };
+  const as = [gbSatz(gb, zweiter && !b1 ? { gap: '[Bereich eintragen]' } : b1, '[Gefahrenbereich wählen]')];
+  if (zweiter) as.push(gbSatz(gb2, b2 || { gap: '[Zweiten Bereich eintragen]' }, '[Gefahrenbereich zweiter Bereich wählen]'));
+  if (((gb && gb !== '0') || (gb2 && gb2 !== '0')) && fb.uebrige) as.push({ t: 'p', runs: [`Bei Arbeiten in den übrigen ${P.nutzung === 'Wohnen' ? 'Wohnungen' : 'Bereichen'} sind keine über den normalen Arbeitsschutz hinausgehenden Maßnahmen notwendig.`] });
   if (kmf.some(p => p.whoNachgewiesen)) {
     if (f.einbau === 'vor1996') as.push({ t: 'p', runs: ['Der Dämmstoff wurde vor 1996 eingebaut und ist nach TRGS 521 als alte Mineralwolle anzusehen. ',
       'Bei Ausbau, Demontage und Instandhaltung sind die Schutzmaßnahmen der TRGS 521 „Tätigkeiten mit alter Mineralwolle“ einzuhalten.'] });
@@ -664,6 +742,10 @@ function bericht(eingabe) {
       'Die Arbeiten dürfen nur von Fachbetrieben mit der erforderlichen Sachkunde ausgeführt werden.');
     as.push({ t: 'p', runs: r });
   }
+  // Zusatz (optional, Befunde Nr. 10 – z. B. Belgien, TRGS 524) am Ende von 7.; leer → nichts
+  as.push(...ftx(fb.zusatz, '7. Zusatz', '#fbZusatz'));
+  /* 8. Zusammenfassung Sanierungsmaßnahmen (nur Sanierungsvorschlag): je Zeile „Bereich: Maßnahme“ → Aufzählung mit fettem Bereich */
+  const zusammenfassung = sanierung ? leerOder(ftx(fb.zusammenfassung, '8. Zusammenfassung', '#fbZusammenfassung', { label: true }), '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]') : [];
 
   /* Unterschriften und Anlagen */
   const { unterschriften, svQuelle } = unterschriftenBlock(e, f, { sv, pn, mt }, false, hinweise, hinweisAktionen);
@@ -681,7 +763,7 @@ function bericht(eingabe) {
     { titel: '5. Befund', inhalt: befund },
     { titel: sanierung ? '6. Sanierungsmaßnahmen' : '6. Schlussfolgerungen', inhalt: massnahmen },
     { titel: '7. Arbeitsschutzmaßnahmen', inhalt: as },
-    ...(sanierung ? [{ titel: '8. Zusammenfassung Sanierungsmaßnahmen', inhalt: [{ t: 'p', runs: [{ gap: '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]' }] }] }] : []),
+    ...(sanierung ? [{ titel: '8. Zusammenfassung Sanierungsmaßnahmen', inhalt: zusammenfassung }] : []),
   ];
   const modell = {
     dateiname: `${+f.mitteilung || 1}._Mitteilung_${P.nr || 'Projekt'}.docx`,
@@ -696,10 +778,12 @@ function bericht(eingabe) {
       mitWischErgebnis: clW.length + pakW.length > 0, mitPakWisch: pakW.length > 0 || nPak > 0, referenzVorgabe: referenzVorgabe(P.nutzung) },
   };
   modell.luecken = luecken(modell);
+  // selbst geschriebene Lücken der Freitextfelder → Feld (bericht-luecken.js zuordnen); nur, was noch im Bericht steht
+  modell.lueckenFelder = Object.fromEntries(Object.entries(lueckenFelder).filter(([g]) => modell.luecken.includes(g)));
   return modell;
 }
 
-const API = { VERSION: 1, art: 'brand', bericht, vorgabe, objektart, OBJEKTART, TITEL, referenzVorgabe, SPALTEN_ERG, nrText };
+const API = { VERSION: 1, art: 'brand', bericht, vorgabe, objektart, OBJEKTART, TITEL, referenzVorgabe, SPALTEN_ERG, nrText, SAN, FREITEXT, SCHADENBILD_START };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtBrand = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

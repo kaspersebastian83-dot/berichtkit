@@ -27,8 +27,8 @@ const bilder = { logoSvg: fs.readFileSync(path.join(ROOT, 'assets/logo-schiffers
 const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bilder)), 'word/document.xml');
 
 (async () => {
-  await fall('Berichtsarten: Asbest bereit, Brand im Aufbau (Modul da, nicht bereit)', () => {
-    assert.deepEqual(T.BERICHTSARTEN.map(a => [a.art, a.bereit, a.modul]), [['asbest', true, true], ['brand', false, true]]);
+  await fall('Berichtsarten: Asbest und Brand bereit (Brand ab 1.14.0)', () => {
+    assert.deepEqual(T.BERICHTSARTEN.map(a => [a.art, a.bereit, a.modul]), [['asbest', true, true], ['brand', true, true]]);
     assert.equal(T.berichtsart({}), 'asbest'); assert.equal(T.berichtsart(null), 'asbest');
     assert.equal(T.berichtsart({ art: ' Brand ' }), 'brand');
   });
@@ -39,11 +39,11 @@ const wordXml = async m => zipDatei(await D.Packer.toBuffer(W.erstellen(D, m, bi
     assert.equal(ohne.deckblatt.titel, 'Untersuchungsbericht vom 27.10.2026'); assert.equal(ohne.kopf[0], ohne.deckblatt.titel);
   });
 
-  await fall('bericht(): Berichtsart ohne Modul wirft – nie ein Asbestbericht stattdessen; Brand im Aufbau baut, aber gesperrt', () => {
+  await fall('bericht(): Berichtsart ohne Modul wirft – nie ein Asbestbericht stattdessen; Brand baut ohne Sperre „im Aufbau“', () => {
     assert.throws(() => T.bericht(eingabe(form({ art: 'pak' }))), /Berichtsart „pak“ gibt es in BerichtKit noch nicht/);
     const b = T.bericht(eingabe(form({ art: 'brand' })));
     assert.equal(b.deckblatt.titel, 'Sanierungsvorschlag vom 27.10.2026'); assert.ok(b.brand, 'Brandmodell');
-    assert.match(b.sperren[0], /Brandbericht ist noch im Aufbau/);
+    assert.ok(!b.sperren.some(x => /im Aufbau/.test(x)), 'Brand bereit – keine Sperre „noch im Aufbau“');
     assert.deepEqual(T.bericht(eingabe(form())).sperren, [], 'Asbestbericht ohne diese Sperre');
   });
 

@@ -30,8 +30,10 @@ const FELDER = {
     { luecke: '[Objekt]', wo: PZ },
     { luecke: /^\[Foto fehlt/, ziel: '#probenListe', wo: 'Proben › Foto – Datei nicht lesbar: in FotoKit prüfen, anderes Foto wählen oder in Word einfügen' },
     { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
+    // Freitext-Schreibweise (bericht-gemeinsam.js freitext) – der Asbestbericht hat noch keine Freitextfelder
+    { luecke: '[Bildunterschrift ergänzen]', wo: 'FotoKit › Beschreibung des Fotos – oder im Freitext „[Abb: Datei | Bildunterschrift]“' },
   ],
-  // Brandbericht (bericht-brand.js, ab 1.12.0; 5.2–5.7 ab 1.13.0 – 5.1, 6. und 8. bekommen in Schritt 5 eigene Felder)
+  // Brandbericht (bericht-brand.js, ab 1.12.0; 5.2–5.7 ab 1.13.0; Freitextfelder 5.1, 6., 7., 8. ab 1.14.0)
   brand: [
     { luecke: '[Auftragsdatum]', feld: '#fAuftrag', wo: 'Auftrag › Auftragsdatum' },
     { luecke: '[Auftraggeber]', feld: '#fAg', wo: 'Auftrag › Auftraggeber im Satz (Deckblatt: Projektzentrale)' },
@@ -54,7 +56,7 @@ const FELDER = {
     { luecke: /^\[Bewertung der .+ ergänzen\]$/, wo: 'in Word ergänzen' },
     { luecke: /^\[Einordnung der (?:Chlorid|PAK)-Wischproben ergänzen\]$/, wo: 'ResultKit › Werte prüfen (Einheit je Fläche), sonst in Word ergänzen' },
     { luecke: '[Abschluss Chlorid ergänzen]', wo: 'in Word ergänzen (Variante A oder B, siehe Hinweise)' },
-    { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
+    { luecke: /^\[Schlussfolgerung für /, wo: 'in Word ergänzen' },   // nicht eindeutiges Asbestergebnis – „[Schlussfolgerungen ergänzen]“ hat ein Feld
     { luecke: '[Projektnummer]', wo: PZ },
     { luecke: '[Schadendatum]', wo: PZ + ' (Schadendatum oder „nicht bekannt“)' },
     { luecke: '[Ortstermin]', wo: PZ + ' (Ortstermin)' },
@@ -63,8 +65,19 @@ const FELDER = {
     { luecke: '[Schadenort]', wo: PZ },
     { luecke: '[Objekt]', wo: PZ },
     { luecke: '[Schaden-Nr.]', wo: PZ },
-    { luecke: /^\[Foto fehlt/, wo: 'Foto – Datei nicht lesbar: in FotoKit prüfen oder in Word einfügen' },
-    { luecke: /^\[(?:Brandlast und Schadenbild beschreiben|Sanierungsmaßnahmen ergänzen|Schlussfolgerungen ergänzen|Zusammenfassung der Sanierungsmaßnahmen ergänzen)\]$/, wo: 'in Word ergänzen (Formular dafür folgt)' },
+    { luecke: /^\[Foto fehlt/, wo: 'Foto – Datei nicht lesbar: in FotoKit prüfen, im Freitext den Dateinamen prüfen, anderes Foto wählen oder in Word einfügen' },
+    // Freitextfelder (ab 1.14.0): feld = leeres Feld gelb umrandet, ziel = Sprung auch dann, wenn nur die Vorbelegung drinsteht
+    { luecke: '[Brandlast und Schadenbild beschreiben]', feld: '#fbSchadenbild', ziel: '#fbSchadenbild', wo: 'Brandbericht › 5.1 Brandlast und Schadenbild' },
+    { luecke: '[Sanierungsmaßnahmen Gebäude beschreiben]', feld: '#fbSanGebaeude', ziel: '#fbSanGebaeude', wo: 'Brandbericht › 6. Sanierungsmaßnahmen Gebäude' },
+    { luecke: '[Sanierungsmaßnahmen technische Einrichtung beschreiben]', feld: '#fbSanTechnik', ziel: '#fbSanTechnik', wo: 'Brandbericht › 6. Sanierungsmaßnahmen technische Einrichtung' },
+    { luecke: '[Sanierungsmaßnahmen Warenvorräte beschreiben]', feld: '#fbSanWaren', ziel: '#fbSanWaren', wo: 'Brandbericht › 6. Sanierungsmaßnahmen Warenvorräte' },
+    { luecke: '[Sanierungsmaßnahmen ergänzen]', ziel: '#fbUmfang', wo: 'Brandbericht › Umfang anhaken, dann die Sanierungsmaßnahmen dazu eintragen' },
+    { luecke: '[Schlussfolgerungen ergänzen]', feld: '#fbSchluss', ziel: '#fbSchluss', wo: 'Brandbericht › 6. Schlussfolgerungen' },
+    { luecke: '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]', feld: '#fbZusammenfassung', ziel: '#fbZusammenfassung', wo: 'Brandbericht › 8. Zusammenfassung' },
+    { luecke: '[Bereich eintragen]', feld: '#fbBereich', wo: 'Brandbericht › 7. Bereich (bei zwei Bereichen nötig)' },
+    { luecke: '[Zweiten Bereich eintragen]', feld: '#fbBereich2', wo: 'Brandbericht › 7. Zweiter Bereich' },
+    { luecke: '[Gefahrenbereich zweiter Bereich wählen]', feld: '#fbGb2', wo: 'Brandbericht › 7. Gefahrenbereich zweiter Bereich' },
+    { luecke: '[Bildunterschrift ergänzen]', wo: 'FotoKit › Beschreibung des Fotos – oder im Freitext „[Abb: Datei | Bildunterschrift]“' },
   ],
 };
 const IN_WORD = 'in Word ausfüllen';
@@ -73,10 +86,13 @@ const IN_WORD = 'in Word ausfüllen';
 function eintrag(luecke, art) {
   return (FELDER[art || 'asbest'] || []).find(e => (e.luecke instanceof RegExp ? e.luecke.test(luecke) : e.luecke === luecke)) || null;
 }
-/** Lücken (modell.luecken, je Text einmal, in Berichtsreihenfolge) → [{ luecke, feld, ziel, wo, bekannt }] */
-function zuordnen(luecken, art) {
+/** Lücken (modell.luecken, je Text einmal, in Berichtsreihenfolge) → [{ luecke, feld, ziel, wo, bekannt }].
+    eigene = modell.lueckenFelder: Lücken, die jemand selbst in ein Freitextfeld geschrieben hat ({ '[Text]': { feld: '#id', wo } }) –
+    sie springen zu ihrem Feld; die Tabelle oben geht vor (gleicher Text wie eine Lücke von BerichtKit). */
+function zuordnen(luecken, art, eigene) {
   return (luecken || []).map(l => {
-    const e = eintrag(l, art);
+    const x = eigene && Object.prototype.hasOwnProperty.call(eigene, l) ? eigene[l] : null;
+    const e = eintrag(l, art) || (x && x.feld ? { feld: x.feld, ziel: x.feld, wo: `Brandbericht › ${x.wo || 'Freitext'} (selbst eingetragene Lücke – im Feld oder in Word ausfüllen)` } : null);
     return { luecke: l, feld: (e && e.feld) || '', ziel: (e && e.ziel) || '', wo: (e && e.wo) || IN_WORD, bekannt: !!e };
   });
 }
