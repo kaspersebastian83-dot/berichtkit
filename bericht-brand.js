@@ -290,7 +290,7 @@ function bericht(eingabe) {
 
   /* 1. Veranlassung */
   const brandort = s(fb.brandort) || objektart(P.nutzung);
-  if (!s(fb.brandort) && !P.nutzung) hinweise.push('Nutzung fehlt in der Projektzentrale – in 1. steht „in dem Objekt“. Nutzung eintragen oder unter „Brandbericht“ den Brandort im Satz angeben.');
+  if (!s(fb.brandort) && !P.nutzung) hinweise.push('Nutzung fehlt in der Projektzentrale – in 1. steht „in dem Objekt“. Nutzung eintragen oder unter „Vor Ort & Proben“ den Brandort im Satz angeben.');
   const objekt = L(objektImSatz(P.objekt), 'Objekt');
   const v = [];
   if (sd.art === 'unbekannt') v.push({ t: 'p', runs: [gross(brandort), ' ', objekt, ' kam es zu einem Brandschaden. Der genaue Zeitpunkt des Schadens ist nicht bekannt.'] });
@@ -563,9 +563,9 @@ function bericht(eingabe) {
       const refLuecke = { gap: '[Hintergrundreferenz 10 oder 100 µg/m²]' };
       befund.push({ t: 'p', runs: ['Erfahrungsgemäß liegt die Hintergrundbelastung in Wohn- und Bürobereichen, die einer turnusgemäßen Reinigung unterzogen werden, in einer Größenordnung von ca. 10 µg/m² für die Summe der 16 PAK nach EPA; in Gewerbe- und Industriebereichen können auch höhere Werte von ca. 100 µg/m² vorliegen. ',
         R ? `Für das vorliegende Objekt wird die Hintergrundreferenz von ca. ${R} µg/m² herangezogen.` : refLuecke, ...(s(fb.referenzGrund) ? [' ' + s(fb.referenzGrund)] : [])] });
-      if (!R) hinweise.push(`Hintergrundreferenz PAK fehlt (Nutzung ${P.nutzung ? `„${P.nutzung}“ ohne Zuordnung` : 'in der Projektzentrale nicht eingetragen'}) – unter „Brandbericht“ 10 oder 100 µg/m² wählen.`);
+      if (!R) hinweise.push(`Hintergrundreferenz PAK fehlt (Nutzung ${P.nutzung ? `„${P.nutzung}“ ohne Zuordnung` : 'in der Projektzentrale nicht eingetragen'}) – unter „Befund & Texte“ 10 oder 100 µg/m² wählen.`);
       const rv = referenzVorgabe(P.nutzung);
-      if (R && rv && String(R) !== rv && !s(fb.referenzGrund)) hinweise.push(`Hintergrundreferenz ${R} µg/m² weicht von der Nutzung „${P.nutzung}“ (${rv} µg/m²) ab – Begründung unter „Brandbericht“ ergänzen?`);
+      if (R && rv && String(R) !== rv && !s(fb.referenzGrund)) hinweise.push(`Hintergrundreferenz ${R} µg/m² weicht von der Nutzung „${P.nutzung}“ (${rv} µg/m²) ab – Begründung unter „Befund & Texte“ ergänzen?`);
       pakW.forEach(x => { x.stufe = R ? BW.pakStufe(x.w, R) : -1; });
       if (planVds.some(k => SUMME_PAK.test(k))) hinweise.push(`${nr53}: In PlanKit ist für Σ 16 EPA-PAK eine eigene Skala eingestellt – der Bericht ordnet nach der Hintergrundreferenz ein, die Ergebniskarte nach der PlanKit-Skala. Bitte prüfen.`);
       const planR = planUsage === 'residential' ? 10 : planUsage === 'industrial' ? 100 : 0;

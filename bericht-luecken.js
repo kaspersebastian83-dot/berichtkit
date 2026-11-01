@@ -12,14 +12,14 @@
 const PZ = 'in der Projektzentrale eintragen';
 const FELDER = {
   asbest: [
-    { luecke: '[Auftragsdatum]', feld: '#fAuftrag', wo: 'Auftrag › Auftragsdatum' },
-    { luecke: '[Eingangsdatum]', feld: '#fEingang', wo: 'Bericht › Eingangsdatum' },
-    { luecke: '[Auftraggeber]', feld: '#fAg', wo: 'Auftrag › Auftraggeber im Satz (Deckblatt: Projektzentrale)' },
-    { luecke: '[Versicherer]', feld: '#fVers', wo: 'Auftrag › Versicherer' },
-    { luecke: '[Probenehmer]', feld: '#fPn', wo: 'Personen › Probenahme durch' },
-    { luecke: '[Sachverständige(r)]', feld: '#fSv', wo: 'Personen › Unterschrift' },
-    { luecke: '[Labor]', feld: '#fLabor', wo: 'Personen › Labor' },
-    { luecke: '[KI-Wert]', feld: '#probenListe input[data-art="ki"]', wo: 'Proben › KI (aus dem Prüfbericht)' },
+    { luecke: '[Auftragsdatum]', feld: '#fAuftrag', wo: 'Bericht & Auftrag › Auftragsdatum' },
+    { luecke: '[Eingangsdatum]', feld: '#fEingang', wo: 'Bericht & Auftrag › Eingangsdatum' },
+    { luecke: '[Auftraggeber]', feld: '#fAg', wo: 'Bericht & Auftrag › Auftraggeber im Satz (Deckblatt: Projektzentrale)' },
+    { luecke: '[Versicherer]', feld: '#fVers', wo: 'Bericht & Auftrag › Versicherer' },
+    { luecke: '[Probenehmer]', feld: '#fPn', wo: 'Vor Ort & Proben › Probenahme durch' },
+    { luecke: '[Sachverständige(r)]', feld: '#fSv', wo: 'Anlagen & Unterschrift › Unterschrift' },
+    { luecke: '[Labor]', feld: '#fLabor', wo: 'Anlagen & Unterschrift › Labor' },
+    { luecke: '[KI-Wert]', feld: '#probenListe input[data-art="ki"]', wo: 'Vor Ort & Proben › KI (aus dem Prüfbericht)' },
     { luecke: '[Material]', ziel: '#probenListe', wo: 'LabelKit › Bauteil / Material' },
     { luecke: '[Probenahmedatum]', ziel: '#probenListe', wo: 'LabelKit › Datum der Probenahme' },
     { luecke: '[Prüfbericht-Nr.]', ziel: '#probenListe', wo: 'ResultKit › Laborergebnisse übernehmen' },
@@ -28,30 +28,30 @@ const FELDER = {
     { luecke: '[Risiko]', wo: PZ },
     { luecke: '[Schadenort]', wo: PZ },
     { luecke: '[Objekt]', wo: PZ },
-    { luecke: /^\[Foto fehlt/, ziel: '#probenListe', wo: 'Proben › Foto – Datei nicht lesbar: in FotoKit prüfen, anderes Foto wählen oder in Word einfügen' },
+    { luecke: /^\[Foto fehlt/, ziel: '#probenListe', wo: 'Vor Ort & Proben › Foto – Datei nicht lesbar: in FotoKit prüfen, anderes Foto wählen oder in Word einfügen' },
     { luecke: /^\[Schlussfolgerung/, wo: 'in Word ergänzen' },
     // Freitext-Schreibweise (bericht-gemeinsam.js freitext) – der Asbestbericht hat noch keine Freitextfelder
     { luecke: '[Bildunterschrift ergänzen]', wo: 'FotoKit › Beschreibung des Fotos – oder im Freitext „[Abb: Datei | Bildunterschrift]“' },
   ],
   // Brandbericht (bericht-brand.js, ab 1.12.0; 5.2–5.7 ab 1.13.0; Freitextfelder 5.1, 6., 7., 8. ab 1.14.0)
   brand: [
-    { luecke: '[Auftragsdatum]', feld: '#fAuftrag', wo: 'Auftrag › Auftragsdatum' },
-    { luecke: '[Auftraggeber]', feld: '#fAg', wo: 'Auftrag › Auftraggeber im Satz (Deckblatt: Projektzentrale)' },
-    { luecke: '[Versicherer]', feld: '#fVers', wo: 'Auftrag › Versicherer' },
-    { luecke: '[Umfang wählen]', ziel: '#fbUmfang', wo: 'Brandbericht › Umfang (Gebäude, technische Einrichtung, Warenvorräte)' },
-    { luecke: '[Anwesende eintragen]', feld: '#fbAnwesende', wo: 'Brandbericht › Weitere Anwesende (oder „nur unser Büro“ / „Teilnehmerliste“)' },
-    { luecke: '[Gefahrenbereich wählen]', feld: '#fbGb', wo: 'Brandbericht › Gefahrenbereich' },
-    { luecke: '[Probenehmer]', feld: '#fPn', wo: 'Personen › Vor Ort / Probenahme' },
-    { luecke: '[Sachverständige(r)]', feld: '#fSv', wo: 'Personen › Unterschrift' },
-    { luecke: '[Labor]', feld: '#fLabor', wo: 'Personen › Labor' },
-    { luecke: '[KI-Wert]', feld: '#probenListe input[data-art="ki"]', wo: 'Proben › KI (aus dem Prüfbericht)' },
+    { luecke: '[Auftragsdatum]', feld: '#fAuftrag', wo: 'Bericht & Auftrag › Auftragsdatum' },
+    { luecke: '[Auftraggeber]', feld: '#fAg', wo: 'Bericht & Auftrag › Auftraggeber im Satz (Deckblatt: Projektzentrale)' },
+    { luecke: '[Versicherer]', feld: '#fVers', wo: 'Bericht & Auftrag › Versicherer' },
+    { luecke: '[Umfang wählen]', ziel: '#fbUmfang', wo: 'Bericht & Auftrag › Umfang (Gebäude, technische Einrichtung, Warenvorräte)' },
+    { luecke: '[Anwesende eintragen]', feld: '#fbAnwesende', wo: 'Vor Ort & Proben › Weitere Anwesende (oder „nur unser Büro“ / „Teilnehmerliste“)' },
+    { luecke: '[Gefahrenbereich wählen]', feld: '#fbGb', wo: 'Befund & Texte › 7. Gefahrenbereich' },
+    { luecke: '[Probenehmer]', feld: '#fPn', wo: 'Vor Ort & Proben › Vor Ort / Probenahme' },
+    { luecke: '[Sachverständige(r)]', feld: '#fSv', wo: 'Anlagen & Unterschrift › Unterschrift' },
+    { luecke: '[Labor]', feld: '#fLabor', wo: 'Anlagen & Unterschrift › Labor' },
+    { luecke: '[KI-Wert]', feld: '#probenListe input[data-art="ki"]', wo: 'Vor Ort & Proben › KI (aus dem Prüfbericht)' },
     { luecke: '[Material]', ziel: '#probenListe', wo: 'LabelKit › Bauteil / Material' },
     { luecke: '[Prüfbericht-Nr.]', ziel: '#anlagenListe', wo: 'ResultKit › Laborergebnisse übernehmen' },
     { luecke: '[Prüfdatum Brandgeruch]', wo: 'LabelKit › Brandgeruch › Prüfdatum' },
     { luecke: '[Anlage-Nr. Brandgeruch]', ziel: '#anlagenListe', wo: 'Projektzentrale › Anlage PN 98 / Brandgeruch erstellen (dann anhaken)' },
     { luecke: '[Probenahme beschreiben]', wo: 'LabelKit › Proben erfassen, sonst in Word ergänzen' },
     { luecke: '[Untersuchungsparameter]', wo: 'LabelKit › Sonstige Proben › Untersuchungsparameter' },
-    { luecke: '[Hintergrundreferenz 10 oder 100 µg/m²]', feld: '#fbReferenz', wo: 'Brandbericht › Hintergrundreferenz PAK (Vorbelegung aus der Nutzung der Projektzentrale)' },
+    { luecke: '[Hintergrundreferenz 10 oder 100 µg/m²]', feld: '#fbReferenz', wo: 'Befund & Texte › Hintergrundreferenz PAK (Vorbelegung aus der Nutzung der Projektzentrale)' },
     { luecke: '[Ergebnis der Brandgeruchprüfung ergänzen]', wo: 'LabelKit › Brandgeruch: Ergebnisse aufdecken und alle fünf Bewertungen eintragen' },
     { luecke: /^\[Bewertung der .+ ergänzen\]$/, wo: 'in Word ergänzen' },
     { luecke: /^\[Einordnung der (?:Chlorid|PAK)-Wischproben ergänzen\]$/, wo: 'ResultKit › Werte prüfen (Einheit je Fläche), sonst in Word ergänzen' },
@@ -67,16 +67,16 @@ const FELDER = {
     { luecke: '[Schaden-Nr.]', wo: PZ },
     { luecke: /^\[Foto fehlt/, wo: 'Foto – Datei nicht lesbar: in FotoKit prüfen, im Freitext den Dateinamen prüfen, anderes Foto wählen oder in Word einfügen' },
     // Freitextfelder (ab 1.14.0): feld = leeres Feld gelb umrandet, ziel = Sprung auch dann, wenn nur die Vorbelegung drinsteht
-    { luecke: '[Brandlast und Schadenbild beschreiben]', feld: '#fbSchadenbild', ziel: '#fbSchadenbild', wo: 'Brandbericht › 5.1 Brandlast und Schadenbild' },
-    { luecke: '[Sanierungsmaßnahmen Gebäude beschreiben]', feld: '#fbSanGebaeude', ziel: '#fbSanGebaeude', wo: 'Brandbericht › 6. Sanierungsmaßnahmen Gebäude' },
-    { luecke: '[Sanierungsmaßnahmen technische Einrichtung beschreiben]', feld: '#fbSanTechnik', ziel: '#fbSanTechnik', wo: 'Brandbericht › 6. Sanierungsmaßnahmen technische Einrichtung' },
-    { luecke: '[Sanierungsmaßnahmen Warenvorräte beschreiben]', feld: '#fbSanWaren', ziel: '#fbSanWaren', wo: 'Brandbericht › 6. Sanierungsmaßnahmen Warenvorräte' },
-    { luecke: '[Sanierungsmaßnahmen ergänzen]', ziel: '#fbUmfang', wo: 'Brandbericht › Umfang anhaken, dann die Sanierungsmaßnahmen dazu eintragen' },
-    { luecke: '[Schlussfolgerungen ergänzen]', feld: '#fbSchluss', ziel: '#fbSchluss', wo: 'Brandbericht › 6. Schlussfolgerungen' },
-    { luecke: '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]', feld: '#fbZusammenfassung', ziel: '#fbZusammenfassung', wo: 'Brandbericht › 8. Zusammenfassung' },
-    { luecke: '[Bereich eintragen]', feld: '#fbBereich', wo: 'Brandbericht › 7. Bereich (bei zwei Bereichen nötig)' },
-    { luecke: '[Zweiten Bereich eintragen]', feld: '#fbBereich2', wo: 'Brandbericht › 7. Zweiter Bereich' },
-    { luecke: '[Gefahrenbereich zweiter Bereich wählen]', feld: '#fbGb2', wo: 'Brandbericht › 7. Gefahrenbereich zweiter Bereich' },
+    { luecke: '[Brandlast und Schadenbild beschreiben]', feld: '#fbSchadenbild', ziel: '#fbSchadenbild', wo: 'Befund & Texte › 5.1 Brandlast und Schadenbild' },
+    { luecke: '[Sanierungsmaßnahmen Gebäude beschreiben]', feld: '#fbSanGebaeude', ziel: '#fbSanGebaeude', wo: 'Befund & Texte › 6. Sanierungsmaßnahmen Gebäude' },
+    { luecke: '[Sanierungsmaßnahmen technische Einrichtung beschreiben]', feld: '#fbSanTechnik', ziel: '#fbSanTechnik', wo: 'Befund & Texte › 6. Sanierungsmaßnahmen technische Einrichtung' },
+    { luecke: '[Sanierungsmaßnahmen Warenvorräte beschreiben]', feld: '#fbSanWaren', ziel: '#fbSanWaren', wo: 'Befund & Texte › 6. Sanierungsmaßnahmen Warenvorräte' },
+    { luecke: '[Sanierungsmaßnahmen ergänzen]', ziel: '#fbUmfang', wo: 'Bericht & Auftrag › Umfang anhaken, dann die Sanierungsmaßnahmen dazu eintragen' },
+    { luecke: '[Schlussfolgerungen ergänzen]', feld: '#fbSchluss', ziel: '#fbSchluss', wo: 'Befund & Texte › 6. Schlussfolgerungen' },
+    { luecke: '[Zusammenfassung der Sanierungsmaßnahmen ergänzen]', feld: '#fbZusammenfassung', ziel: '#fbZusammenfassung', wo: 'Befund & Texte › 8. Zusammenfassung' },
+    { luecke: '[Bereich eintragen]', feld: '#fbBereich', wo: 'Befund & Texte › 7. Bereich (bei zwei Bereichen nötig)' },
+    { luecke: '[Zweiten Bereich eintragen]', feld: '#fbBereich2', wo: 'Befund & Texte › 7. Zweiter Bereich' },
+    { luecke: '[Gefahrenbereich zweiter Bereich wählen]', feld: '#fbGb2', wo: 'Befund & Texte › 7. Gefahrenbereich zweiter Bereich' },
     { luecke: '[Bildunterschrift ergänzen]', wo: 'FotoKit › Beschreibung des Fotos – oder im Freitext „[Abb: Datei | Bildunterschrift]“' },
   ],
 };
@@ -92,7 +92,7 @@ function eintrag(luecke, art) {
 function zuordnen(luecken, art, eigene) {
   return (luecken || []).map(l => {
     const x = eigene && Object.prototype.hasOwnProperty.call(eigene, l) ? eigene[l] : null;
-    const e = eintrag(l, art) || (x && x.feld ? { feld: x.feld, ziel: x.feld, wo: `Brandbericht › ${x.wo || 'Freitext'} (selbst eingetragene Lücke – im Feld oder in Word ausfüllen)` } : null);
+    const e = eintrag(l, art) || (x && x.feld ? { feld: x.feld, ziel: x.feld, wo: `Befund & Texte › ${x.wo || 'Freitext'} (selbst eingetragene Lücke – im Feld oder in Word ausfüllen)` } : null);
     return { luecke: l, feld: (e && e.feld) || '', ziel: (e && e.ziel) || '', wo: (e && e.wo) || IN_WORD, bekannt: !!e };
   });
 }
