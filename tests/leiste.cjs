@@ -175,7 +175,7 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   const eigen = block(fs.readFileSync(path.join(ROOT, 'mosaik-leiste.js'), 'utf8'));
   assert.ok(eigen && eigen.startsWith('/* ===== MOSAIK-LEISTE v3'), 'Block v3');
   const andere = { LabelKit: 'labelkit/index.html', FotoKit: 'bildumbenenner/index.html', ResultKit: 'resultkit/src/suite-bar.ts', PlanKit: 'probenplan/src/suite-bar.ts', BelegKit: 'aufwandkit/index.html' };
-  const V3 = ['LabelKit', 'FotoKit', 'PlanKit'];   // tragen v3 schon (müssen gleich sein); die anderen ziehen mit ihrem Umbau nach (FotoKit ab 2.0.0, PlanKit ab 2.0.0)
+  const V3 = ['LabelKit', 'FotoKit', 'PlanKit', 'ResultKit'];   // tragen v3 schon (müssen gleich sein); die anderen ziehen mit ihrem Umbau nach (FotoKit ab 2.0.0, PlanKit ab 2.0.0, ResultKit ab 2.0.0)
   const geprueft = [], nochV2 = [];
   for (const [app, rel] of Object.entries(andere)) {
     const f = path.join(ROOT, '..', rel); if (!fs.existsSync(f)) continue;
@@ -194,10 +194,15 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   for (const c of appFarben) assert.ok(!lookEigen.toLowerCase().includes(c), `keine App-Farbe ${c} im Look-Block`);
   assert.match(html.slice(html.indexOf('/* ===== Ende SPEKTRON-LOOK v')), /--sp-app:#b0683c;\s*--sp-app-dunkel:#9c5a32/, 'BerichtKit setzt seine Leistenfarbe nach dem Block');
   const mitLook = [];
-  const lookOrt = { ...andere, PlanKit: 'probenplan/src/spektron-look.css' };   // PlanKit (Vite) trägt den Look als eigene CSS-Datei
+  const lookOrt = { ...andere, PlanKit: 'probenplan/src/spektron-look.css', ResultKit: 'resultkit/src/spektron-look.css' };   // PlanKit und ResultKit (Vite) tragen den Look als eigene CSS-Datei
   for (const [app, rel] of Object.entries(lookOrt)) {
-    const f = path.join(ROOT, '..', rel); if (!fs.existsSync(f)) continue;
-    const b = look(fs.readFileSync(f, 'utf8')); if (!b) continue;
+    const f = path.join(ROOT, '..', rel), repo = path.join(ROOT, '..', rel.split('/')[0]);
+    // Apps mit Leiste v3 tragen auch den Look: liegt ihr Repo daneben, muss der Block da sein (kein stilles Überspringen)
+    if (V3.includes(app) && fs.existsSync(repo)) assert.ok(fs.existsSync(f), `Spektron-Look fehlt in ${app}: ${rel}`);
+    if (!fs.existsSync(f)) continue;
+    const b = look(fs.readFileSync(f, 'utf8'));
+    if (V3.includes(app)) assert.ok(b, `Spektron-Look-Block fehlt in ${app} (${rel})`);
+    if (!b) continue;
     assert.equal(b, lookEigen, `Spektron-Look in ${app} (${rel}) nicht byte-gleich`); mitLook.push(app);
   }
   console.log(`Spektron-Look v1: Block ok${mitLook.length ? `; byte-gleich mit ${mitLook.join(', ')}` : ' (noch keine andere App mit dem Block daneben)'}`);
