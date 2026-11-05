@@ -196,8 +196,13 @@ const P = '26.0100 Testweg Teststadt', name = s => s.kinder[1].textContent;   //
   const mitLook = [];
   const lookOrt = { ...andere, PlanKit: 'probenplan/src/spektron-look.css', ResultKit: 'resultkit/src/spektron-look.css' };   // PlanKit und ResultKit (Vite) tragen den Look als eigene CSS-Datei
   for (const [app, rel] of Object.entries(lookOrt)) {
-    const f = path.join(ROOT, '..', rel); if (!fs.existsSync(f)) continue;
-    const b = look(fs.readFileSync(f, 'utf8')); if (!b) continue;
+    const f = path.join(ROOT, '..', rel), repo = path.join(ROOT, '..', rel.split('/')[0]);
+    // Apps mit Leiste v3 tragen auch den Look: liegt ihr Repo daneben, muss der Block da sein (kein stilles Überspringen)
+    if (V3.includes(app) && fs.existsSync(repo)) assert.ok(fs.existsSync(f), `Spektron-Look fehlt in ${app}: ${rel}`);
+    if (!fs.existsSync(f)) continue;
+    const b = look(fs.readFileSync(f, 'utf8'));
+    if (V3.includes(app)) assert.ok(b, `Spektron-Look-Block fehlt in ${app} (${rel})`);
+    if (!b) continue;
     assert.equal(b, lookEigen, `Spektron-Look in ${app} (${rel}) nicht byte-gleich`); mitLook.push(app);
   }
   console.log(`Spektron-Look v1: Block ok${mitLook.length ? `; byte-gleich mit ${mitLook.join(', ')}` : ' (noch keine andere App mit dem Block daneben)'}`);
