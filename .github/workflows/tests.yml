@@ -68,6 +68,12 @@ jobs:
           BASIS: ${{ github.base_ref }}
         # gleichnamiger Zweig, sonst der Basiszweig des PRs, sonst main (Repo Probenplan, Ordner probenplan)
         run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/Probenplan.git ../probenplan 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/Probenplan.git ../probenplan 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/Probenplan.git ../probenplan
+      - name: ResultKit daneben holen (Leiste v3 und Spektron-Look byte-gleich)
+        env:
+          ZWEIG: ${{ github.head_ref }}
+          BASIS: ${{ github.base_ref }}
+        # gleichnamiger Zweig, sonst der Basiszweig des PRs, sonst main (Repo resultkit, Ordner resultkit)
+        run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/resultkit.git ../resultkit 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/resultkit.git ../resultkit 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/resultkit.git ../resultkit
       - name: Offline-Dateien und Leiste
         run: node tests/sw.cjs
       - name: Leiste v3, Spektron-Look und Berichtsart ohne art (gemerkt / Proben / asbest), Haken, Weiter
