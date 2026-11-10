@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.17.0';
-const APP_DATE = '01.11.2026';
+const APP_VERSION = '1.17.1';
+const APP_DATE = '10.11.2026';
 const CHANGELOG = [
+  ['1.17.1', '10.11.2026', 'Dateien an zwei Orten (Audit K1): Liegen Berichtsangaben, Projekt-, LabelKit-, Ergebnis-, Foto- oder Plandateien in „_Spektron“ und zusätzlich am früheren Ort (z. B. eine kopierte Datei), gilt immer die in „_Spektron“ – vorher schaltete eine solche Datei das Projekt ohne Hinweis zurück. Eine Zeile über den Karten nennt beide Dateien mit Datum; gelöscht wird nichts.'],
   ['1.17.0', '01.11.2026', 'Berichtswahl und Spektron-Look: Direkt unter dem Kopfband stehen jetzt zwei Kachelreihen – „Welcher Bericht?“ (Asbestbericht · Brandbericht) und beim Brandbericht „Welche Form?“ (Sanierungsvorschlag · Untersuchungsbericht, daneben, was die Form ändert). Die gewählte Kachel ist weiß mit Rahmen in der BerichtKit-Farbe; daneben steht, ob die Berichtsart für das Projekt gemerkt ist und ob sie zu den LabelKit-Proben passt (die passende andere Kachel trägt „passt zu den Proben“). Ist für das Projekt schon ein Bericht der offenen Art gespeichert, fragt BerichtKit vor dem Umschalten einmal nach. Die Kacheln kommen aus einem Berichte-Baum (bericht-text.js) – weitere Berichtsarten und Formen sind dort je ein Eintrag. Dafür entfallen der Titel-Schalter in „Bericht & Auftrag“, „Als … öffnen“ unter „Mehr …“ und der Hinweis „Zum Brandbericht“. Aussehen wie in den Entwürfen (gemeinsamer Block SPEKTRON-LOOK v1 für alle Apps): Schrift Segoe UI, ruhiges Grau statt Blau, Karten mit runden Ecken, die offene Karte mit Rahmen in BerichtKit-Farbe, der Zähler offener Stellen als gelbe Pille, große Knöpfe unten.'],
   ['1.16.0', '01.11.2026', 'Einfachere Oberfläche (Spektron Schritt 2): Oben steht das neue Kopfband der Spektron-Leiste – das Projekt groß, darunter Objekt, Nutzung, Schadendatum und Zuständig, die sechs Schritte als Kacheln mit Symbol (Proben, Fotos, Labor, Plan, Brandbericht/Asbestbericht, Abrechnung) und ein großes „Weiter: … →“ mit Grund. Die eigene Kopfzeile ist weg. Das Formular hat vier Karten in der Reihenfolge des Berichts – Bericht & Auftrag · Vor Ort & Proben · Befund & Texte (nur Brandbericht) · Anlagen & Unterschrift –, zugeklappt mit einer Zeile Zusammenfassung und „n offen“; aufgeklappt ist beim Öffnen die erste Karte mit offenen Stellen. Der Zähler „n Stellen noch offen“ klappt die richtige Karte auf und springt ins Feld. Die Hinweise stehen als eine aufklappbare Zeile unter dem Zähler (Sperren immer offen und rot). Unten genau eine Hauptaktion: „Brandbericht als Word speichern →“, gesperrt „Entwurf herunterladen →“, nach dem Speichern „Ans Büro übergeben →“ (daneben „Erneut speichern“). Alles andere unter „Mehr …“ unten links: Als Asbest-/Brandbericht öffnen, Word nur herunterladen, Einstellungen, anderen Projektordner wählen, Über BerichtKit (Version), Handbuch, Rückmeldung, Alle Projekte. Bericht, Speichern, Dateien und Verbindung zu den anderen Apps unverändert.'],
   ['1.15.0', '01.11.2026', 'Berichtsart durchgängig: Ohne Angabe in der Adresse (Leiste, „Zuletzt geöffnet“, Lesezeichen) öffnet BerichtKit die für das Projekt gemerkte Berichtsart – sonst die, die zu den LabelKit-Proben passt (Chlorid, Bohrmehl, PAK oder Brandgeruch → Brandbericht, nur Asbest → Asbestbericht), sonst den Asbestbericht. Gemerkt (in _BerichtKit.json) wird nur, was ausdrücklich gewählt wurde: Knopf in der Projektzentrale, „Zum Asbestbericht“/„Zum Brandbericht“ und Speichern. Die Adresse zeigt danach immer &art= (mit &auto=1, sobald gemerkt oder automatisch gewählt – Neu laden und Links der Leiste wählen dann wieder nach der Regel und überschreiben nichts, was ein Kollege inzwischen gemerkt hat; das wird gemeldet). Kopf und Fenstertitel nennen die Berichtsart (Tooltip: gemerkt oder nach den Proben gewählt). Im Asbestbericht steht ein Hinweis mit „Zum Brandbericht“, wenn die Proben nach Brandschaden aussehen. „Projekt wählen“ übernimmt die Berichtsart des vorigen Projekts nicht mehr. „Ans Büro übergeben →“ öffnet die Projektzentrale im eigenen Fenster (BerichtKit bleibt offen). Spektron-Leiste v2: Schritt „BerichtKit · Brandbericht“ (mit gemerkter Art), Haken nur für einen gespeicherten Bericht dieser Art, dessen Datei noch in „Mitteilungen“ liegt, nach dem gespeicherten Bericht „Weiter: Ans Büro übergeben →“, „Weiter“ nennt Ziel und Grund im Tooltip, keine Nummern mehr an den Schritten, „Aktuelles Projekt“ im Projektmenü lädt nicht mehr neu.'],
@@ -279,6 +280,17 @@ async function waehlen() {
 }
 
 /* ---------- Projekt lesen ---------- */
+/** K1: App-Dateien an zwei Orten (in „_Spektron“ und am früheren Ort) – eine sichtbare Zeile je Bereich, den BerichtKit liest. Nur lesen.
+    Beim Öffnen, beim Zurückkommen ins Fenster und vor dem Speichern/Herunterladen. → Kennung der Dateien am früheren Ort
+    ('' = keine Zeile) – ohne die Daten in „_Spektron“, die ändern sich beim eigenen Speichern. */
+async function zweiOrteZeigen(dir) {
+  const el = $('zweiOrte'); if (!el || !dir) return '';
+  let z = [];
+  try { if (SO.zweiOrte) z = await SO.zweiOrte(dir, ['berichtkit', 'projekt', 'resultkit', 'labelkit', 'fotokit', 'plankit', 'anlagenProtokoll', 'buero']); } catch (e) { z = []; }
+  if (S.dir !== dir) return '';
+  el.hidden = !z.length; el.innerHTML = z.map(e => esc(SO.zweiOrteText(e))).join('<br>');
+  return z.map(e => e.bereich + ':' + e.alt.map(a => a.name + '@' + (a.zeit || 0)).join(',')).join('|');
+}
 async function oeffnen(dir) {
   await zustandAbschliessen();
   S.laedt = true;
@@ -294,6 +306,7 @@ async function oeffnen(dir) {
     await archivLesen();
     S.ordner.kuerzel = ordnerKuerzel(dir.name);
     // Projektdaten, ResultKit, LabelKit – später beim Zurückkommen ins Fenster und vor dem Speichern erneut verglichen (quellenAuffrischen)
+    S.zweiOrteGesehen = ''; zweiOrteZeigen(dir).then(h => { if (S.dir === dir) S.zweiOrteGesehen = h; }).catch(() => {});   // K1: Dateien an zwei Orten? – im Hintergrund
     S.stempel = await quellenStempel(dir).catch(() => null);
     quellenUebernehmen(await quellenLesen(dir));
     // FotoKit
@@ -485,6 +498,8 @@ async function anlagenLesen() {
       if (h.kind !== 'file' || !/\.probenplan$/i.test(h.name) || PLAN_KOPIE.test(h.name)) continue;
       const f = await h.getFile().catch(() => null); if (!f) continue;
       if (h.name.normalize('NFC') === soll) { best = f; break; }
+      // ohne den genauen Namen (z. B. Ordner umbenannt): nur Pläne dieses Projekts – dieselbe Regel wie spektron-ordner.js (K1)
+      if (SO.planHaupt && !SO.planHaupt(h.name, 'file', { nr: SO.projektNr(dir.name) })) continue;
       if (!best || f.lastModified > best.lastModified) best = f;
     }
     if (best) {
@@ -1123,6 +1138,10 @@ const UNGESEHEN_MS = 3000;
 async function vorherNeuLesen(anlass) {
   await (S.fokusLauf || Promise.resolve()).catch(() => {});   // gerade beim Zurückkommen ins Fenster neu gelesen? Erst abwarten.
   const geaendert = await quellenAuffrischen(anlass).catch(() => []);
+  // K1: inzwischen eine Datei am früheren Ort dazugekommen (z. B. von einer alten App-Fassung)? Dann einmal anhalten, damit die Zeile gelesen wird.
+  // S.zweiOrteGesehen: was beim Öffnen bzw. beim letzten Anhalten schon dastand – eine Änderung erst durch den Fokus zählt als neu.
+  const zwei = await zweiOrteZeigen(S.dir).catch(() => '');
+  if (zwei && zwei !== S.zweiOrteGesehen) { S.zweiOrteGesehen = zwei; statusFest('<span class="warn">App-Dateien liegen an zwei Orten – lies bitte die gelbe Zeile oben und klick dann noch einmal.</span>'); return true; }
   await anlagenLesen().catch(() => {}); render();   // Anlagen frisch: inzwischen in FotoKit/PlanKit erstellt oder geändert?
   // Eben erst neu gelesen (Fokus und Klick fast gleichzeitig, z. B. direkt auf „Speichern“ aus ResultKit zurück): auch dann einmal anhalten
   const ungesehen = S.ungesehen && Date.now() - S.ungesehen < UNGESEHEN_MS;
@@ -1393,6 +1412,7 @@ function verbinden() {
     if (!S.dir || S.laedt || S.speichert) return;
     const anl = () => V.stabil([S.anlagen, [...(S.anlagenVorhanden || [])]]), vorher = anl();
     // Anlagen erst nach dem Neu-Lesen: der Stand der Brandgeruch-Anlage hängt an der Prüfsumme der eben gelesenen LabelKit-Datei
+    void zweiOrteZeigen(S.dir);   // K1: Zeile auch beim Zurückkommen ins Fenster neu prüfen
     S.fokusLauf = quellenAuffrischen('fokus').then(g => anlagenLesen().then(() => g)).then(g => { if (g.length || anl() !== vorher) render(); }).catch(() => {});
   });
   $('btnMeldungenWeg').onclick = () => { S.meldungen = []; meldungenZeigen(); };
