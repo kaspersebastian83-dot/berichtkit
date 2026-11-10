@@ -280,13 +280,16 @@ async function waehlen() {
 }
 
 /* ---------- Projekt lesen ---------- */
-/** K1: App-Dateien an zwei Orten (in „_Spektron“ und am früheren Ort) – eine sichtbare Zeile je Bereich, den BerichtKit liest. Nur lesen. */
+/** K1: App-Dateien an zwei Orten (in „_Spektron“ und am früheren Ort) – eine sichtbare Zeile je Bereich, den BerichtKit liest. Nur lesen.
+    Beim Öffnen, beim Zurückkommen ins Fenster und vor dem Speichern/Herunterladen. → Kennung der Dateien am früheren Ort
+    ('' = keine Zeile) – ohne die Daten in „_Spektron“, die ändern sich beim eigenen Speichern. */
 async function zweiOrteZeigen(dir) {
-  const el = $('zweiOrte'); if (!el) return;
+  const el = $('zweiOrte'); if (!el || !dir) return '';
   let z = [];
   try { if (SO.zweiOrte) z = await SO.zweiOrte(dir, ['berichtkit', 'projekt', 'resultkit', 'labelkit', 'fotokit', 'plankit', 'anlagenProtokoll', 'buero']); } catch (e) { z = []; }
-  if (S.dir !== dir) return;
+  if (S.dir !== dir) return '';
   el.hidden = !z.length; el.innerHTML = z.map(e => esc(SO.zweiOrteText(e))).join('<br>');
+  return z.map(e => e.bereich + ':' + e.alt.map(a => a.name + '@' + (a.zeit || 0)).join(',')).join('|');
 }
 async function oeffnen(dir) {
   await zustandAbschliessen();
@@ -303,7 +306,7 @@ async function oeffnen(dir) {
     await archivLesen();
     S.ordner.kuerzel = ordnerKuerzel(dir.name);
     // Projektdaten, ResultKit, LabelKit – später beim Zurückkommen ins Fenster und vor dem Speichern erneut verglichen (quellenAuffrischen)
-    void zweiOrteZeigen(dir);   // K1: Dateien an zwei Orten? – im Hintergrund
+    S.zweiOrteGesehen = ''; zweiOrteZeigen(dir).then(h => { if (S.dir === dir) S.zweiOrteGesehen = h; }).catch(() => {});   // K1: Dateien an zwei Orten? – im Hintergrund
     S.stempel = await quellenStempel(dir).catch(() => null);
     quellenUebernehmen(await quellenLesen(dir));
     // FotoKit
@@ -1133,6 +1136,10 @@ const UNGESEHEN_MS = 3000;
 async function vorherNeuLesen(anlass) {
   await (S.fokusLauf || Promise.resolve()).catch(() => {});   // gerade beim Zurückkommen ins Fenster neu gelesen? Erst abwarten.
   const geaendert = await quellenAuffrischen(anlass).catch(() => []);
+  // K1: inzwischen eine Datei am früheren Ort dazugekommen (z. B. von einer alten App-Fassung)? Dann einmal anhalten, damit die Zeile gelesen wird.
+  // S.zweiOrteGesehen: was beim Öffnen bzw. beim letzten Anhalten schon dastand – eine Änderung erst durch den Fokus zählt als neu.
+  const zwei = await zweiOrteZeigen(S.dir).catch(() => '');
+  if (zwei && zwei !== S.zweiOrteGesehen) { S.zweiOrteGesehen = zwei; statusFest('<span class="warn">App-Dateien liegen an zwei Orten – lies bitte die gelbe Zeile oben und klick dann noch einmal.</span>'); return true; }
   await anlagenLesen().catch(() => {}); render();   // Anlagen frisch: inzwischen in FotoKit/PlanKit erstellt oder geändert?
   // Eben erst neu gelesen (Fokus und Klick fast gleichzeitig, z. B. direkt auf „Speichern“ aus ResultKit zurück): auch dann einmal anhalten
   const ungesehen = S.ungesehen && Date.now() - S.ungesehen < UNGESEHEN_MS;
@@ -1403,6 +1410,7 @@ function verbinden() {
     if (!S.dir || S.laedt || S.speichert) return;
     const anl = () => V.stabil([S.anlagen, [...(S.anlagenVorhanden || [])]]), vorher = anl();
     // Anlagen erst nach dem Neu-Lesen: der Stand der Brandgeruch-Anlage hängt an der Prüfsumme der eben gelesenen LabelKit-Datei
+    void zweiOrteZeigen(S.dir);   // K1: Zeile auch beim Zurückkommen ins Fenster neu prüfen
     S.fokusLauf = quellenAuffrischen('fokus').then(g => anlagenLesen().then(() => g)).then(g => { if (g.length || anl() !== vorher) render(); }).catch(() => {});
   });
   $('btnMeldungenWeg').onclick = () => { S.meldungen = []; meldungenZeigen(); };
