@@ -166,6 +166,7 @@ ul.hinweise li.luecke{background:var(--gap);border-radius:4px;padding:0 4px;list
 #probenListe.luecke-hier,#hinweise.luecke-hier,#probenListe:focus,#hinweise:focus{animation:none;outline:3px solid #f0c800;outline-offset:2px}
 .ok{color:var(--ok)}
 .fehler{background:#fdf1ef;border:1px solid #f1c4bd;color:var(--err);border-radius:8px;padding:10px 14px;margin-bottom:14px}
+.zwei-orte{background:#fff0cf;border:1px solid #bd7900;color:#603b00;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;line-height:1.45}.zwei-orte[hidden]{display:none}
 /* Vorschau wie Papier */
 .vorschau{background:#e6ebef;border-radius:12px;padding:18px;min-width:0}
 .blatt{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.14);max-width:780px;margin:0 auto 18px;padding:46px 60px;font-family:Arial,Helvetica,sans-serif;font-size:14.5px;line-height:1.75;color:#111}
@@ -258,6 +259,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     <button type="button" id="lueckenZaehler" class="luecken-zaehler" aria-describedby="lueckenListe" hidden></button>
     <span id="lueckenListe" class="nur-vorleser"></span>
     <div id="fehler" class="fehler" hidden></div>
+    <div id="zweiOrte" class="zwei-orte" role="status" hidden></div>
     <div id="meldungen" class="meldungen" role="status" hidden><ul id="meldungenListe"></ul><button type="button" class="klein-knopf" id="btnMeldungenWeg" title="Hinweise ausblenden">Ausblenden</button></div>
     <details class="hinweis-box" id="hinweisBox">
       <summary><span id="hinweisZus">Hinweise</span><span class="kauf" aria-hidden="true"></span></summary>
