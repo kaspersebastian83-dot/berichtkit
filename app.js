@@ -498,6 +498,8 @@ async function anlagenLesen() {
       if (h.kind !== 'file' || !/\.probenplan$/i.test(h.name) || PLAN_KOPIE.test(h.name)) continue;
       const f = await h.getFile().catch(() => null); if (!f) continue;
       if (h.name.normalize('NFC') === soll) { best = f; break; }
+      // ohne den genauen Namen (z. B. Ordner umbenannt): nur Pläne dieses Projekts – dieselbe Regel wie spektron-ordner.js (K1)
+      if (SO.planHaupt && !SO.planHaupt(h.name, 'file', { nr: SO.projektNr(dir.name) })) continue;
       if (!best || f.lastModified > best.lastModified) best = f;
     }
     if (best) {
