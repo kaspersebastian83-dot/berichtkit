@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.18.0';
+const APP_VERSION = '1.18.1';
 const APP_DATE = '11.11.2026';
 const CHANGELOG = [
+  ['1.18.1', '11.11.2026', 'LabelKit-Datei nur noch von diesem Projekt (Name beginnt mit der Projektnummer, Regel wie LabelKit 5.1): Die Datei, aus der ResultKit übernommen hat, gilt nur, wenn sie zu diesem Projekt gehört; sonst die Projektdatei nach der Regel – nie mehr die neueste beliebige …_Daten.json. Liegt nur eine fremde Datei da, liest BerichtKit nichts und sagt es in der Quellenliste. Spektron-Leiste: „Proben ✓“ nur für eine Datei dieses Projekts.'],
   ['1.18.0', '11.11.2026', 'Befunde aus dem Audit Kernkette: Asbestbericht in einem Projekt mit Chlorid-, PAK- oder Brandgeruch-Proben – Hinweis mit „Zum Brandbericht“ und eine Rückfrage vor dem Speichern oder Herunterladen; gemerkt wird der Asbestbericht dort erst nach der Rückfrage oder beim Speichern. Brandbericht: Entnahmestelle der Chlorid- und PAK-Wischproben wird mit dem Prüfbericht verglichen (Hinweis); jede automatisch angenommene Freimessung oder Referenzprobe steht als Annahme mit „✓ stimmt“ / „Normale Probe“ (gleicher Raum/Ort = eine Zeile). Nicht lesbare _BerichtKit.json wird nie überschrieben – „Neu anlegen“ bewahrt den Inhalt als _BerichtKit.unlesbar.json auf. Projekt vor 26.0560: bloßes Öffnen legt nichts mehr an. Asbestbericht ohne Proben meldet das vor jeder Rückfrage. Bilddokumentation eines anderen Projekts wird nie Anlage. Projektnummer wie in den anderen Apps; LabelKit-Datei ohne Projektnummer → Hinweis; Leerzeichen um Kommas zählen beim Beschreibungsvergleich nicht.'],
   ['1.17.1', '10.11.2026', 'Dateien an zwei Orten (Audit K1): Liegen Berichtsangaben, Projekt-, LabelKit-, Ergebnis-, Foto- oder Plandateien in „_Spektron“ und zusätzlich am früheren Ort (z. B. eine kopierte Datei), gilt immer die in „_Spektron“ – vorher schaltete eine solche Datei das Projekt ohne Hinweis zurück. Eine Zeile über den Karten nennt beide Dateien mit Datum; gelöscht wird nichts.'],
   ['1.17.0', '01.11.2026', 'Berichtswahl und Spektron-Look: Direkt unter dem Kopfband stehen jetzt zwei Kachelreihen – „Welcher Bericht?“ (Asbestbericht · Brandbericht) und beim Brandbericht „Welche Form?“ (Sanierungsvorschlag · Untersuchungsbericht, daneben, was die Form ändert). Die gewählte Kachel ist weiß mit Rahmen in der BerichtKit-Farbe; daneben steht, ob die Berichtsart für das Projekt gemerkt ist und ob sie zu den LabelKit-Proben passt (die passende andere Kachel trägt „passt zu den Proben“). Ist für das Projekt schon ein Bericht der offenen Art gespeichert, fragt BerichtKit vor dem Umschalten einmal nach. Die Kacheln kommen aus einem Berichte-Baum (bericht-text.js) – weitere Berichtsarten und Formen sind dort je ein Eintrag. Dafür entfallen der Titel-Schalter in „Bericht & Auftrag“, „Als … öffnen“ unter „Mehr …“ und der Hinweis „Zum Brandbericht“. Aussehen wie in den Entwürfen (gemeinsamer Block SPEKTRON-LOOK v1 für alle Apps): Schrift Segoe UI, ruhiges Grau statt Blau, Karten mit runden Ecken, die offene Karte mit Rahmen in BerichtKit-Farbe, der Zähler offener Stellen als gelbe Pille, große Knöpfe unten.'],
@@ -369,15 +370,17 @@ async function quellenLesen(dir) {
     r.erg = re.data; const am = T.datumDE(String(re.data.uebernommen || '').slice(0, 10)); q(true, 'Laborergebnisse aus ResultKit' + (am ? ` (übernommen ${am})` : ''));
     if (re.data.vollstaendig === false) q(false, 'ResultKit: noch nicht alle Ergebnisse da.');
   } else q(false, 'Keine Laborergebnisse – zuerst in ResultKit die Prüfberichte übernehmen.');
-  // LabelKit: die Datei, aus der ResultKit den Auftrag übernommen hat (auftrag.quelle) – sonst die neueste *_Daten.json.
-  // Fremde Projektnummer prüft das Berichtsmodell (sperrt das Speichern).
+  // LabelKit: nur eine Datei dieses Projekts (Audit m1, Regel wie LabelKit 5.1 – spektron-ordner.js labelkitWahl). Die Datei, aus der
+  // ResultKit den Auftrag übernommen hat (auftrag.quelle), geht vor – aber nur, wenn sie nach dem Namen zu diesem Projekt gehört.
+  // Sonst die Projektdatei nach der Regel; fremde Dateien werden nie gelesen. Fremde Projektnummer im Inhalt sperrt weiter das Speichern.
   const ol = await SO.ort(dir, 'labelkit'), quelle = String((r.erg && r.erg.auftrag && r.erg.auftrag.quelle) || '').trim();
+  let lkFremd = '';
   if (ol.dir) {
-    let neu = null, genau = null;
-    for await (const h of ol.dir.values()) if (h.kind === 'file' && /_Daten\.json$/i.test(h.name)) {
-      const f = await h.getFile(); if (h.name === quelle) genau = f; if (!neu || f.lastModified > neu.lastModified) neu = f;
-    }
-    const datei = genau || neu;
+    const w = await SO.labelkitWahl(ol.dir, dir.name), nr = SO.projektNr(dir.name);
+    let datei = w.datei ? w.datei.file : null, genau = !!datei && datei.name === quelle;
+    if (!genau && quelle && w.eigene.includes(quelle)) try { datei = await (await ol.dir.getFileHandle(quelle)).getFile(); genau = true; } catch (e) { /* inzwischen weg: Projektdatei nach der Regel */ }
+    const fremd = w.fremd.length ? `„${w.fremd[0]}“${w.fremd.length > 1 ? ` und ${w.fremd.length - 1} weitere` : ''}` : '';
+    if (!datei && fremd) lkFremd = `In „${ol.pfad}“ liegt keine LabelKit-Datei von Projekt ${nr} – nur ${fremd} (nach dem Namen nicht von diesem Projekt). BerichtKit liest sie nicht; Material und Entnahmestelle fehlen dann.`;
     if (datei) {
       try {
         const buf = await datei.arrayBuffer();
@@ -385,12 +388,14 @@ async function quellenLesen(dir) {
         // Stand der Brandgeruch-Anlage (Projektzentrale vermerkt die Prüfsumme der LabelKit-Datei im Anlagen-Protokoll)
         r.lkDatei = { name: datei.name, t: datei.lastModified, sha: await sha256(buf) };
         if (genau) q(true, `LabelKit: ${datei.name} (wie in ResultKit übernommen)`);
-        else q(false, quelle ? `LabelKit-Datei „${quelle}“ aus ResultKit nicht gefunden – genommen: ${datei.name} (neueste).`
-          : `LabelKit: ${datei.name} (neueste) – ResultKit nennt keine LabelKit-Datei; dort die Ergebnisse erneut übernehmen.`);
+        else q(false, !quelle ? `LabelKit: ${datei.name} – ResultKit nennt keine LabelKit-Datei; dort die Ergebnisse erneut übernehmen.`
+          : w.fremd.includes(quelle) ? `LabelKit-Datei „${quelle}“ aus ResultKit gehört nach dem Namen nicht zu Projekt ${nr} – genommen: ${datei.name}. In ResultKit die Ergebnisse erneut übernehmen.`
+          : `LabelKit-Datei „${quelle}“ aus ResultKit nicht gefunden – genommen: ${datei.name}.`);
+        if (fremd) q(false, `In „${ol.pfad}“ liegt auch ${fremd} – nach dem Namen nicht von Projekt ${nr}. BerichtKit nimmt sie nicht.`);
       } catch (e) { q(false, `LabelKit-Datei ${datei.name} nicht lesbar.`); }
     }
   }
-  if (!r.lk) q(false, 'Keine LabelKit-Daten – Material und Entnahmestelle fehlen dann.');
+  if (!r.lk) q(false, lkFremd || 'Keine LabelKit-Daten – Material und Entnahmestelle fehlen dann.');
   // Probenehmer laut Feldbogen (asbestmat) – zugeordnet nur bei genauem Namen oder Kürzel
   const fp = ((r.lk && r.lk.feldprotokolle) || []).find(x => x && x.typ === 'asbestmat' && x.kopf && x.kopf.probenehmer);
   r.feldbogen = fp ? { text: String(fp.kopf.probenehmer).trim(), kuerzel: personFinden(fp.kopf.probenehmer) } : null;
