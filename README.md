@@ -92,8 +92,8 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
 - **Brandbericht – Rollen** (ab 1.18.0, M4): jede automatisch angenommene Freimessung/Referenzprobe (`rolleAuto`, Regel der Projektzentrale – dort
   ändern) einer Chlorid-/PAK-Wischprobe ist eine Annahme mit Grund (`rolleGrund`) und „✓ stimmt“ / „Normale Probe“; gleicher Raum/Ort und gleiche
   Rolle = eine Zeile. Die Wahl steht je Probe in `form.brand.rolle` (`{ auto, wahl: 'ok'|'keine' }`) und gilt nur, solange der Name dieselbe Rolle
-  ergibt. „Normale Probe“ wertet die Probe regulär, nur in BerichtKit (ResultKit-Übersicht und Datenarchiv gehen weiter nach dem Namen) – mit
-  „Rückgängig“; Probenbezeichnungen bleiben unverändert.
+  ergibt. „Normale Probe“ wertet die Probe regulär; das Datenarchiv der Projektzentrale übernimmt die Wahl (außer bei einer eigenen Korrektur
+  dort), „Übersicht drucken“ in ResultKit geht weiter nach dem Namen – mit „Rückgängig“; Probenbezeichnungen bleiben unverändert.
 - **Chlorid genau 10 µg/cm²** (ab 1.19.0, Audit m7, Entscheidung 4): `KORROSION-CHLORID v2` in `bericht-bewertung.js` – gleich in ResultKit,
   PlanKit, FotoKit. Die Stufe „oberhalb“ trägt `ueber: true` und zählt erst über 10 µg/cm² (umgerechnet, z. B. 100 mg/m²); genau 10 liegt „im
   Bereich“, genau 5 bleibt „im Bereich“. Keine neue Zahl, keine Rundung.
