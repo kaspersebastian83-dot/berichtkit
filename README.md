@@ -82,6 +82,25 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   Bericht – nur Hinweis „P3 ist in LabelKit storniert – der Laborwert (Prüfbericht …) kommt nicht in den Bericht.“
   Ausnahme: Sind **alle** Asbestproben in LabelKit storniert und bleibt kein Ergebnis übrig, sperrt das (Datenfehler, nur Entwurf) –
   „Alle Asbestproben in LabelKit sind storniert (P3 und P7) – ohne Probe gibt es keinen Bericht. …“; ein Bericht mit 0 Proben wäre falsch.
+- **Asbestbericht in einem Projekt mit Brand-Proben** (ab 1.18.0, Audit M2; nicht stornierte Chlorid-, Chlorid-Bohrmehl-, PAK- oder Brandgeruch-Proben
+  in LabelKit, Regel `artAusProben` wie die Projektzentrale): keine Sperre, aber ein Hinweis zuerst mit „Zum Brandbericht“ und eine Rückfrage vor
+  Speichern, „Word nur herunterladen“ und „Entwurf herunterladen“ („Zum Brandbericht“ · „Trotzdem …“ · „Abbrechen“ = Standard für Enter/Esc).
+  Gemerkt wird der Asbestbericht dort nicht beim Öffnen (Link, Lesezeichen, Kachel – die Adresse behält `art=asbest` ohne `auto=1`), sondern erst
+  mit „Trotzdem …“ oder beim Speichern. Bestätigt gilt bis zum nächsten Öffnen oder bis sich die LabelKit-Datei ändert.
+- **Brandbericht – Entnahmestelle der Chlorid-/PAK-Wischproben** (ab 1.18.0, M3): gleicher Vergleich wie bei Asbest (`abgleichVon`), gegen den
+  Prüfbericht des genommenen Werts; Hinweis, Schalter `ABGLEICH_SPERRT` gilt mit.
+- **Brandbericht – Rollen** (ab 1.18.0, M4): jede automatisch angenommene Freimessung/Referenzprobe (`rolleAuto`, Regel der Projektzentrale – dort
+  ändern) einer Chlorid-/PAK-Wischprobe ist eine Annahme mit Grund (`rolleGrund`) und „✓ stimmt“ / „Normale Probe“; gleicher Raum/Ort und gleiche
+  Rolle = eine Zeile. Die Wahl steht je Probe in `form.brand.rolle` (`{ auto, wahl: 'ok'|'keine' }`) und gilt nur, solange der Name dieselbe Rolle
+  ergibt. „Normale Probe“ wertet die Probe regulär, nur in BerichtKit (ResultKit-Übersicht und Datenarchiv gehen weiter nach dem Namen) – mit
+  „Rückgängig“; Probenbezeichnungen bleiben unverändert.
+- **`_BerichtKit.json` nicht lesbar** (ab 1.18.0, M7: kein JSON, leer, Lesefehler, fremdes Format): BerichtKit schreibt sie nie – rote Zeile über den
+  Karten, Eingaben bleiben im Browser, ein gespeicherter Bericht wird vorgemerkt. „Neu anlegen …“ legt zuerst den Inhalt byte-gleich als
+  `_BerichtKit.unlesbar.json` in denselben Ordner (eine vorhandene Kopie wird nur nach Nennung ihres Datums ersetzt), dann die neue Datei aus dem
+  Formular. Eine Datei einer neueren BerichtKit-Fassung (`version` > 1) bleibt unberührt, ohne „Neu anlegen“.
+- **Projekt vor 26.0560 ohne Datei am früheren Ort** (ab 1.18.0, m3): Öffnen legt nichts an (weder `Mitteilungen/_BerichtKit.json` noch „Mitteilungen“);
+  Berichtsart und frühere Angaben bleiben im Browser, bis die Datei ohnehin entsteht (gespeicherter Bericht oder eigene Eingabe).
+- **Asbestbericht ohne Proben** (m4): Meldung vor jeder Rückfrage und bevor „Mitteilungen“ angelegt wird.
 - **Lücken** sperren nicht – Rückfrage vor dem Speichern; die Übergabe ans Büro prüft, ob noch welche in der Word-Datei stehen.
 - Nach dem Speichern: `_BerichtKit.json` → `berichte[]` mit `anlagen` (alle Anlage-Dateien, z. B. `Laborergebnisse/<Prüfbericht>.pdf`, `Fotos/Bilddokumentation_….pdf`), `anlagenListe` und `luecken`; Knopf
   „Ans Büro übergeben →“ öffnet `../Projektzentrale/#projekt=<Ordner>&uebergabe=Mitteilungen/<Datei>`.
@@ -96,7 +115,7 @@ in der Reihenfolge Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter 
 
 | Art | Wo | Erkannt an | Veraltet, wenn … |
 |---|---|---|---|
-| Bilddokumentation | `Fotos/` | `Bilddokumentation_…pdf`, Teile `…_Teil_1_von_2.pdf` = **eine** Anlage; FotoKit ab 1.29 vermerkt die erzeugte PDF (`bilddoku`) | FotoKit: `dokuGeaendert` nach `bilddoku.erstellt` (Beschreibungen, Auswahl, Reihenfolge, Projektdaten geändert) |
+| Bilddokumentation | `Fotos/` | `Bilddokumentation_…pdf`, Teile `…_Teil_1_von_2.pdf` = **eine** Anlage; FotoKit ab 1.29 vermerkt die erzeugte PDF (`bilddoku`); ab 1.18.0 (m9) nie mit der Projektnummer eines anderen Projekts im Namen (Hinweis), ohne Nummer und ohne Vermerk nicht vorgehakt („Projekt unklar“) | FotoKit: `dokuGeaendert` nach `bilddoku.erstellt` (Beschreibungen, Auswahl, Reihenfolge, Projektdaten geändert) |
 | Probenplan | `Pläne/` | `Probenplan <Ordner>.pdf` (alle Geschosse) oder `… - EG.pdf`, `… - OG.pdf` (= eine Anlage), „ (2)“ = neuere Fassung | `.probenplan` nach dem PDF gespeichert |
 | Ergebniskarte | `Pläne/` | `Probenplan … - Ergebniskarte.pdf` | wie Probenplan |
 | Raumbuch, Wandansichten, Anlage Probenahme | `Mitteilungen/` | PlanKit-Namen `<Nr>_Raumbuch_<Datum>.docx` usw. | Prüfsumme der `.probenplan` laut `_Anlagen-Protokoll.txt` ≠ jetzt; sonst Dateizeit |
@@ -162,7 +181,7 @@ node tests/luecken-kommentare.cjs  # Word-Kommentar je Lücke (Asbest und Brand,
                                    # (--beispiel <datei.docx> schreibt eine Datei mit vielen Lücken zum Ansehen)
 node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich wie LabelKit (falls ../labelkit daneben)
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)
-node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei (Playwright)
+node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei; ab 1.18.0 Audit-Fälle M2/M3/M4/M7/m3/m4 (Playwright)
 node tests/render-beispiele.cjs <Ordner>   # Beispielberichte als .docx zum Ansehen (nicht in CI)
 ```
 

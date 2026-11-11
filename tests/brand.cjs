@@ -713,4 +713,94 @@ fall('Rolle gleich wie Projektzentrale archiv/auswertung.js (in CI liegt die Pro
   console.log(`   (Projektzentrale daneben: rolleAuto gleich, ${n_} Kombinationen)`);
 });
 
+/* ---------- Audit Kernkette (1.18.0): M3 Abgleich Chlorid/PAK, M4 Rollen als Annahme ---------- */
+/** Kleines Brandprojekt: Wischproben [nr, liste, z2, wert]; Auftrag (LabelKit-Übergabe in _Ergebnisse.json) und Prüfbericht-Beschreibung je Probe */
+function wisch(proben, { auftragDesc = {}, berichtDesc = {}, brand = {} } = {}) {
+  const lkDaten = D.lk({ pak: proben.filter(p => p[1] === 'pak').map(([nr, , z2]) => [nr, '2026-10-14', z2, 'Wischprobe']),
+    chlorid: proben.filter(p => p[1] === 'cl').map(([nr, , z2]) => [nr, '2026-10-14', z2, 'Wischprobe']) });
+  const e = D.erg([{ nr: 'AR-999-2026-000501-01', proben: proben.map(([nr, l, , r]) => [nr, l === 'cl' ? D.W.cl(r) : D.W.pak(r), l === 'cl' ? 'Chlorid' : 'PAK']) }]);
+  const desc = z2 => `${z2}, verrußt, Putz, 600 cm²`;   // wie ResultKit labelkit.ts description()
+  e.auftrag = { proben: proben.map(([nr, , z2]) => ({ label: 'P' + nr, desc: auftragDesc[nr] != null ? auftragDesc[nr] : desc(z2) })) };
+  e.berichte[0].proben.forEach(p => { const nr = +p.label.slice(1), z2 = proben.find(x => x[0] === nr)[2]; p.desc = berichtDesc[nr] != null ? berichtDesc[nr] : desc(z2); });
+  return { pj: D.pj(), lk: lkDaten, erg: e, anlagen: D.anlagen({ brandgeruch: '' }), form: D.form({ gb: '1', umfang: { gebaeude: true }, ...brand }) };
+}
+const alles5 = m => text(m, 5);
+
+fall('Audit M3: Entnahmestelle der Chlorid-/PAK-Wischproben wird mit dem Prüfbericht verglichen (Hinweis, Text unverändert)', () => {
+  const proben = [[1, 'cl', 'EG Küche Brandraum Decke', '12,3'], [2, 'pak', 'EG Flur Wand', '85'], [4, 'pak', 'EG Küche Brandraum Decke', '140']];
+  const gleich = modell(wisch(proben));
+  assert.ok(!gleich.hinweise.some(h => /Entnahmestelle passt nicht/.test(h)), 'gleiche Beschreibung → kein Hinweis');
+  const anders = modell(wisch(proben, { berichtDesc: { 4: 'OG Bad Wand, verrußt, Putz, 600 cm²' } }));
+  assert.ok(anders.hinweise.includes('Probe 4: Entnahmestelle passt nicht – LabelKit „EG Küche Brandraum Decke, verrußt, Putz, 600 cm²“, Prüfbericht AR-999-2026-000501-01 „OG Bad Wand, verrußt, Putz, 600 cm²“ → in LabelKit oder beim Labor klären.'));
+  assert.equal(anders.hinweise.filter(h => /Entnahmestelle passt nicht/.test(h)).length, 1);
+  assert.deepEqual(anders.sperren, [], 'ABGLEICH_SPERRT bleibt aus');
+  assert.equal(alles5(anders), alles5(gleich), 'Berichtstext unverändert');
+  // LabelKit übergibt ungetrimmt: „EG Flur Wand “ → „EG Flur Wand , verrußt …“ – kein Unterschied (o2)
+  const leer = modell(wisch(proben, { auftragDesc: { 2: 'EG Flur Wand , verrußt, Putz, 600 cm²', 1: 'EG Küche Brandraum Decke  , verrußt, Putz, 600 cm² ' } }));
+  assert.ok(!leer.hinweise.some(h => /Entnahmestelle passt nicht/.test(h)), 'Leerzeichen am Ende → kein Hinweis');
+  const cl = modell(wisch(proben, { berichtDesc: { 1: 'EG Küche Decke, verrußt, Putz, 600 cm²' } }));
+  assert.ok(cl.hinweise.some(h => /^Probe 1: Entnahmestelle passt nicht/.test(h)), 'auch Chlorid');
+});
+
+fall('Audit M4: Rollen-Erklärung stimmt immer mit rolleAuto überein (Regel unverändert)', () => {
+  const faelle_ = [['F 12 Lager Wand', ''], ['F-Trakt Flur Decke', ''], ['EG Hintergrundlager Wand', ''], ['EG Flur nach Sanierung der Decke 2019', ''],
+    ['OG Wohnzimmer REF Wand', ''], ['Referenzstelle Keller', ''], ['Keller unbelastet', ''], ['Nullprobe Treppe', ''], ['Sanierungskontrolle Küche', ''],
+    ['EG Küche F-1 Wand', ''], ['Freimessung Küche', ''], ['Refektorium Wand', ''], ['EG Küche', 'F_EG Küche Wand'], ['EG Küche', 'nach der Sanierung'],
+    ['', 'Hintergrund OG'], ['F_Bad', 'REF'], ['EG Küche Brandraum Decke', 'EG Küche Brandraum Decke, verrußt'], ['f-eg', ''], ['', '']];
+  for (const [z2, desc] of faelle_) {
+    const g = BR.rolleGrund(z2, desc);
+    assert.equal(g.rolle, BW.rolleAuto(z2, desc), `${z2} | ${desc}`);
+    assert.equal(!!g.grund, !!g.rolle, `Grund nur mit Rolle: ${z2} | ${desc}`);
+  }
+  assert.equal(BR.rolleGrund('F 12 Lager Wand', '').grund, 'Raum/Ort „F 12 Lager Wand“ beginnt mit „F “');
+  assert.equal(BR.rolleGrund('EG Hintergrundlager Wand', '').grund, '„Hintergrund“ in Raum/Ort „EG Hintergrundlager Wand“');
+  assert.equal(BR.rolleGrund('EG Flur nach Sanierung der Decke 2019', '').grund, '„nach Sanierung“ in Raum/Ort „EG Flur nach Sanierung der Decke 2019“');
+  assert.equal(BR.rolleGrund('EG Küche', 'F_EG Küche Wand').grund, 'Beschreibung im Prüfbericht „F_EG Küche Wand“ beginnt mit „F_“');
+});
+
+fall('Audit M4: automatisch angenommene Freimessung/Referenz = Annahme; „Normale Probe“ wertet regulär, Namen bleiben', () => {
+  const proben = [[1, 'pak', 'EG Küche Brandraum Decke', '140'], [2, 'pak', 'F 12 Lager Wand', '950'], [3, 'pak', 'EG Hintergrundlager Wand', '12'],
+    [4, 'pak', 'F-Trakt Flur Decke', '30'], [5, 'pak', 'EG Flur nach Sanierung der Decke 2019', '40']];
+  const m = modell(wisch(proben));
+  const an = m.annahmen.filter(a => a.id.startsWith('rolle:'));
+  assert.deepEqual(an.map(a => a.text), [
+    'Probe 2 als Freimessung angenommen – Raum/Ort „F 12 Lager Wand“ beginnt mit „F “. Sie zählt nicht in der Einordnung und steht im Bericht als Freimessung.',
+    'Probe 3 als Referenzprobe angenommen – „Hintergrund“ in Raum/Ort „EG Hintergrundlager Wand“. Sie zählt nicht in der Einordnung und steht im Bericht als Referenzprobe.',
+    'Probe 4 als Freimessung angenommen – Raum/Ort „F-Trakt Flur Decke“ beginnt mit „F-“. Sie zählt nicht in der Einordnung und steht im Bericht als Freimessung.',
+    'Probe 5 als Freimessung angenommen – „nach Sanierung“ in Raum/Ort „EG Flur nach Sanierung der Decke 2019“. Sie zählt nicht in der Einordnung und steht im Bericht als Freimessung.']);
+  assert.deepEqual(an[0], { id: 'rolle:P2', text: an[0].text, wert: 'frei', labels: ['P2'] });
+  assert.match(alles5(m), /Die Freimessungen ergaben 950 µg\/m² \(Probe 2\)/, 'Bericht wie bisher (Rolle aus dem Namen)');
+  // ✓ stimmt → keine Annahme mehr, Text gleich
+  const ok = modell(wisch(proben, { brand: { rolle: { P2: { auto: 'frei', wahl: 'ok' } } } }));
+  assert.ok(!ok.annahmen.some(a => a.id === 'rolle:P2')); assert.equal(alles5(ok), alles5(m));
+  // Normale Probe → zählt regulär, Hinweis mit Rückgängig; Probenbezeichnung im Bericht bleibt
+  const nein = modell(wisch(proben, { brand: { rolle: { P2: { auto: 'frei', wahl: 'keine' } } } }));
+  assert.ok(!nein.annahmen.some(a => a.id === 'rolle:P2'));
+  const h = nein.hinweise.find(x => /^Probe 2 wird als normale Probe/.test(x));
+  assert.equal(h, 'Probe 2 wird als normale Probe eingeordnet (deine Wahl in BerichtKit, angenommen war Freimessung – Raum/Ort „F 12 Lager Wand“ beginnt mit „F “). Das gilt nur in BerichtKit: Die ResultKit-Übersicht und das Datenarchiv der Projektzentrale gehen weiter nach dem Namen. Umbenennen in LabelKit geht nur, solange die Proben noch nicht beim Labor sind.');
+  assert.doesNotMatch(h, /LabelKit umbenennen|in LabelKit umbenennen/);
+  assert.deepEqual(nein.hinweisAktionen[h], { rolleZurueck: ['P2'] });
+  assert.doesNotMatch(alles5(nein), /Freimessungen? \(Probe 2\)|950 µg\/m² \(Probe 2\)\./);
+  assert.match(alles5(nein), /950/); assert.match(alles5(nein), /F 12 Lager Wand/, 'Raum/Ort steht unverändert im Bericht');
+  // Wahl gilt nur für die angenommene Rolle: ergibt der Name später eine andere, wird wieder gefragt
+  const alt = modell(wisch(proben, { brand: { rolle: { P2: { auto: 'referenz', wahl: 'keine' } } } }));
+  assert.ok(alt.annahmen.some(a => a.id === 'rolle:P2')); assert.equal(alles5(alt), alles5(m));
+});
+
+fall('Audit M4: gleicher Raum/Ort + gleiche Rolle = eine Annahme (Chlorid und PAK an derselben Referenzstelle)', () => {
+  const m = modell(F.BR1_voll_Versicherung);
+  const an = m.annahmen.filter(a => a.id.startsWith('rolle:'));
+  assert.deepEqual(an.map(a => [a.id, a.labels]), [['rolle:P3,P6', ['P3', 'P6']], ['rolle:P7', ['P7']]]);
+  assert.equal(an[0].text, 'Proben 3 und 6 als Referenzproben angenommen – „REF“ in Raum/Ort „OG Wohnzimmer REF Wand“. Sie zählen nicht in der Einordnung und stehen im Bericht als Referenzproben.');
+  const beide = { P3: { auto: 'referenz', wahl: 'keine' }, P6: { auto: 'referenz', wahl: 'keine' } };
+  const n_ = modell(mitForm(F.BR1_voll_Versicherung, { rolle: beide }));
+  assert.ok(!n_.annahmen.some(a => a.id === 'rolle:P3,P6'));
+  const h = n_.hinweise.filter(x => /werden als normale Proben eingeordnet/.test(x));
+  assert.equal(h.length, 1); assert.match(h[0], /^Proben 3 und 6 werden als normale Proben eingeordnet \(deine Wahl in BerichtKit, angenommen war Referenzproben – „REF“/);
+  assert.deepEqual(n_.hinweisAktionen[h[0]], { rolleZurueck: ['P3', 'P6'] });
+  // nur eine der beiden bestätigt → die andere bleibt als eigene Zeile
+  const eine_ = modell(mitForm(F.BR1_voll_Versicherung, { rolle: { P3: { auto: 'referenz', wahl: 'ok' } } }));
+  assert.deepEqual(eine_.annahmen.filter(a => a.id.startsWith('rolle:')).map(a => a.id), ['rolle:P6', 'rolle:P7']);
+});
+
 console.log(`Brandbericht: ${n} Fälle bestanden.`);

@@ -36,7 +36,10 @@ const tidy = v => String(v == null ? '' : v).normalize('NFC').replace(/\s+/g, ' 
 /** Probenbeschreibung vergleichbar machen. Eurofins übernimmt den Text der LabelKit-Laborübergabe wörtlich (geprüft an 15 echten
     Asbestproben, 30.10.2026 – sogar Tippfehler bleiben stehen); angeglichen werden nur Leerraum, Groß-/Kleinschreibung, Striche
     und Anführungszeichen. In ResultKit (src/ergebnisse.ts) gleich halten. */
-const beschreibungKey = v => tidy(v).toLowerCase().replace(/[\u2010-\u2015\u2212]/g, '-').replace(/[\u201E\u201C\u201D\u201A\u2018\u2019\u00AB\u00BB"']/g, '"');
+const beschreibungKey = v => tidy(v).toLowerCase().replace(/[\u2010-\u2015\u2212]/g, '-').replace(/[\u201E\u201C\u201D\u201A\u2018\u2019\u00AB\u00BB"']/g, '"')
+  // Wie ResultKit 2.2.0 (m6/o2): LabelKit übergibt die Felder ungetrimmt („EG Küche , Wand“) – Leerraum um die Kommas und leere
+  // Abschnitte zählen nicht. Nur verglichen; angezeigt wird der Text unverändert.
+  .split(',').map(x => x.trim()).filter(Boolean).join(', ');
 /** Weicht die Beschreibung im Prüfbericht von der aus LabelKit ab? Nie bei fehlendem Text und bei Bohrkernen (andere Reihenfolge
     in der Übergabe); „Tiefe: …“ am Ende zählt nicht (LabelKit übergibt sie nur bei Bohrmehl). */
 function beschreibungWeichtAb(auftrag, bericht, art = '') {
@@ -204,10 +207,20 @@ function labelkitAsbest(lk) {
     Prüfbericht (berichte[].proben[].desc) – ok: true/false, null = nicht abgleichbar (kein Auftrag oder kein Text).
     offen: LabelKit-Asbestproben ohne Ergebnis (stornierte nie).
     storniert: Laborwerte zu Proben, die in LabelKit storniert sind – nicht im Bericht, nicht im Abgleich, nur als Hinweis. */
+/** LabelKit-Auftrag aus _Ergebnisse.json (auftrag.proben[], wie ResultKit ihn übernommen hat): Label → Eintrag, null = kein Auftrag */
+const auftragKarte = erg => (erg && erg.auftrag && Array.isArray(erg.auftrag.proben) ? new Map(erg.auftrag.proben.filter(a => a && a.label).map(a => [s(a.label), a])) : null);
+/** Entnahmestelle-Abgleich einer Probe (p = Probe aus einem Prüfbericht: desc, art) – für Asbest/KMF und (ab 1.18.0) die
+    Chlorid-/PAK-Wischproben im Brandbericht: { labelkit, bericht, auftrag, ok: true/false/null (nicht abgleichbar) } */
+function abgleichVon(auftrag, label, p) {
+  const a = auftrag && auftrag.get(label);
+  const abgleich = { labelkit: a ? tidy(a.desc) : '', bericht: tidy(p && p.desc), auftrag: !!auftrag };
+  abgleich.ok = abgleich.labelkit && abgleich.bericht ? !beschreibungWeichtAb(a.desc, p.desc, s(p.art)) : null;
+  return abgleich;
+}
 function probenSammeln(erg, lk) {
   const { aktiv: lkm, storniert: lks } = labelkitAsbest(lk), out = [], storniert = [], gesehen = new Set();
   const berichte = erg && Array.isArray(erg.berichte) ? erg.berichte : [];
-  const auftrag = erg && erg.auftrag && Array.isArray(erg.auftrag.proben) ? new Map(erg.auftrag.proben.filter(a => a && a.label).map(a => [s(a.label), a])) : null;
+  const auftrag = auftragKarte(erg);
   for (const b of berichte) for (const p of (b.proben || [])) {
     const werte = p.werte || [];
     const befund = asbestBefund(werte), kmf = kmfWerte(werte);
@@ -215,9 +228,7 @@ function probenSammeln(erg, lk) {
     const label = s(p.label) || (PNR(p.ref) ? 'P' + PNR(p.ref) : s(p.ref));
     if (gesehen.has(label + '|' + b.bericht)) continue; gesehen.add(label + '|' + b.bericht);
     if (lks.has(label)) { storniert.push({ label, nr: lks.get(label).nr, ref: s(p.ref), labNr: s(p.labNr), bericht: s(b.bericht || p.bericht) }); continue; }
-    const l = lkm.get(label) || {}, a = auftrag && auftrag.get(label);
-    const abgleich = { labelkit: a ? tidy(a.desc) : '', bericht: tidy(p.desc), auftrag: !!auftrag };
-    abgleich.ok = abgleich.labelkit && abgleich.bericht ? !beschreibungWeichtAb(a.desc, p.desc, s(p.art)) : null;
+    const l = lkm.get(label) || {}, abgleich = abgleichVon(auftrag, label, p);
     out.push({ label, nr: l.nr || PNR(p.ref) || PNR(label), ref: s(p.ref), labNr: s(p.labNr), bericht: s(b.bericht || p.bericht),
       stelle: l.stelle || s(p.raum) || '', material: l.material || matrixMaterial(l.matrix), materialAusMatrix: !l.material && !!matrixMaterial(l.matrix),
       matrix: l.matrix || s(p.art),
@@ -269,9 +280,11 @@ function projektSicht(pj, ordner) {
    Reihenfolge der Aufrufe in einer Berichtsart = Reihenfolge der Hinweise in der Liste (sie werden hier nur angehängt). */
 
 /** LabelKit-Datei eines anderen Projekts: nichts daraus darf in den Bericht → Sperre */
-function labelkitProjektPruefen(e, P, sperren) {
+function labelkitProjektPruefen(e, P, sperren, hinweise) {
   const lkNr = s(e.lk && e.lk.projekt && e.lk.projekt.nr), nr = s(e.ordner && e.ordner.nr) || P.nr;
   if (lkNr && nr && !gleichesProjekt(lkNr, nr)) sperren.push(`Die LabelKit-Datei gehört zu Projekt ${lkNr}, nicht zu ${nr} – in LabelKit/ResultKit prüfen.`);
+  // Ohne Projektnummer (ältere Datei, LabelKit vor 5.0) – wie ResultKit: nur ein Hinweis, die Datei liegt im Projektordner
+  else if (e.lk && !lkNr && hinweise) hinweise.push(`Die LabelKit-Datei enthält keine Projektnummer (ältere Datei) – ob sie zu ${nr ? 'Projekt ' + nr : 'diesem Projekt'} gehört, kann BerichtKit nicht prüfen. Bitte in LabelKit nachsehen.`);
 }
 
 /** Deckblatt-Feldblock „mit Versicherung“ (VN · Risiko · Versicherer) oder „ohne“ (Auftraggeber · Schadenort), dazu Schaden-Nr.
@@ -475,7 +488,7 @@ const API = { VERSION: 1, ABGLEICH_SPERRT,
   istVersicherer, versicherungsfallAuto, projektNummer, gleichesProjekt, projektSicht, mitArtikel, objektImSatz,
   labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
   // Unterschriften, Anlagen, Kennzeilen, Annahmen
-  unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus };
+  auftragKarte, abgleichVon, unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtGemeinsam = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

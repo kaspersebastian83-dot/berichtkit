@@ -515,4 +515,39 @@ fall('Schon beim Büro: Büroaufgabe nennt die Datei (zurückgezogene zählen ni
   assert.equal(V.beimBuero(a, [...weg, { id: 'v2', aufgabe: 'a1', schritt: 'geloescht', wert: false, zeit: '2026-10-30T13:00:00Z' }], '1._Mitteilung_99.9001.docx').id, 'a1', 'wieder aufgenommen');
 });
 
+fall('Audit M2: Asbestbericht mit Brand-Proben in LabelKit → Hinweis zuerst, Aktion „Zum Brandbericht“, Text unverändert', () => {
+  const ein = { pj: D.pj(), erg: D.erg([[1, 'chrysotil']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form() };
+  const lkA = D.lk([[1, '2026-10-16', 'Umkleide Schwimmbad', 'Fliesenkleber', 'Bituminöse Proben / Kleber']]);
+  const ohne = T.bericht({ ...ein, lk: lkA });
+  const lkB = { ...lkA, chloridProben: [{ _nr: 2 }, { _nr: 3 }], proben: [{ _nr: 4 }], brandgeruchProben: [{ id: 1 }, { id: 2, storniert: true }] };
+  const m = T.bericht({ ...ein, lk: lkB });
+  assert.equal(m.hinweise[0], 'Die LabelKit-Proben sprechen für den Brandbericht (2 Chlorid-Proben, 1 PAK-Probe, 1 Brandgeruch-Probe und 1 Asbestprobe). Dieser Asbestbericht beschreibt nur die Asbestproben – vor dem Speichern fragt BerichtKit noch einmal.');
+  assert.deepEqual(m.hinweisAktionen[m.hinweise[0]], { art: 'brand' });
+  assert.equal(m.brandProben, '2 Chlorid-Proben, 1 PAK-Probe und 1 Brandgeruch-Probe', 'für die Rückfrage – ohne Asbestproben');
+  assert.deepEqual(m.sperren, [], 'Entscheidung 2: keine Sperre');
+  assert.equal(alles(m), alles(ohne), 'Berichtstext unverändert');
+  assert.equal(ohne.brandProben, undefined); assert.ok(!ohne.hinweise.some(h => /Brandbericht/.test(h)));
+  const nurCl = T.bericht({ ...ein, lk: { ...lkA, chloridProben: [{ _nr: 2 }] } });
+  assert.equal(nurCl.brandProben, '1 Chlorid-Probe');
+  assert.equal(T.bericht({ ...ein, lk: { ...lkA, chloridProben: [{ _nr: 2, storniert: true }] } }).brandProben, undefined, 'stornierte zählen nicht');
+});
+
+fall('Audit m12: LabelKit-Datei ohne Projektnummer → Hinweis (wie ResultKit), andere Nummer sperrt wie bisher', () => {
+  const ein = { pj: D.pj(), ordner: { nr: '99.9001' }, erg: D.erg([[1, 'chrysotil']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form() };
+  const lkA = D.lk([[1, '2026-10-16', 'Umkleide Schwimmbad', 'Fliesenkleber', 'Bituminöse Proben / Kleber']]);
+  const m = T.bericht({ ...ein, lk: { ...lkA, projekt: {} } });
+  assert.ok(m.hinweise.includes('Die LabelKit-Datei enthält keine Projektnummer (ältere Datei) – ob sie zu Projekt 99.9001 gehört, kann BerichtKit nicht prüfen. Bitte in LabelKit nachsehen.'));
+  assert.deepEqual(m.sperren, []);
+  assert.ok(!T.bericht({ ...ein, lk: lkA }).hinweise.some(h => /keine Projektnummer/.test(h)));
+  assert.match(T.bericht({ ...ein, lk: { ...lkA, projekt: { nr: '99.9555' } } }).sperren.join(), /gehört zu Projekt 99\.9555/);
+  assert.ok(!T.bericht({ ...ein, lk: null }).hinweise.some(h => /keine Projektnummer/.test(h)), 'ohne LabelKit-Datei kein Hinweis');
+});
+
+fall('Audit o2: Leerraum um die Kommas und leere Abschnitte zählen beim Beschreibungsvergleich nicht (wie ResultKit 2.2.0)', () => {
+  assert.equal(T.beschreibungWeichtAb('EG Küche , verrußt, Putz', 'EG Küche, verrußt, Putz'), false, 'Leerzeichen vor dem Komma');
+  assert.equal(T.beschreibungWeichtAb('EG Küche  ,  verrußt,, Putz ', 'EG Küche, verrußt, Putz'), false, 'doppelt und leerer Abschnitt');
+  assert.equal(T.beschreibungWeichtAb('EG Küche, verrußt', 'EG Bad, verrußt'), true, 'echter Unterschied bleibt');
+  assert.equal(T.beschreibungWeichtAb('EG Küche, verrußt', 'EG Küche verrußt'), true, 'fehlendes Komma ist ein Unterschied (wie ResultKit)');
+});
+
 console.log(`\n${n} Fälle bestanden.`);

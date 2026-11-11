@@ -143,7 +143,7 @@ function laborProben(erg, weg) {
     if (!p) continue;
     const label = s(p.label) || (PNR(p.ref) ? 'P' + PNR(p.ref) : s(p.ref));
     if (!label || weg.has(label)) continue;
-    out.push({ label, ref: s(p.ref), labNr: s(p.labNr), bericht: s(b.bericht || p.bericht), desc: s(p.desc), raum: s(p.raum), werte: p.werte || [] });
+    out.push({ label, ref: s(p.ref), labNr: s(p.labNr), bericht: s(b.bericht || p.bericht), desc: s(p.desc), raum: s(p.raum), art: s(p.art), werte: p.werte || [] });
   }
   return out;
 }
@@ -151,8 +151,9 @@ function laborProben(erg, weg) {
     sammeln (ResultKit hat ersetzte Werte schon entfernt), dann der bevorzugte Wert (je Fläche vor „je Probe“); Labor-Nr. und
     Prüfbericht kommen aus dem Bericht dieses Werts.
     wisch: Wischprobe laut LabelKit (Liste und Matrix), ohne LabelKit-Eintrag nach der Einheit (je Fläche).
-    rolle: 'referenz' | 'frei' | '' (Projektzentrale-Datenarchiv) */
-function ergebnisse(proben, re, karte, liste_) {
+    rolle: 'referenz' | 'frei' | '' (Projektzentrale-Datenarchiv); rolleAuto: dieselbe, bevor eine eigene Wahl („Normale Probe“) greift.
+    abgleich: Entnahmestelle LabelKit ↔ Prüfbericht des genommenen Werts (wie Asbest, gemeinsam.abgleichVon; ab 1.18.0, Audit M3) */
+function ergebnisse(proben, re, karte, liste_, auftrag) {
   const je = new Map();
   for (const p of proben) {
     if (!je.has(p.label)) je.set(p.label, []);
@@ -164,7 +165,8 @@ function ergebnisse(proben, re, karte, liste_) {
     const p = ws.find(x => x.w === w).p, l = karte.get(label) || null;
     const wisch = l ? l.liste === liste_ && l.matrix.toLowerCase() === 'wischprobe' : BW.FLAECHE.test(s(w.u));
     out.push({ label, nr: (l && l.nr) || PNR(p.ref) || PNR(label), ref: p.ref, labNr: p.labNr, bericht: p.bericht,
-      w: { r: s(w.r), u: s(w.u) }, wisch, lk: l, roh: (l && l.z2) || p.raum || tidy(p.desc), rolle: BW.rolleAuto(l ? l.z2 : '', p.desc) });
+      w: { r: s(w.r), u: s(w.u) }, wisch, lk: l, roh: (l && l.z2) || p.raum || tidy(p.desc), rolle: BW.rolleAuto(l ? l.z2 : '', p.desc),
+      z2: l ? l.z2 : '', desc: s(p.desc), abgleich: G.abgleichVon(auftrag, label, p) });
   }
   return out.sort((a, b) => (a.nr || 0) - (b.nr || 0));
 }
@@ -174,6 +176,22 @@ function werteVon(erg, p) {
     for (const x of (b.proben || [])) if (x && (s(x.label) || (PNR(x.ref) ? 'P' + PNR(x.ref) : s(x.ref))) === p.label) return x.werte || [];
   return [];
 }
+/** Warum rolleAuto (bericht-bewertung.js, Regel der Projektzentrale – dort nichts ändern) eine Rolle annimmt – nur zum Anzeigen.
+    Prüft dieselben Muster in derselben Reihenfolge; tests/brand.cjs vergleicht das Ergebnis mit rolleAuto.
+    z2 = Raum/Ort aus LabelKit, desc = Beschreibung im Prüfbericht → { rolle: 'frei'|'referenz'|'', grund } */
+const ROLLE_MUSTER = { frei: [/freimessung/, /sanierungskontrolle/, /nach (?:der )?sanierung/],
+  referenz: [/(?:^|[^a-zäöüß])(ref)(?:[^a-zäöüß]|$)/, /referenz/, /unbelastet/, /nullprobe/, /hintergrund/] };
+function rolleGrund(z2, desc) {
+  const a = tidy(z2), b = tidy(desc), wo = [[a, `Raum/Ort „${a}“`], [b, `Beschreibung im Prüfbericht „${b}“`]].filter(([x]) => x);
+  for (const [x, w] of wo) if (BW.istFrei(x)) return { rolle: 'frei', grund: `${w} beginnt mit „${x.slice(0, 2)}“` };
+  for (const rolle of ['frei', 'referenz']) for (const re of ROLLE_MUSTER[rolle]) for (const [x, w] of wo) {
+    const m = re.exec(x.toLocaleLowerCase('de')); if (!m) continue;
+    const i = m.index + m[0].indexOf(m[1] || m[0]), wort = x.slice(i, i + (m[1] || m[0]).length);
+    return { rolle, grund: `„${wort}“ in ${w}` };
+  }
+  return { rolle: '', grund: '' };
+}
+const ROLLE_NAME = { frei: 'Freimessung', referenz: 'Referenzprobe' };
 /** Probennummern im Satz: „1“, „1 und 4“, „1 bis 3 und 5“ (ab drei aufeinanderfolgenden Nummern „bis“) */
 function nrText(xs) {
   const nrs = [...new Set(xs.map(x => x.nr).filter(n => n != null))].sort((a, b) => a - b), teile = [];
@@ -241,7 +259,7 @@ function bericht(eingabe) {
   const proben = alle.filter(p => !(f.aus && f.aus[p.label] === false));
   const offen = offenAlle.map(o => ({ ...o, aus: !!(f.aus && f.aus[o.label] === false) }));
   storniert.forEach(x => hinweise.push(`${x.label} ist in LabelKit storniert – der Laborwert${x.bericht ? ` (Prüfbericht ${x.bericht})` : ''} kommt nicht in den Bericht.`));
-  labelkitProjektPruefen(e, P, sperren);
+  labelkitProjektPruefen(e, P, sperren, hinweise);
   offen.filter(o => !o.aus).forEach(o => sperren.push(`${o.label}: in LabelKit als Asbestprobe erfasst, aber noch kein Ergebnis in ResultKit – Ergebnis übernehmen oder die Probe unter „Proben“ abwählen.`));
   proben.forEach(p => {
     p.istKmf = f.kmf && p.label in f.kmf ? !!f.kmf[p.label] : (IST_KMF.test(p.material + ' ' + p.matrix) || !!p.kmf.ki || !!p.kmf.who);
@@ -263,7 +281,38 @@ function bericht(eingabe) {
   const pos = asb.filter(p => p.befund.gefunden);
   // Laborwerte Chlorid/PAK je Probe (für 5.2/5.3) und weitere Untersuchungen (LabelKit „Sonstige“ ohne Chlorid-Bohrmehl)
   const karte = lkKarte(e.lk), lp = laborProben(e.erg, stornierteLabels(e.lk));
-  const clErg = ergebnisse(lp, CHLORID, karte, 'chlorid'), pakErg = ergebnisse(lp, SUMME_PAK, karte, 'pak');
+  const auftrag = G.auftragKarte(e.erg);
+  const clErg = ergebnisse(lp, CHLORID, karte, 'chlorid', auftrag), pakErg = ergebnisse(lp, SUMME_PAK, karte, 'pak', auftrag);
+  /* Chlorid-/PAK-Wischproben (Audit M3): Entnahmestelle wie bei Asbest mit dem Prüfbericht abgleichen – vorerst Hinweis (ABGLEICH_SPERRT) */
+  [...clErg, ...pakErg].filter(x => x.wisch && x.abgleich.ok === false).forEach(x => (ABGLEICH_SPERRT ? sperren : hinweise)
+    .push(`${x.ref || x.label}: Entnahmestelle passt nicht – LabelKit „${x.abgleich.labelkit}“, Prüfbericht ${x.bericht} „${x.abgleich.bericht}“ → in LabelKit oder beim Labor klären.`));
+  /* Rollen der Chlorid-/PAK-Wischproben (Audit M4): jede automatisch angenommene Freimessung/Referenz ist eine Annahme mit „✓ stimmt“.
+     Eigene Wahl in form.brand.rolle[Label] = { auto, wahl: 'ok' | 'keine' } – gilt nur, solange die Regel dieselbe Rolle ergibt.
+     „keine“ = normale Probe: zählt regulär; Probenbezeichnungen bleiben unverändert. */
+  const rollenWahl = fb.rolle && typeof fb.rolle === 'object' ? fb.rolle : {}, rollenAnnahmen = [];
+  /* Eine Zeile je Raum/Ort und Rolle (Chlorid und PAK an derselben Referenzstelle = ein Klick); die Wahl wird je Probe gespeichert. */
+  const rollenGruppen = new Map();
+  [...clErg, ...pakErg].filter(x => x.wisch && x.rolle).sort((a, b) => (a.nr || 0) - (b.nr || 0)).forEach(x => {
+    const w = rollenWahl[x.label], gilt = w && w.auto === x.rolle;
+    x.rolleAuto = x.rolle;
+    const zustand = gilt && w.wahl === 'keine' ? 'keine' : gilt && w.wahl === 'ok' ? 'ok' : 'offen';
+    if (zustand === 'keine') x.rolle = '';
+    if (zustand === 'ok') return;
+    const key = [zustand, x.rolleAuto, tidy(x.z2 || x.desc).toLowerCase()].join('|');
+    if (!rollenGruppen.has(key)) rollenGruppen.set(key, { zustand, rolle: x.rolleAuto, xs: [], grund: rolleGrund(x.z2, x.desc).grund });
+    const g = rollenGruppen.get(key); if (!g.xs.some(y => y.label === x.label)) g.xs.push(x);
+  });
+  const ROLLE_MEHR = { frei: 'Freimessungen', referenz: 'Referenzproben' };
+  for (const g of rollenGruppen.values()) {
+    const eine = g.xs.length === 1, labels = g.xs.map(x => x.label), wer = probe(g.xs);
+    if (g.zustand === 'keine') {
+      const h = `${wer} ${eine ? 'wird als normale Probe' : 'werden als normale Proben'} eingeordnet (deine Wahl in BerichtKit, angenommen war ${eine ? ROLLE_NAME[g.rolle] : ROLLE_MEHR[g.rolle]} – ${g.grund}). Das gilt nur in BerichtKit: Die ResultKit-Übersicht und das Datenarchiv der Projektzentrale gehen weiter nach dem Namen. Umbenennen in LabelKit geht nur, solange die Proben noch nicht beim Labor sind.`;
+      hinweise.push(h); hinweisAktionen[h] = { rolleZurueck: labels };
+    } else rollenAnnahmen.push({ id: 'rolle:' + labels.join(','),
+      text: eine ? `${wer} als ${ROLLE_NAME[g.rolle]} angenommen – ${g.grund}. Sie zählt nicht in der Einordnung und steht im Bericht als ${ROLLE_NAME[g.rolle]}.`
+        : `${wer} als ${ROLLE_MEHR[g.rolle]} angenommen – ${g.grund}. Sie zählen nicht in der Einordnung und stehen im Bericht als ${ROLLE_MEHR[g.rolle]}.`,
+      wert: g.rolle, labels });
+  }
   const mitWert = new Set([...clErg, ...pakErg].map(x => x.label));
   const weitereLabels = new Set([...karte].filter(([, l]) => l.liste === 'sonstige' && !l.bohrmehl).map(([k]) => k));
   const weitereErg = [...new Set(lp.filter(p => weitereLabels.has(p.label) && !mitWert.has(p.label) && p.werte.length).map(p => p.label))]
@@ -770,7 +819,7 @@ function bericht(eingabe) {
     deckblatt: { titel, mitteilung, projektnummer: P.nr, betreff: schadenZeile, felder },
     kopf, kennzeilen, abschnitte, ortDatum: `Würselen, ${datum}`, unterschriften, versicherungsfall: vfall, anlagen, anlagenTeile, anlagenDateien, anlagenListe, anlagenZeilen: A.zeilen, proben, offen, storniert,
     hinweise: [...new Set(hinweise)], hinweisAktionen, sperren, probenehmerQuelle, versichererQuelle, svQuelle,
-    annahmen: annahmenAus([['probenehmer', probenehmerQuelle], ['versicherer', versichererQuelle], ['sv', svQuelle]]),
+    annahmen: [...annahmenAus([['probenehmer', probenehmerQuelle], ['versicherer', versichererQuelle], ['sv', svQuelle]]), ...rollenAnnahmen],
     brand: { titel: titelArt, objektartVorgabe: objektart(P.nutzung), nutzung: P.nutzung, schadenereignis: P.schadenereignis, brandgut: P.brandgut,
       schadendatum: sd.art, ortstermin: ortstermin || '', probenahme: lkDaten,
       zahlen: { chlorid: nCl, pak: nPak, pakMaterial: nPakM, kmf: kmf.length, asbest: asb.length, brandgeruch: nBg, chloridAndere: nClM, bohrmehl: nBm, sonstige: lk.sonstige.length },
@@ -783,7 +832,7 @@ function bericht(eingabe) {
   return modell;
 }
 
-const API = { VERSION: 1, art: 'brand', bericht, vorgabe, objektart, OBJEKTART, TITEL, referenzVorgabe, SPALTEN_ERG, nrText, SAN, FREITEXT, SCHADENBILD_START };
+const API = { VERSION: 1, art: 'brand', bericht, vorgabe, rolleGrund, objektart, OBJEKTART, TITEL, referenzVorgabe, SPALTEN_ERG, nrText, SAN, FREITEXT, SCHADENBILD_START };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtBrand = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -12,7 +12,13 @@ const V = require('../bericht-vorgaben.js');
 const LK_BRAND = { chloridProben: [{ _nr: 1 }, { _nr: 2 }], proben: [{ _nr: 3 }], asbestProben: [{ _nr: 4 }] };
 const LK_ASBEST = { asbestProben: [{ _nr: 1 }, { _nr: 2, storniert: true }] };
 const w = (adresse, datei, lk) => V.artWaehlen({ adresse, datei, lk });
-assert.deepEqual(w('brand', null, LK_ASBEST), { art: 'brand', quelle: 'adresse', merken: true, grund: '' }, 'Adresse geht vor und wird gemerkt');
+assert.deepEqual(w('brand', null, LK_ASBEST), { art: 'brand', quelle: 'adresse', merken: true, rueckfrage: false, grund: '' }, 'Adresse geht vor und wird gemerkt');
+// Audit M2: ausdrücklicher Asbestbericht mit Brand-Proben → nicht gemerkt, Rückfrage vor dem Speichern
+assert.deepEqual(w('asbest', null, LK_BRAND), { art: 'asbest', quelle: 'adresse', merken: false, rueckfrage: true, grund: '2 Chlorid-Proben, 1 PAK-Probe und 1 Asbestprobe' }, 'M2: Asbest mit Brand-Proben nicht merken');
+assert.equal(w('asbest', null, LK_ASBEST).merken, true, 'M2: reines Asbest-Projekt wird gemerkt wie bisher');
+assert.equal(w('asbest', null, { chloridProben: [{ storniert: true }], asbestProben: [{}] }).merken, true, 'M2: stornierte Brand-Proben zählen nicht');
+assert.equal(w('asbest', null, { brandgeruchProben: [{}] }).rueckfrage, true, 'M2: Brandgeruch allein reicht');
+assert.equal(w('brand', null, LK_BRAND).rueckfrage, false);
 assert.equal(w('pak', null, null).merken, false, 'unbekannte Art wird nicht gemerkt');
 assert.equal(w('', { art: 'brand', berichte: [] }, LK_ASBEST).art, 'brand', 'gemerkt geht vor den Proben');
 assert.equal(w('', { art: 'brand' }, LK_ASBEST).merken, false);
