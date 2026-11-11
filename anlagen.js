@@ -52,7 +52,30 @@ const BILDDOKU = /^Bilddokumentation(?![a-zäöüß]).*\.pdf$|[_ ]Bilddokumentat
    Name ein anderes Projekt nennt, wird nie Anlage (Hinweis, wie beim Probenplan); ohne Nummer im Namen und ohne FotoKit-Vermerk ist
    nicht prüfbar, zu welchem Projekt sie gehört → gefunden, aber nicht vorgehakt. */
 const NR_IM_NAMEN = /(?<![\d.])(\d{2}\.\d{2,6})(?![\d])/;
-function bilddokuFinden(fotos, fk, projektNr, fremd) {
+/* o15 (Audit 11.11.2026): BerichtKit prüft selbst, ob die Bilddokumentation hinter Fotos oder Deckblatt zurückliegt – FotoKit (ab 2.1.0)
+   vermerkt „Doku geändert“ dafür erst mit seinem nächsten Speichern. Dieselben Regeln wie FotoKit: Bildendungen und Hilfsnamen wie
+   FotoKit beim Einlesen (IMG_EXT, TMP_PREFIX, „~umb_“), Deckblattfelder wie applyPJ (PJ_MAP ohne Sachverständige(n); nur gefüllte
+   Felder aus _Projekt.json zählen). Nur ein Hinweis (offener Punkt o15): ein unter demselben Namen ersetztes Foto sieht BerichtKit nicht,
+   ältere FotoKit-Dateien ohne „bestand“ prüfen nur das Deckblatt, Auftraggeber/Schaden-Nr. vergleicht FotoKit auch nicht. */
+const FK_BILD = /\.(jpe?g|png|webp|gif|bmp|tiff?|hei[cf])$/i, FK_HILFE = /^(umb-tmp_|~umb_)/;
+const FK_DECKBLATT = [['objekt', 'objekt', 'Objekt'], ['ereignis', 'schadenereignis', 'Schadenereignis'], ['sdatum', 'schadendatum', 'Schadendatum'], ['ort', 'ortstermin', 'Ortstermin']];
+function bilddokuSelbst(fk, bilder, projekt) {
+  const b = fk && fk.bilddoku, gruende = [];
+  if (b && Array.isArray(b.bestand) && Array.isArray(bilder)) {
+    const damals = new Set(b.bestand.map(n => String(n))), jetzt = bilder.map(f => String(f.name)).filter(n => FK_BILD.test(n) && !FK_HILFE.test(n));
+    const neu = jetzt.filter(n => !damals.has(n)), weg = [...damals].filter(n => !jetzt.includes(n));
+    const liste = a => a.slice(0, 3).map(n => `„${n}“`).join(', ') + (a.length > 3 ? ` und ${a.length - 3} weitere` : '');
+    if (neu.length) gruende.push(`seit der PDF neu in „Fotos“: ${liste(neu)}`);
+    if (weg.length) gruende.push(`seit der PDF nicht mehr in „Fotos“: ${liste(weg)}`);
+  }
+  if (projekt && typeof projekt === 'object') {
+    const meta = (fk && fk.projekt && typeof fk.projekt === 'object') ? fk.projekt : {};
+    const felder = FK_DECKBLATT.filter(([k, pk]) => { const v = s(projekt[pk]); return v && meta[k] !== v; }).map(x => x[2]);
+    if (felder.length) gruende.push(`seit der PDF in der Projektzentrale geändert: ${felder.join(', ')}`);
+  }
+  return gruende.length ? gruende.join('; ') + ' – von BerichtKit festgestellt, FotoKit vermerkt es erst beim nächsten Speichern' : '';
+}
+function bilddokuFinden(fotos, fk, projektNr, fremd, bilder, projekt) {
   const gruppen = new Map(), nr = s(projektNr);
   for (const f of fotos || []) {
     const name = nfc(f.name); if (!BILDDOKU.test(name)) continue;
@@ -81,6 +104,7 @@ function bilddokuFinden(fotos, fk, projektNr, fremd) {
   if (aufgezeichnet) {
     const erstellt = zeit(fk.bilddoku.erstellt) || g.t;
     if (geaendert != null) { k.veraltet = geaendert > erstellt; if (k.veraltet) k.grund = k.grund || 'nach dem Erstellen in FotoKit geändert (Beschreibungen, Auswahl, Reihenfolge oder Projektdaten)'; }
+    if (k.veraltet !== true && !k.unvollstaendig) { const selbst = bilddokuSelbst(fk, bilder, projekt); if (selbst) { k.veraltet = true; k.grund = selbst; k.selbst = true; } }   // o15
     if (s(fk.bilddoku.anlage)) { k.nrImDokument = anlageNr(fk.bilddoku.anlage); k.nrQuelle = s(fk.bilddoku.anlage); }
   } else if (geaendert != null) {
     k.veraltet = geaendert > g.t + TOLERANZ; if (k.veraltet) k.grund = k.grund || 'älter als die letzte Änderung in FotoKit';
@@ -91,7 +115,8 @@ function bilddokuFinden(fotos, fk, projektNr, fremd) {
 
 /** Plan-PDFs aus PlanKit: Pläne/Probenplan <Ordner>[ - <Geschoss>][ - Ergebniskarte][ (k)].pdf – „alle Geschosse“ ohne Geschoss-Zusatz.
     Nur Dateien mit dem Namen dieses Projektordners: ein hineinkopierter Plan eines anderen Projekts wird nie Anlage. */
-function planFinden(art, plaene, plan, ordnerName) {
+function planFinden(art, plaene, plan, ordnerName, wo) {
+  if (wo && Array.isArray(wo.geschosse)) return planFindenNamen(art, plaene, plan, ordnerName, wo);
   const ergebnis = art === 'ergebniskarte', praefix = ('Probenplan ' + nfc(ordnerName)).toLowerCase();
   const neueste = new Map();   // Name ohne „ (k)“ → neueste Datei
   for (const f of plaene || []) {
@@ -116,6 +141,58 @@ function planFinden(art, plaene, plan, ordnerName) {
   const t = Math.max(...nimm.map(x => x.t)), dateien = nimm.map(x => 'Pläne/' + x.name);
   const k = { art, dateien, t, key: schluessel(dateien, Math.max(...nimm.map(x => x.t))), veraltet: null, grund: '', unvollstaendig: false, nrImDokument: null, nrQuelle: '',
     details: nimm.length > 1 || nimm[0].geschoss ? nimm.map(x => x.geschoss).join(', ') : '' };
+  if (plan && plan.t) { k.veraltet = plan.t > Math.min(...nimm.map(x => x.t)) + TOLERANZ; if (k.veraltet) k.grund = 'Plan in PlanKit nach dem Export geändert'; }
+  else k.grund = 'PlanKit-Datei (.probenplan) nicht gefunden – Stand nicht prüfbar';
+  return k;
+}
+
+/** Audit o11 – nur wenn eine .probenplan gelesen werden konnte (sonst planFinden wie bisher).
+    wo.frueher: frühere Ordnernamen aus den Namen der eigenen .probenplan-Dateien („Probenplan <Ordner>.probenplan“, z. B. nach dem
+    Umbenennen des Ordners); wo.geschosse: Namen der Pläne in der gelesenen .probenplan (PlanKit floorName – nur bei mehr als einem Plan,
+    Zeichen wie im Export ersetzt). Eine PDF gehört zum längsten Ordnernamen, mit dem ihr Name beginnt (danach Ende oder „ - “) – ein
+    früherer, längerer Name wird so kein „Geschoss“. Ein Geschoss-Zusatz, den es im Plan nicht gibt, ist unklar. Gibt es mehr als eine
+    passende Fassung (jetziger und früherer Name, zwei frühere Namen, unklares Geschoss), wählt BerichtKit nicht still: Hinweis, und
+    vorgehakt nur, wenn die PDF unter dem jetzigen Namen die neueste ist. */
+function planFindenNamen(art, plaene, plan, ordnerName, wo) {
+  const ergebnis = art === 'ergebniskarte', jetzt = nfc(ordnerName);
+  const namen = [jetzt, ...(wo.frueher || []).map(nfc)].filter((n, i, a) => n && a.findIndex(x => x.toLowerCase() === n.toLowerCase()) === i);
+  const geschosse = new Set(wo.geschosse.map(g => nfc(g).replace(/[<>:"/\\|?*]/g, '_').toLowerCase()));
+  const neueste = new Map();
+  for (const f of plaene || []) {
+    const name = nfc(f.name); if (!/^Probenplan\b.*\.pdf$/i.test(name)) continue;
+    const ohne = name.replace(KOPIE, ''), istErg = / - Ergebniskarte\.pdf$/i.test(ohne); if (istErg !== ergebnis) continue;
+    const kern = ohne.replace(/\.pdf$/i, '').replace(/ - Ergebniskarte$/i, ''), klein = kern.toLowerCase();
+    const ordner = namen.filter(n => { const p = ('Probenplan ' + n).toLowerCase(); return klein === p || klein.startsWith(p + ' - '); }).sort((x, y) => y.length - x.length)[0];
+    // Kein bekannter Name: mit der Projektnummer dieses Projekts vorn (z. B. frühere .probenplan von Hand gelöscht) → unklar, sonst nie
+    const nrVorn = !ordner && s(wo.nr) && new RegExp('^probenplan ' + s(wo.nr).replace(/\./g, '\\.') + '(?![0-9])').test(klein);
+    if (!ordner && !nrVorn) continue;   // anderes Projekt (kopiert) – nie als Anlage
+    const geschoss = ordner ? kern.slice(('Probenplan ' + ordner).length).replace(/^ - /, '').trim() : '';
+    const key = ohne.toLowerCase(), alt = neueste.get(key);
+    if (!alt || (+f.t || 0) > alt.t) neueste.set(key, { name, t: +f.t || 0, ordner: ordner || '', geschoss, ohneName: !ordner,
+      unbekannt: !ordner || (!!geschoss && !geschosse.has(geschoss.toLowerCase())) });
+  }
+  if (!neueste.size) return null;
+  // Fassungen: je Ordnername die Pläne mit bekannten Geschossen; jede PDF mit unbekanntem Geschoss ist eine eigene Fassung
+  const fassungen = [];
+  for (const n of namen) {
+    const alle = [...neueste.values()].filter(x => x.ordner === n && !x.unbekannt); if (!alle.length) continue;
+    const gesamt = alle.filter(x => !x.geschoss).sort((a, b) => b.t - a.t)[0];
+    const je = alle.filter(x => x.geschoss).sort((a, b) => a.geschoss.localeCompare(b.geschoss, 'de', { numeric: true }));
+    const nimm = gesamt && (!je.length || gesamt.t >= Math.max(...je.map(x => x.t))) ? [gesamt] : je;
+    fassungen.push({ nimm, jetzt: n === jetzt, ordner: n, t: Math.max(...nimm.map(x => x.t)) });
+  }
+  for (const x of neueste.values()) if (x.unbekannt) fassungen.push({ nimm: [x], jetzt: false, ordner: x.ordner, unbekannt: true, t: x.t });
+  const wahl = fassungen.find(f => f.jetzt) || [...fassungen].sort((a, b) => b.t - a.t)[0], nimm = wahl.nimm;
+  const t = Math.max(...nimm.map(x => x.t)), dateien = nimm.map(x => 'Pläne/' + x.name);
+  const k = { art, dateien, t, key: schluessel(dateien, t), veraltet: null, grund: '', unvollstaendig: false, nrImDokument: null, nrQuelle: '',
+    details: nimm.length > 1 || nimm[0].geschoss ? nimm.map(x => x.geschoss).join(', ') : '' };
+  const nenne = f => f.nimm.map(x => `„${x.name}“`).join(', ');
+  const warum = f => f.nimm[0].ohneName ? 'Ordnername nicht bekannt' : f.unbekannt ? `Plan „${f.nimm[0].geschoss}“ gibt es in PlanKit nicht` : f.jetzt ? 'jetziger Ordnername' : `früherer Ordnername „${f.ordner}“`;
+  const andere = fassungen.filter(f => f !== wahl);
+  // vorgehakt nur: PDF unter dem jetzigen Namen und keine andere passende Fassung neuer
+  k.unklar = !wahl.jetzt || andere.some(f => f.t > wahl.t);
+  if (andere.length) k.unklarText = `${andere.length > 1 ? 'mehrere Probenpläne passen' : 'zwei Probenpläne passen'}: ${[wahl, ...andere].map(f => `${nenne(f)} (${warum(f)})`).join(' und ')} – angehakt kommt ${nenne(wahl)} in den Bericht`;
+  else if (!wahl.jetzt) k.unklarText = `${nenne(wahl)} – ${warum(wahl)}`;
   if (plan && plan.t) { k.veraltet = plan.t > Math.min(...nimm.map(x => x.t)) + TOLERANZ; if (k.veraltet) k.grund = 'Plan in PlanKit nach dem Export geändert'; }
   else k.grund = 'PlanKit-Datei (.probenplan) nicht gefunden – Stand nicht prüfbar';
   return k;
@@ -188,9 +265,9 @@ function brandgeruchFinden(mitteilungen, protokoll, labelkit) {
 function erkennen(e) {
   e = e || {};
   const out = {};
-  const fremd = [], b = bilddokuFinden(e.fotos, e.fk, e.projektNr, fremd); if (b) out.bilddoku = b;
+  const fremd = [], b = bilddokuFinden(e.fotos, e.fk, e.projektNr, fremd, e.bilder, e.projekt); if (b) out.bilddoku = b;
   if (fremd.length) out.bilddokuFremd = fremd;
-  for (const art of ['probenplan', 'ergebniskarte']) { const k = planFinden(art, e.plaene, e.plan, e.ordnerName); if (k) out[art] = k; }
+  for (const art of ['probenplan', 'ergebniskarte']) { const k = planFinden(art, e.plaene, e.plan, e.ordnerName, e.planNamen && { ...e.planNamen, nr: e.projektNr }); if (k) out[art] = k; }
   for (const art of Object.keys(WORD)) { const k = wordFinden(art, e.mitteilungen, e.protokoll, e.plan); if (k) out[art] = k; }
   const bg = brandgeruchFinden(e.mitteilungen, e.protokoll, e.labelkit); if (bg) out.brandgeruch = bg;
   return out;
@@ -222,11 +299,11 @@ function zusammenstellen(o) {
   });
   if (prb.length) nr.pruefbericht = 1;
   // Eigene Wahl gilt nur für denselben Stand: andere Dateien oder inzwischen veraltet → wieder nach der Regel
-  const wahlKey = k => k.key + (k.veraltet ? '#veraltet' : '');
+  const wahlKey = k => k.key + (k.veraltet ? '#veraltet' : '') + (k.unklar ? '#unklar' : '');
   const anHaken = (art, k, fest) => {
     const w = wahl[art];
     if (w && typeof w === 'object' && w.key === wahlKey(k)) return !!w.an;
-    return fest && k.veraltet !== true && !k.unvollstaendig && !k.ohneNr;
+    return fest && k.veraltet !== true && !k.unvollstaendig && !k.ohneNr && !k.unklar;
   };
   const zeile = (art, fest) => {
     const k = gefunden[art], A = ARTEN[art];
@@ -241,7 +318,7 @@ function zusammenstellen(o) {
     const titel = A.titel + (art === 'probenplan' || art === 'ergebniskarte' ? (k.details ? ` (${k.details})` : '') : '');
     if (an) { liste.push({ nr: n, art, titel, dateien: k.dateien, zeilen: [[titel]] }); nr[art] = n; }
     zeilen.push({ art, titel, nr: n, an, fest, dateien: k.dateien, t: k.t, key: wahlKey(k), details: k.details,
-      zustand: k.unvollstaendig ? 'unvollstaendig' : k.ohneNr ? 'ohneNr' : k.veraltet ? 'veraltet' : k.veraltet === null ? 'unbekannt' : 'ok', grund: k.grund, app: A });
+      zustand: k.unvollstaendig ? 'unvollstaendig' : k.ohneNr ? 'ohneNr' : k.unklar ? 'unklar' : k.veraltet ? 'veraltet' : k.veraltet === null ? 'unbekannt' : 'ok', grund: k.grund, app: A });
     if (art === 'bilddoku' && an) {
       if (k.nrImDokument == null) hinweise.push(`Bilddokumentation: keine Anlagen-Nr. in FotoKit eingetragen – im Bericht ist sie Anlage ${n}.`);
       else if (k.nrImDokument !== n) hinweise.push(`Bilddokumentation trägt „${k.nrQuelle}“, im Bericht ist sie Anlage ${n} – in FotoKit die Anlagen-Nr. ändern und die PDF neu erstellen.`);
@@ -254,9 +331,14 @@ function zusammenstellen(o) {
       else hinweis(`${A.titel} ohne Projektnummer im Namen – nicht prüfbar, ob sie zu diesem Projekt gehört. Nicht im Bericht; in ${A.app} neu erstellen oder trotzdem anhaken.`, art, 'öffnen');
       return;
     }
+    if (k.unklarText) {   // o11: mehrere passende Probenpläne oder nur einer unter einem früheren Namen – nie still gewählt
+      if (!k.unklar) hinweise.push(`${A.titel}: ${k.unklarText}.`);
+      else if (an) hinweis(`${A.titel} ist angehakt, aber ${k.unklarText}.`, art, 'öffnen');
+      else hinweis(`${A.titel}: ${k.unklarText}. Nicht im Bericht – in ${A.app} neu exportieren (und den alten Plan löschen) oder trotzdem anhaken.`, art, 'öffnen');
+    }
     const mangel = k.unvollstaendig ? 'unvollständig' : k.veraltet ? 'veraltet' : '';
     if (mangel && an) hinweis(`${A.titel} ist angehakt, aber ${k.unvollstaendig ? `unvollständig (${k.grund})` : k.grund} – in ${A.app} neu erstellen.`, art, 'öffnen');
-    else if (mangel && fest) hinweis(`${A.titel} ${mangel}${k.unvollstaendig ? ` (${k.grund})` : ''} – nicht im Bericht. In ${A.app} neu erstellen oder trotzdem anhaken.`, art, 'öffnen');
+    else if (mangel && fest) hinweis(`${A.titel} ${mangel}${k.unvollstaendig || k.selbst ? ` (${k.grund})` : ''} – nicht im Bericht. In ${A.app} neu erstellen oder trotzdem anhaken.`, art, 'öffnen');
   };
   (gefunden.bilddokuFremd || []).forEach(x => hinweise.push(`Bilddokumentation „${x.datei}“ gehört zu Projekt ${x.nr} – nicht im Bericht.`));
   profil.fest.filter(a => !ohne.has(a)).forEach(a => zeile(a, true));

@@ -40,14 +40,21 @@ function labQualifier(raw) {
   return Number.isFinite(labNumber(raw)) ? 'measured' : 'unrated';
 }
 
-/* ===== KORROSION-CHLORID v1 – in ResultKit, PlanKit (TypeScript), FotoKit und BerichtKit (JavaScript) gleich halten =====
+/* ===== KORROSION-CHLORID v2 – in ResultKit, PlanKit (TypeScript), FotoKit und BerichtKit (JavaScript) gleich halten =====
    Chlorid auf Oberflächen: VdS 2357 nennt 5–10 µg/cm² als korrosionschemisch relevante Größenordnung (Vorgabe des Büros).
    Gilt unabhängig von der Nutzung. Die Grenzen werden in die Einheit des Berichts umgerechnet (1 µg/cm² = 10 mg/m²),
-   damit ältere Berichte in mg/m² gleich bewertet werden. */
+   damit ältere Berichte in mg/m² gleich bewertet werden.
+   v2 (Audit m7, Entscheidung 4): genau 10 µg/cm² liegt noch „im Bereich“, „oberhalb“ erst über 10; genau 5 bleibt „im Bereich“.
+   Keine neue Zahl: die Stufe „oberhalb“ trägt `ueber: true` (zählt erst über ihrem Wert), jede andere Stufe zählt ab ihrem Wert.
+   (BerichtKit ordnet nur nach der Referenz ein; angepasste PlanKit-Skalen ergeben einen Hinweis.) */
 const CHLORID_JE_UG_CM2 = { 'µg/cm2': 1, 'mg/m2': 10, 'µg/m2': 10000, 'mg/cm2': .001, 'µg/100cm2': 100, 'mg/dm2': .1 };
 const einheitKey = unit => String(unit == null ? '' : unit).replace(/μ/g, 'µ').replace(/²/g, '2').replace(/\s+/g, '').toLowerCase();
 const chloridEinheit = unit => CHLORID_JE_UG_CM2[einheitKey(unit)];
-/* ===== Ende KORROSION-CHLORID v1 ===== */
+/** Stufen über „unterhalb“ in der Einheit des Berichts: [im Bereich, oberhalb] */
+const chloridGrenzen = f => [{ from: 5 * f }, { from: 10 * f, ueber: true }];
+/** Wert in dieser Stufe? `ueber`: erst über dem Wert, sonst ab dem Wert. */
+const stufeErreicht = (c, v) => c.ueber ? v > c.from : v >= c.from;
+/* ===== Ende KORROSION-CHLORID v2 ===== */
 
 /** VdS 2357 Hintergrundreferenz Σ16 EPA-PAK: Faktor von µg/m² in die Einheit des Berichts (ResultKit vdsScale) */
 const PAK_JE_UG_M2 = { 'µg/m2': 1, 'µg/100cm2': .01, 'mg/m2': .001, 'ng/m2': 1000 };
@@ -58,18 +65,19 @@ const FLAECHE = /\/\s*(?:\d+\s*)?(?:c|d)?m\s*(?:2|²)\s*$/i;
 /** Wert eines Parameters: der Wert je Fläche geht vor (Labor liefert z. B. Chlorid „µg/Probe“ und „µg/cm² berechnet“) */
 function bevorzugt(werte, re) { const c = (werte || []).filter(x => x && re.test(String(x.p || ''))); return c.find(x => FLAECHE.test(String(x.u || ''))) || c[0] || null; }
 
-/** Einordnung eines Werts gegen Grenzen (in der Einheit des Berichts, aufsteigend) → Index der Gruppe oder -1 (nicht bewertbar).
+/** Einordnung eines Werts gegen Grenzen (in der Einheit des Berichts, aufsteigend; Zahl = ab dem Wert, { from, ueber } wie
+    KORROSION-CHLORID v2) → Index der Gruppe oder -1 (nicht bewertbar).
     Gemessen: letzte Grenze, die erreicht ist (wie ResultKit rate). „< BG“: nur dann die unterste Gruppe, wenn die BG selbst unter der
     ersten Grenze liegt – sonst ist nichts sicher. „n. n.“, „unter BG“ (ohne Zahl): unterste Gruppe. „n. b.“, „1.250“, „> 500“: nicht bewertbar. */
 function einordnen(r, grenzen) {
   const q = labQualifier(r);
-  if (q === 'measured') { const v = labNumber(r); if (!(v >= 0)) return -1; let i = 0; grenzen.forEach((g, j) => { if (v >= g) i = j + 1; }); return i; }
+  if (q === 'measured') { const v = labNumber(r); if (!(v >= 0)) return -1; let i = 0; grenzen.forEach((g, j) => { if (stufeErreicht(typeof g === 'number' ? { from: g } : g, v)) i = j + 1; }); return i; }
   if (q === 'notDetected') return 0;
-  if (q === 'below') { const t = String(r).trim().replace(/^\(|\)$/g, '').trim(); if (!t.startsWith('<')) return 0; const bg = labNumber(t.slice(1)); return bg <= grenzen[0] ? 0 : -1; }
+  if (q === 'below') { const t = String(r).trim().replace(/^\(|\)$/g, '').trim(); if (!t.startsWith('<')) return 0; const bg = labNumber(t.slice(1)); return bg <= (typeof grenzen[0] === 'number' ? grenzen[0] : grenzen[0].from) ? 0 : -1; }
   return -1;
 }
-/** Chlorid-Wischprobe: 0 unterhalb (< 5 µg/cm²) · 1 im Bereich (5 bis < 10) · 2 oberhalb (≥ 10) · -1 nicht bewertbar (Einheit unbekannt, Wert unklar) */
-function chloridStufe(w) { const f = w && chloridEinheit(w.u); return f ? einordnen(w.r, [5 * f, 10 * f]) : -1; }
+/** Chlorid-Wischprobe: 0 unterhalb (< 5 µg/cm²) · 1 im Bereich (5 bis einschließlich 10) · 2 oberhalb (> 10) · -1 nicht bewertbar (Einheit unbekannt, Wert unklar) */
+function chloridStufe(w) { const f = w && chloridEinheit(w.u); return f ? einordnen(w.r, chloridGrenzen(f)) : -1; }
 /** PAK-Wischprobe (Σ16 EPA-PAK) gegen die Hintergrundreferenz R (10 oder 100 µg/m²): 0 unter Referenz · 1 erreicht/überschritten · -1 */
 function pakStufe(w, R) { const f = w && pakEinheit(w.u); return f && R > 0 ? einordnen(w.r, [R * f]) : -1; }
 /** Kein Nachweis über der BG (für den Satz „… keine … oberhalb der Bestimmungsgrenze nachweisbar“) */

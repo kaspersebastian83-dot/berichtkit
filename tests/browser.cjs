@@ -26,6 +26,9 @@ function zipDatei(buf, name) {
   }
   return null;
 }
+// FotoKit hält die Deckblattangaben aus _Projekt.json in „projekt“ (applyPJ) – ab 1.19.0 vergleicht BerichtKit sie (o15)
+const fkDeckblatt = pj => Object.fromEntries([['objekt', 'objekt'], ['ereignis', 'schadenereignis'], ['sdatum', 'schadendatum'], ['ort', 'ortstermin']]
+  .filter(([, pk]) => String(pj[pk] || '').trim()).map(([k, pk]) => [k, String(pj[pk]).trim()]));
 const daten = {
   pj: B.pj(),
   // P3 in LabelKit storniert (4.49.0), der Prüfbericht hat trotzdem einen Wert dafür
@@ -34,7 +37,7 @@ const daten = {
   erg: B.erg([[1, 'chrysotil'], [2, 'kmf'], [3, 'kein']]),
   ma: { format: 'spektron-mitarbeiter', version: 1, personen: B.mitarbeiter },
   fk: { app: 'Bildumbenenner', format: 1, reihenfolge: ['01_P1_Fliesenkleber.jpg'], bilder: { '01_P1_Fliesenkleber.jpg': { beschreibung: 'Fliesenkleber', probe: 'P1' }, '02_alt.jpg': { aussortiert: true, probe: 'P1' } },
-    projekt: { anlage: 'Anlage 2' }, dokuGeaendert: '2026-10-30T09:00:00.000Z',
+    projekt: { anlage: 'Anlage 2', ...fkDeckblatt(B.pj()) }, dokuGeaendert: '2026-10-30T09:00:00.000Z',
     bilddoku: { dateien: ['Bilddokumentation_99.9001_Musterstadt_2026-10-30_Teil_1_von_2.pdf', 'Bilddokumentation_99.9001_Musterstadt_2026-10-30_Teil_2_von_2.pdf'], erstellt: '2026-10-30T10:00:00.000Z', anlage: 'Anlage 2' } },
 };
 
@@ -397,7 +400,7 @@ const daten = {
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
     await page.click('#btnMehr'); await page.waitForSelector('#mosaikMehrPop');
     assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Word nur herunterladen',
-      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.18.1', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
+      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.19.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
     assert.equal(await page.getAttribute('#mosaikMehrPop a[target=aidkit]', 'href'), '../aidkit/#app-berichtkit');
     await page.keyboard.press('Escape'); await page.waitForSelector('#mosaikMehrPop', { state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'btnMehr', 'Esc: Fokus zurück auf „Mehr …“');

@@ -94,6 +94,18 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   Rolle = eine Zeile. Die Wahl steht je Probe in `form.brand.rolle` (`{ auto, wahl: 'ok'|'keine' }`) und gilt nur, solange der Name dieselbe Rolle
   ergibt. „Normale Probe“ wertet die Probe regulär, nur in BerichtKit (ResultKit-Übersicht und Datenarchiv gehen weiter nach dem Namen) – mit
   „Rückgängig“; Probenbezeichnungen bleiben unverändert.
+- **Chlorid genau 10 µg/cm²** (ab 1.19.0, Audit m7, Entscheidung 4): `KORROSION-CHLORID v2` in `bericht-bewertung.js` – gleich in ResultKit,
+  PlanKit, FotoKit. Die Stufe „oberhalb“ trägt `ueber: true` und zählt erst über 10 µg/cm² (umgerechnet, z. B. 100 mg/m²); genau 10 liegt „im
+  Bereich“, genau 5 bleibt „im Bereich“. Keine neue Zahl, keine Rundung.
+- **Probenplan nach dem Umbenennen des Ordners** (ab 1.19.0, o11; nur mit lesbarer `.probenplan`, sonst wie bisher): frühere Ordnernamen kommen
+  aus den Namen der eigenen `.probenplan`-Dateien, die Plannamen (Geschosse) aus der gelesenen `.probenplan`. Eine PDF gehört zum längsten passenden
+  Ordnernamen (danach Ende oder „ - “); ein Geschoss, das es im Plan nicht gibt, und eine PDF mit der Projektnummer, aber unbekanntem Namen sind
+  „Plan unklar“. Nur ein früherer Name oder eine neuere andere Fassung → gefunden, nicht vorgehakt, Hinweis nennt die Dateien; die PDF unter dem
+  jetzigen Namen, die die neueste ist, bleibt vorgehakt (Hinweis nennt die andere).
+- **Bilddokumentation – Stand selbst prüfen** (ab 1.19.0, o15): Ist FotoKits Vermerk nicht schon „veraltet“, vergleicht BerichtKit die Bilder direkt
+  in „Fotos“ (Endungen und Hilfsnamen wie FotoKit) mit `bilddoku.bestand` und Objekt/Schadenereignis/Schadendatum/Ortstermin aus `_Projekt.json`
+  (nur gefüllte) mit `projekt` in `_Bildumbenenner.json` (wie FotoKit `applyPJ`). Abweichung → „veraltet“ mit Grund, nicht vorgehakt. Offen: ein unter
+  demselben Namen ersetztes Foto sieht BerichtKit nicht; FotoKit-Dateien ohne `bestand` prüfen nur das Deckblatt.
 - **`_BerichtKit.json` nicht lesbar** (ab 1.18.0, M7: kein JSON, leer, Lesefehler, fremdes Format): BerichtKit schreibt sie nie – rote Zeile über den
   Karten, Eingaben bleiben im Browser, ein gespeicherter Bericht wird vorgemerkt. „Neu anlegen …“ legt zuerst den Inhalt byte-gleich als
   `_BerichtKit.unlesbar.json` in denselben Ordner (eine vorhandene Kopie wird nur nach Nennung ihres Datums ersetzt), dann die neue Datei aus dem

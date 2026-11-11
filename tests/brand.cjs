@@ -488,10 +488,10 @@ fall('5.2 Chlorid: fester Text, Spanne, Zähl-Absatz Form B, höchster Wert, Ref
   assert.ok(fehlt.hinweise.includes('Chlorid: noch kein Ergebnis für P2 – in 5.2 nicht berücksichtigt.'));
 });
 
-fall('Einordnung wie ResultKit: Chlorid 5/10 µg/cm² (umgerechnet), PAK-Referenz 10/100 µg/m², Zahlen streng lesen', () => {
+fall('Einordnung wie ResultKit: Chlorid 5 bis einschließlich 10 µg/cm² (umgerechnet, KORROSION-CHLORID v2), PAK-Referenz 10/100 µg/m², Zahlen streng lesen', () => {
   const cl = (r, u = 'µg/cm²') => BW.chloridStufe({ r, u });
-  assert.deepEqual(['4,99', '5', '9,99', '10', '0'].map(r => cl(r)), [0, 1, 1, 2, 0]);
-  assert.deepEqual([cl('50', 'mg/m²'), cl('99', 'mg/m²'), cl('100', 'mg/m2'), cl('49', 'mg/m²')], [1, 1, 2, 0], '1 µg/cm² = 10 mg/m²');
+  assert.deepEqual(['4,99', '5', '9,99', '10', '0'].map(r => cl(r)), [0, 1, 1, 1, 0]);
+  assert.deepEqual([cl('50', 'mg/m²'), cl('99', 'mg/m²'), cl('100', 'mg/m2'), cl('49', 'mg/m²')], [1, 1, 1, 0], '1 µg/cm² = 10 mg/m²');
   assert.deepEqual([cl('< 0,5'), cl('n. n.'), cl('unter BG'), cl('< 5'), cl('< 12'), cl('(n. b.)'), cl('12', 'µg/Probe'), cl('> 50')], [0, 0, 0, 0, -1, -1, -1, -1]);
   assert.deepEqual([BW.pakStufe({ r: '9,9', u: 'µg/m²' }, 10), BW.pakStufe({ r: '10', u: 'µg/m²' }, 10), BW.pakStufe({ r: '99', u: 'µg/m²' }, 100), BW.pakStufe({ r: '0,1', u: 'µg/100 cm²' }, 10), BW.pakStufe({ r: '10', u: 'mg/kg' }, 10)], [0, 1, 0, 1, -1]);
   assert.deepEqual(['2300', '2.300', '1.234,5', '12,3', '1 250', '< 0,5', 'n. n.'].map(BW.labNumber).map(v => (Number.isNaN(v) ? 'NaN' : v)), [2300, 'NaN', 1234.5, 12.3, 1250, 'NaN', 'NaN']);

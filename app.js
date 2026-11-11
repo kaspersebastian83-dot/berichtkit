@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.18.1';
+const APP_VERSION = '1.19.0';
 const APP_DATE = '11.11.2026';
 const CHANGELOG = [
+  ['1.19.0', '11.11.2026', 'Chlorid genau 10 µg/cm² (bzw. 100 mg/m²) liegt im Brandbericht jetzt „im Bereich“ der korrosionschemisch relevanten Größenordnung (VdS 2357: 5–10 µg/cm²), „oberhalb“ erst darüber – Tabelle, Zähl-Satz und Abschluss in 5.2, gleich wie ResultKit, PlanKit und FotoKit (KORROSION-CHLORID v2); genau 5 bleibt „im Bereich“. Probenplan nach dem Umbenennen des Projektordners: eine PDF unter einem früheren Ordnernamen wird gefunden, aber nicht vorgehakt; passen zwei Probenpläne, wählt BerichtKit keinen still (Hinweis nennt beide, vorgehakt nur der unter dem jetzigen Namen, wenn er der neueste ist); ein früherer, längerer Ordnername gilt nicht mehr als Geschoss. Ohne lesbare PlanKit-Datei wie bisher. Bilddokumentation: BerichtKit prüft selbst, ob seit der PDF Fotos in „Fotos“ dazugekommen oder weggefallen sind oder sich die Deckblattangaben in der Projektzentrale geändert haben – dann „veraltet“, nicht vorgehakt, mit Grund (FotoKit vermerkt es erst beim nächsten Speichern).'],
   ['1.18.1', '11.11.2026', 'LabelKit-Datei nur noch von diesem Projekt (Name beginnt mit der Projektnummer, Regel wie LabelKit 5.1): Die Datei, aus der ResultKit übernommen hat, gilt nur, wenn sie zu diesem Projekt gehört; sonst die Projektdatei nach der Regel – nie mehr die neueste beliebige …_Daten.json. Liegt nur eine fremde Datei da, liest BerichtKit nichts und sagt es in der Quellenliste. Spektron-Leiste: „Proben ✓“ nur für eine Datei dieses Projekts.'],
   ['1.18.0', '11.11.2026', 'Befunde aus dem Audit Kernkette: Asbestbericht in einem Projekt mit Chlorid-, PAK- oder Brandgeruch-Proben – Hinweis mit „Zum Brandbericht“ und eine Rückfrage vor dem Speichern oder Herunterladen; gemerkt wird der Asbestbericht dort erst nach der Rückfrage oder beim Speichern. Brandbericht: Entnahmestelle der Chlorid- und PAK-Wischproben wird mit dem Prüfbericht verglichen (Hinweis); jede automatisch angenommene Freimessung oder Referenzprobe steht als Annahme mit „✓ stimmt“ / „Normale Probe“ (gleicher Raum/Ort = eine Zeile). Nicht lesbare _BerichtKit.json wird nie überschrieben – „Neu anlegen“ bewahrt den Inhalt als _BerichtKit.unlesbar.json auf. Projekt vor 26.0560: bloßes Öffnen legt nichts mehr an. Asbestbericht ohne Proben meldet das vor jeder Rückfrage. Bilddokumentation eines anderen Projekts wird nie Anlage. Projektnummer wie in den anderen Apps; LabelKit-Datei ohne Projektnummer → Hinweis; Leerzeichen um Kommas zählen beim Beschreibungsvergleich nicht.'],
   ['1.17.1', '10.11.2026', 'Dateien an zwei Orten (Audit K1): Liegen Berichtsangaben, Projekt-, LabelKit-, Ergebnis-, Foto- oder Plandateien in „_Spektron“ und zusätzlich am früheren Ort (z. B. eine kopierte Datei), gilt immer die in „_Spektron“ – vorher schaltete eine solche Datei das Projekt ohne Hinweis zurück. Eine Zeile über den Karten nennt beide Dateien mit Datum; gelöscht wird nichts.'],
@@ -478,6 +479,8 @@ function fotoListeBauen() {
    Gelesen werden nur Namen und Dateizeiten in Fotos/, Pläne/ und Mitteilungen/, das Anlagen-Protokoll und die PlanKit-Datei
    (Prüfsumme). Neu gelesen beim Öffnen, wenn das Fenster wieder in den Vordergrund kommt (z. B. nach FotoKit) und vor dem Speichern. */
 const PLAN_KOPIE = / \((vorher|Wiederherstellung|Speicherkandidat|Kopie)\b[^)]*\)\.probenplan$/i;   // wie mosaik-leiste.js
+/** Nur die Namen der Dateien direkt im Ordner (Fotos für den Bilddoku-Stand, o15 – ohne Dateien zu öffnen) */
+async function namenIn(dir) { const out = []; try { for await (const h of dir.values()) if (h.kind === 'file') out.push({ name: h.name }); } catch (e) { return null; } return out; }
 async function dateienIn(dir, muster) {
   const out = []; if (!dir) return out;
   for await (const h of dir.values()) {
@@ -495,20 +498,24 @@ async function anlagenLesen() {
   const dir = S.dir; if (!dir) return;
   const lauf = S.anlagenLauf = (S.anlagenLauf || 0) + 1;
   const [fo, pl, mi] = await Promise.all(['Fotos', 'Pläne', 'Mitteilungen'].map(n => SO.unter(dir, [n]).catch(() => null)));
-  const fotos = await dateienIn(fo, /\.pdf$/i), plaene = await dateienIn(pl, /\.pdf$/i), mitteilungen = await dateienIn(mi, /\.(docx?|pdf)$/i);
+  const fotos = await dateienIn(fo, /\.pdf$/i), bilder = fo ? await namenIn(fo) : null, plaene = await dateienIn(pl, /\.pdf$/i), mitteilungen = await dateienIn(mi, /\.(docx?|pdf)$/i);
   let protokoll = null;
   const op = await SO.ort(dir, 'anlagenProtokoll').catch(() => ({}));
   if (op.dir) try { protokoll = await (await (await op.dir.getFileHandle('_Anlagen-Protokoll.txt')).getFile()).text(); } catch (e) { /* ohne Protokoll */ }
-  let plan = null, planSkalen = null;
+  let plan = null, planSkalen = null, planNamen = null;
   const ok = await SO.ort(dir, 'plankit').catch(() => ({}));
   if (ok.dir) {
-    const soll = `Probenplan ${dir.name}.probenplan`.normalize('NFC'); let best = null;
+    const soll = `Probenplan ${dir.name}.probenplan`.normalize('NFC'); let best = null, genau = false;
+    const frueher = [];   // o11: Ordnernamen aus den eigenen .probenplan-Dateien (z. B. vor dem Umbenennen des Ordners)
     for await (const h of ok.dir.values()) {
       if (h.kind !== 'file' || !/\.probenplan$/i.test(h.name) || PLAN_KOPIE.test(h.name)) continue;
+      const eigen = h.name.normalize('NFC') === soll || !SO.planHaupt || SO.planHaupt(h.name, 'file', { nr: SO.projektNr(dir.name) });
+      if (eigen) { const m = /^Probenplan (.+)\.probenplan$/i.exec(h.name.normalize('NFC')); if (m) frueher.push(m[1]); }
+      if (genau) continue;
       const f = await h.getFile().catch(() => null); if (!f) continue;
-      if (h.name.normalize('NFC') === soll) { best = f; break; }
+      if (h.name.normalize('NFC') === soll) { best = f; genau = true; continue; }
       // ohne den genauen Namen (z. B. Ordner umbenannt): nur Pläne dieses Projekts – dieselbe Regel wie spektron-ordner.js (K1)
-      if (SO.planHaupt && !SO.planHaupt(h.name, 'file', { nr: SO.projektNr(dir.name) })) continue;
+      if (!eigen) continue;
       if (!best || f.lastModified > best.lastModified) best = f;
     }
     if (best) {
@@ -516,7 +523,9 @@ async function anlagenLesen() {
       plan = { name: best.name, t: best.lastModified, sha: await sha256(buf) };
       // Einstellungen der Ergebniskarte wie ResultKit planEinstellungen(): Nutzung und in PlanKit angepasste VdS-Skalen (nur die Schlüssel)
       try {
-        const r = JSON.parse(new TextDecoder().decode(buf))?.results;
+        const pj = JSON.parse(new TextDecoder().decode(buf)), r = pj?.results;
+        // o11: Plannamen wie PlanKit floorName – nur bei mehr als einem Plan steht der Name im Export („Probenplan <Ordner> - <Plan>.pdf“)
+        if (pj && typeof pj === 'object') planNamen = { frueher, geschosse: Array.isArray(pj.sheets) && pj.sheets.length > 1 ? pj.sheets.map(x => String((x && x.name) || '')).filter(Boolean) : [] };
         if (r && typeof r === 'object') planSkalen = { usage: r.usage === 'residential' || r.usage === 'industrial' ? r.usage : '',
           vds: r.vds && typeof r.vds === 'object' && !Array.isArray(r.vds) ? Object.keys(r.vds).filter(k => typeof k === 'string' && k.length <= 330).slice(0, 100) : [] };
       } catch (e) { /* Plan nicht lesbar */ }
@@ -530,7 +539,7 @@ async function anlagenLesen() {
   if (lauf !== S.anlagenLauf || dir !== S.dir) return;
   if (rf && rf.data) { S.fk = rf.data; fotoListeBauen(); }
   S.planSkalen = planSkalen;
-  S.anlagen = BerichtAnlagen.erkennen({ ordnerName: dir.name, projektNr: S.ordner && S.ordner.nr, fotos, plaene, mitteilungen, protokoll, fk: S.fk, plan, labelkit: S.lkDatei });
+  S.anlagen = BerichtAnlagen.erkennen({ ordnerName: dir.name, projektNr: S.ordner && S.ordner.nr, fotos, plaene, mitteilungen, protokoll, fk: S.fk, plan, planNamen, bilder, projekt: S.pj, labelkit: S.lkDatei });
   S.anlagenVorhanden = vorhanden;
 }
 async function anlageHinzufuegen() {
@@ -1163,7 +1172,7 @@ function bestaetigen(id) {
   if (id === 'sv' && S.form.sv) return setze('svOk', S.form.sv);
 }
 const tagDE = t => { if (!t) return ''; const d = new Date(t); return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`; };
-const ZUSTAND = { veraltet: 'veraltet', unvollstaendig: 'unvollständig', unbekannt: 'Stand unbekannt', fehlt: 'fehlt', ohneNr: 'Projekt unklar' };
+const ZUSTAND = { veraltet: 'veraltet', unvollstaendig: 'unvollständig', unbekannt: 'Stand unbekannt', fehlt: 'fehlt', ohneNr: 'Projekt unklar', unklar: 'Plan unklar' };
 function anlagenZeigen(m) {
   const zeile = z => {
     const fest = z.art === 'pruefbericht', sperr = fest || z.zustand === 'fehlt';
