@@ -115,10 +115,15 @@ function artAusProben(lk) {
   return { art: '', grund: '' };
 }
 /** Berichtsart beim Öffnen. adresse: Wert aus #…&art= ('' = keine Angabe), datei: _BerichtKit.json oder null, lk: LabelKit-Daten.
-    → { art, quelle: 'adresse'|'gemerkt'|'proben'|'standard', merken: nur bei 'adresse', grund } */
+    → { art, quelle: 'adresse'|'gemerkt'|'proben'|'standard', merken: nur bei 'adresse', rueckfrage, grund }
+    Audit M2 (Entscheidung 10.11.2026): Ein ausdrücklicher Asbestbericht in einem Projekt mit Brand-Proben wird beim Öffnen nicht
+    gemerkt (rueckfrage: true) – erst, wenn die Rückfrage vor dem Speichern/Herunterladen bestätigt oder gespeichert wird. */
 function artWaehlen({ adresse, datei, lk } = {}) {
   const a = String(adresse == null ? '' : adresse).trim().toLowerCase();
-  if (a) return { art: a, quelle: 'adresse', merken: !!artOk(a), grund: '' };
+  if (a) {
+    const p = a === 'asbest' ? artAusProben(lk) : { art: '' }, rueckfrage = p.art === 'brand';
+    return { art: a, quelle: 'adresse', merken: !!artOk(a) && !rueckfrage, rueckfrage, grund: rueckfrage ? p.grund : '' };
+  }
   const g = artGemerkt(datei); if (g) return { art: g, quelle: 'gemerkt', merken: false, grund: '' };
   const p = artAusProben(lk); if (p.art) return { art: p.art, quelle: 'proben', merken: false, grund: p.grund };
   return { art: 'asbest', quelle: 'standard', merken: false, grund: '' };

@@ -1128,6 +1128,23 @@
     "id": "versicherer",
     "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
     "wert": "Beispiel Versicherung AG"
+   },
+   {
+    "id": "rolle:P3,P6",
+    "text": "Proben 3 und 6 als Referenzproben angenommen – „REF“ in Raum/Ort „OG Wohnzimmer REF Wand“. Sie zählen nicht in der Einordnung und stehen im Bericht als Referenzproben.",
+    "wert": "referenz",
+    "labels": [
+     "P3",
+     "P6"
+    ]
+   },
+   {
+    "id": "rolle:P7",
+    "text": "Probe 7 als Freimessung angenommen – Raum/Ort „F-EG Küche Wand“ beginnt mit „F-“. Sie zählt nicht in der Einordnung und steht im Bericht als Freimessung.",
+    "wert": "frei",
+    "labels": [
+     "P7"
+    ]
    }
   ],
   "brand": {
@@ -3634,6 +3651,14 @@
     "id": "versicherer",
     "text": "Versicherer angenommen: Auftraggeber „Beispiel Versicherung AG“ – bitte prüfen. Stimmt das nicht, trag den Versicherer unter „Versicherer“ ein (oder in der Projektzentrale).",
     "wert": "Beispiel Versicherung AG"
+   },
+   {
+    "id": "rolle:P11",
+    "text": "Probe 11 als Referenzprobe angenommen – „REF“ in Raum/Ort „Büro REF Wand“. Sie zählt nicht in der Einordnung und steht im Bericht als Referenzprobe.",
+    "wert": "referenz",
+    "labels": [
+     "P11"
+    ]
    }
   ],
   "brand": {

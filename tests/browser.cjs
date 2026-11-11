@@ -397,7 +397,7 @@ const daten = {
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
     await page.click('#btnMehr'); await page.waitForSelector('#mosaikMehrPop');
     assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Word nur herunterladen',
-      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.17.1', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
+      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.18.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
     assert.equal(await page.getAttribute('#mosaikMehrPop a[target=aidkit]', 'href'), '../aidkit/#app-berichtkit');
     await page.keyboard.press('Escape'); await page.waitForSelector('#mosaikMehrPop', { state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'btnMehr', 'Esc: Fokus zurück auf „Mehr …“');
@@ -604,6 +604,146 @@ const daten = {
     await page.waitForFunction(() => S.luecken.some(x => x.luecke === '[Foto fehlt: 01_P1_Fliesenkleber.jpg]'));
     assert.equal(await page.textContent('#lueckenZaehler'), '2 Stellen noch offen');
     assert.match(await page.textContent('#hinweise'), /Lücke im Bericht: \[Foto fehlt: 01_P1_Fliesenkleber\.jpg\] – Vor Ort & Proben › Foto/);
+
+    /* ---------- Audit Kernkette (1.18.0): M2, M3, M4, M7, m3, m4 – erfundene Daten ---------- */
+    const DB = require('./daten/brand.cjs'), P2 = DB.ORDNER, bk2 = '_Spektron/BerichtKit/_BerichtKit.json';
+    const dateiIn = (P, pfad, inhalt) => page.evaluate(async ({ P, pfad, inhalt }) => {
+      let d = await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv'); d = await d.getDirectoryHandle(P, { create: true });
+      const teile = pfad.split('/');
+      if (inhalt == null) { try { for (const t of teile.slice(0, -1)) d = await d.getDirectoryHandle(t); return await (await (await d.getFileHandle(teile.at(-1))).getFile()).text(); } catch (e) { return null; } }
+      for (const t of teile.slice(0, -1)) d = await d.getDirectoryHandle(t, { create: true });
+      const w = await (await d.getFileHandle(teile.at(-1), { create: true })).createWritable(); await w.write(inhalt); await w.close(); return inhalt;
+    }, { P, pfad, inhalt });
+    const eintraege = P => page.evaluate(async P => { const d = await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv')).getDirectoryHandle(P); const n = []; for await (const k of d.keys()) n.push(k); return n.sort(); }, P);
+    const oeffne = async hash => { await page.goto(url + 'index.html#projekt=' + hash); await page.reload(); await page.waitForSelector('#app:not([hidden]) .blatt'); await page.waitForFunction(() => !S.laedt); };
+    const warteBis = async (fn, was) => { for (let i = 0; i < 40; i++) { if (await fn()) return; await page.waitForTimeout(150); } assert.fail('nicht eingetreten: ' + was); };
+    // Brand-Projekt (BR1) mit zwei PAK-Wischproben mehr: P12 „F 12 Lager Wand“ 950 µg/m² (Freimessung nur nach dem Namen),
+    // P13 mit Leerzeichen am Ende von Raum/Ort in der LabelKit-Übergabe; P5 steht im Prüfbericht an anderer Stelle
+    const br = JSON.parse(JSON.stringify(DB.faelle.BR1_voll_Versicherung));
+    br.lk.proben.push({ ...br.lk.proben[0], id: 12, _nr: 12, z2: 'F 12 Lager Wand' }, { ...br.lk.proben[0], id: 13, _nr: 13, z2: 'EG Bad Wand ' });
+    br.erg.berichte[0].proben.push({ label: 'P12', ref: 'Probe 12', labNr: '999-2026-0001112', typ: 'PAK', reportId: 'b1', werte: DB.W.pak('950') },
+      { label: 'P13', ref: 'Probe 13', labNr: '999-2026-0001113', typ: 'PAK', reportId: 'b1', werte: DB.W.pak('20') });
+    const alleLk = [...br.lk.proben, ...br.lk.chloridProben, ...br.lk.asbestProben];
+    const descVon = l => [l.z2, l.z3, l.z4, l.matrix === 'Wischprobe' ? l.cm2 + ' cm²' : ''].map(x => String(x || '').replace(/\s+/g, ' ').trim()).filter(Boolean).join(', ');
+    br.erg.auftrag = { proben: alleLk.map(l => ({ label: 'P' + l._nr, desc: [l.z2, l.z3, l.z4, l.matrix === 'Wischprobe' ? l.cm2 + ' cm²' : ''].filter(Boolean).join(', ') })) };
+    for (const b of br.erg.berichte) for (const pr of b.proben) { const l = alleLk.find(x => 'P' + x._nr === pr.label); pr.desc = pr.label === 'P5' ? 'OG Bad Wand, verrußt, Putz, 600 cm²' : descVon(l); }
+    assert.match(br.erg.auftrag.proben.find(a => a.label === 'P13').desc, /^EG Bad Wand , verrußt/, 'LabelKit übergibt ungetrimmt');
+    await dateiIn(P2, '_Spektron/_Projekt.json', JSON.stringify(br.pj));
+    await dateiIn(P2, '_Spektron/LabelKit/99.9002_Daten.json', JSON.stringify(br.lk));
+    await dateiIn(P2, '_Spektron/ResultKit/_Ergebnisse.json', JSON.stringify(br.erg));
+
+    // M2: Brand-Daten mit art=asbest → Hinweis zuerst mit „Zum Brandbericht“, nichts gemerkt, Rückfrage vor Speichern/Herunterladen
+    await oeffne(encodeURIComponent(P2) + '&art=asbest');
+    assert.equal(await page.textContent('#kopfArt'), 'Asbestbericht');
+    assert.match(await page.textContent('#hinweise'), /Die LabelKit-Proben sprechen für den Brandbericht \(3 Chlorid-Proben, 7 PAK-Proben, 2 Brandgeruch-Proben und 3 Asbestproben\)\. Dieser Asbestbericht beschreibt nur die Asbestproben – vor dem Speichern fragt BerichtKit noch einmal\.\s*Zum Brandbericht/);
+    assert.equal(await page.$$eval('#hinweise [data-aktion="zur-art"][data-art="brand"]', x => x.length), 1);
+    assert.match(page.url(), /&art=asbest$/, 'nicht gemerkt: art=asbest ohne auto=1 (Neu laden bleibt beim Asbestbericht)');
+    assert.match(await page.textContent('#wahlArtNotiz'), /^Noch nicht gemerkt – erst, wenn du die Rückfrage beim Speichern bestätigst\./);
+    await page.waitForTimeout(1200); assert.equal(await dateiIn(P2, bk2), null, 'bloßes Öffnen merkt den Asbestbericht nicht');
+    const frageAuf = async () => { await page.waitForSelector('#dlgFrage[open]'); return page.$$eval('#frKnoepfe button', bs => bs.map(b => [b.textContent, b.className])); };
+    const frageZu = () => page.waitForSelector('#dlgFrage', { state: 'hidden' });
+    const dlgVorher = dialoge.length;
+    await page.click('#btnErstellen');
+    assert.deepEqual(await frageAuf(), [['Zum Brandbericht', 'primary'], ['Trotzdem Asbestbericht speichern', ''], ['Abbrechen', '']]);
+    assert.equal(await page.textContent('#frTitel'), 'Asbestbericht für ein Brandprojekt?');
+    assert.equal(await page.textContent('#frText'), 'In LabelKit stehen für dieses Projekt 3 Chlorid-Proben, 7 PAK-Proben und 2 Brandgeruch-Proben. Im Asbestbericht kommen sie nicht vor – er beschreibt nur die Asbestproben. Gehört das Projekt zu einem Brandschaden, ist der Brandbericht richtig.');
+    assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Abbrechen', 'Standard ist Abbrechen');
+    await page.keyboard.press('Enter'); await frageZu();
+    await page.click('#btnErstellen'); await frageAuf(); await page.keyboard.press('Escape'); await frageZu();
+    await page.evaluate(() => { herunterladen(); });   // „Word nur herunterladen“ fragt genauso
+    assert.equal((await frageAuf())[1][0], 'Trotzdem Asbestbericht herunterladen'); await page.keyboard.press('Escape'); await frageZu();
+    assert.equal(dialoge.length, dlgVorher, 'keine Lücken-Rückfrage, nichts erstellt');
+    assert.equal(await dateiIn(P2, 'Mitteilungen/1._Mitteilung_99.9002.docx'), null); assert.equal(await dateiIn(P2, bk2), null);
+    // „Zum Brandbericht“ → Brandbericht, gemerkt
+    await page.click('#btnErstellen'); await frageAuf(); await page.click('#frKnoepfe button:has-text("Zum Brandbericht")');
+    await page.waitForFunction(() => document.getElementById('kopfArt').textContent === 'Brandbericht' && !S.laedt);
+    await warteBis(async () => (JSON.parse(await dateiIn(P2, bk2) || '{}').art === 'brand'), 'Brandbericht gemerkt');
+
+    // M3: P5 an anderer Stelle → ein Hinweis; P13 nur mit Leerzeichen am Ende → keiner
+    const hw3 = await page.textContent('#hinweise');
+    assert.match(hw3, /Probe 5: Entnahmestelle passt nicht – LabelKit „EG Flur Wand, verrußt, Putz, 600 cm²“, Prüfbericht AR-999-2026-000101-01 „OG Bad Wand, verrußt, Putz, 600 cm²“ → in LabelKit oder beim Labor klären\./);
+    assert.equal((hw3.match(/Entnahmestelle passt nicht/g) || []).length, 1, 'P13 (Leerzeichen am Ende) ohne Hinweis');
+    assert.doesNotMatch(hw3, /Gesperrt/, 'ABGLEICH_SPERRT bleibt aus');
+    // M4: Annahmen – P12 „F 12 Lager Wand“ als Freimessung, P3/P6 an derselben Referenzstelle eine Zeile
+    assert.match(hw3, /Probe 12 als Freimessung angenommen – Raum\/Ort „F 12 Lager Wand“ beginnt mit „F “\. Sie zählt nicht in der Einordnung und steht im Bericht als Freimessung\.\s*✓ stimmt\s*Normale Probe/);
+    assert.match(hw3, /Proben 3 und 6 als Referenzproben angenommen – „REF“ in Raum\/Ort „OG Wohnzimmer REF Wand“/);
+    assert.match(await page.textContent('#vorschau'), /950 µg\/m² \(Probe 12\)/, 'Bericht wie bisher: Freimessung im eigenen Satz');
+    const hinweiseAuf = () => page.evaluate(() => { document.getElementById('hinweisBox').open = true; });
+    await hinweiseAuf(); await page.click('[data-nein="rolle:P12"]');
+    await page.waitForFunction(() => /Probe 12 wird als normale Probe eingeordnet/.test(document.getElementById('hinweise').textContent));
+    assert.match(await page.textContent('#hinweise'), /Umbenennen in LabelKit geht nur, solange die Proben noch nicht beim Labor sind\.\s*Rückgängig/);
+    assert.doesNotMatch(await page.textContent('#hinweise'), /Probe 12 als Freimessung angenommen/);
+    assert.doesNotMatch(await page.textContent('#vorschau'), /950 µg\/m² \(Probe 12\)/, 'Probe 12 zählt jetzt regulär');
+    await warteBis(async () => JSON.stringify((JSON.parse(await dateiIn(P2, bk2)).form.brand || {}).rolle) === '{"P12":{"auto":"frei","wahl":"keine"}}', 'Wahl in _BerichtKit.json');
+    assert.match(JSON.parse(await dateiIn(P2, '_Spektron/LabelKit/99.9002_Daten.json')).proben.find(p => p._nr === 12).z2, /^F 12 Lager Wand$/, 'LabelKit unverändert');
+    await hinweiseAuf(); await page.click('[data-aktion="rolle-zurueck"][data-l="P12"]');
+    await page.waitForFunction(() => /Probe 12 als Freimessung angenommen/.test(document.getElementById('hinweise').textContent));
+    await hinweiseAuf(); await page.click('[data-ok="rolle:P3,P6"]');
+    await page.waitForFunction(() => !/Proben 3 und 6 als Referenzproben angenommen/.test(document.getElementById('hinweise').textContent));
+    await warteBis(async () => { const r = (JSON.parse(await dateiIn(P2, bk2)).form.brand || {}).rolle || {}; return r.P3 && r.P6 && r.P3.wahl === 'ok' && r.P6.wahl === 'ok' && !r.P12; }, 'ein Klick bestätigt beide');
+
+    // M2: wieder art=asbest – „Trotzdem Asbestbericht speichern“ speichert und merkt asbest
+    await oeffne(encodeURIComponent(P2) + '&art=asbest');
+    assert.equal(JSON.parse(await dateiIn(P2, bk2)).art, 'brand', 'Öffnen ändert die gemerkte Art nicht');
+    await page.click('#btnErstellen'); await frageAuf(); await page.click('#frKnoepfe button:has-text("Trotzdem Asbestbericht speichern")');
+    await warteBis(async () => !!(await dateiIn(P2, 'Mitteilungen/1._Mitteilung_99.9002.docx')), 'Asbestbericht gespeichert');
+    await warteBis(async () => JSON.parse(await dateiIn(P2, bk2)).art === 'asbest', 'nach dem Speichern gemerkt');
+    // Fremde LabelKit-Datei sperrt weiter; gesperrt nur „Entwurf herunterladen“, nichts in „Mitteilungen“
+    await dateiIn(P2, '_Spektron/LabelKit/99.9002_Daten.json', JSON.stringify({ ...br.lk, projekt: { nr: '99.9555' } }));
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    assert.match(await page.textContent('#hinweise'), /Gesperrt: Die LabelKit-Datei gehört zu Projekt 99\.9555, nicht zu 99\.9002/);
+    assert.ok(await page.isHidden('#btnErstellen')); assert.ok(await page.isVisible('#btnLaden'));
+    const vorMitt = await eintraege(P2);
+    const [dlE] = await Promise.all([page.waitForEvent('download'), page.click('#btnLaden')]);
+    assert.match(dlE.suggestedFilename(), /^2\._Mitteilung_99\.9002_ENTWURF\.docx$/);
+    assert.deepEqual(await eintraege(P2), vorMitt);
+    await dateiIn(P2, '_Spektron/LabelKit/99.9002_Daten.json', JSON.stringify(br.lk));
+
+    // M7: abgeschnittene _BerichtKit.json mit getipptem Text → beim Öffnen und Tippen unverändert; „Neu anlegen“ bewahrt sie auf
+    const kaputt = '{"format":"spektron-bericht","version":1,"nurEigene":true,"art":"brand","form":{"brand":{"schadenbild":"Der Brand ereignete sich in der Küche, Decke stark verru';
+    await dateiIn(P2, bk2, kaputt);
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    await page.waitForSelector('#unlesbar:not([hidden])');
+    assert.match(await page.textContent('#unlesbar'), /Die Angaben zum Bericht \(_BerichtKit\.json\) lassen sich nicht lesen – vermutlich abgeschnitten oder ein Sync-Konflikt\. BerichtKit schreibt die Datei nicht; was du hier eingibst, bleibt vorerst nur in diesem Browser\. Gespeicherte Berichte in „Mitteilungen“ sind nicht betroffen\.\s*Neu anlegen …/);
+    await alleAuf(); await page.fill('#fLabor', 'Labor nach Unlesbar'); await page.dispatchEvent('#fLabor', 'change');
+    await page.waitForTimeout(2500);
+    assert.equal(await dateiIn(P2, bk2), kaputt, 'nicht lesbare Datei unverändert'); assert.equal(await dateiIn(P2, '_Spektron/BerichtKit/_BerichtKit.unlesbar.json'), null);
+    await page.click('#btnUnlesbarNeu'); await frageAuf();
+    assert.match(await page.textContent('#frText'), /^Der jetzige Inhalt bleibt als „_BerichtKit\.unlesbar\.json“ im selben Ordner\./);
+    assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Abbrechen');
+    await page.click('#frKnoepfe button:has-text("Neu anlegen")'); await frageZu();
+    await page.waitForSelector('#unlesbar', { state: 'hidden' });
+    assert.equal(await dateiIn(P2, '_Spektron/BerichtKit/_BerichtKit.unlesbar.json'), kaputt, 'alter Inhalt byte-gleich aufbewahrt');
+    const neu = JSON.parse(await dateiIn(P2, bk2));
+    assert.equal(neu.form.labor, 'Labor nach Unlesbar', 'Getipptes kommt in die neue Datei'); assert.equal(neu.art, 'brand');
+    // Datei einer neueren Fassung: bleibt unberührt wie bisher, kein „Neu anlegen“
+    const neuer = '{"format":"spektron-bericht","version":2,"form":{"labor":"aus Version 2"}}';
+    await dateiIn(P2, bk2, neuer);
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    assert.ok(await page.isHidden('#unlesbar'));
+    assert.match(await page.textContent('#hinweise'), /stammt von einer neueren BerichtKit-Fassung – bleibt unverändert/);
+    await alleAuf(); await page.fill('#fLabor', 'Labor 3'); await page.dispatchEvent('#fLabor', 'change'); await page.waitForTimeout(2000);
+    assert.equal(await dateiIn(P2, bk2), neuer);
+    await dateiIn(P2, bk2, JSON.stringify(neu));
+
+    // m3: Projekt 26.0400 ohne _Spektron, mit art=brand geöffnet → nichts geschrieben, Berichtsart nur im Browser gemerkt
+    const P3 = '26.0400 Altweg Altstadt Tst';
+    await dateiIn(P3, 'Fotos/notiz.txt', 'x');
+    await oeffne(encodeURIComponent(P3) + '&art=brand');
+    assert.equal(await page.textContent('#kopfArt'), 'Brandbericht');
+    await page.waitForTimeout(1500);
+    assert.deepEqual(await eintraege(P3), ['Fotos'], 'kein „Mitteilungen“, kein „_Spektron“, keine _BerichtKit.json');
+    assert.match(await page.textContent('#wahlArtNotiz'), /^Gemerkt in diesem Browser – im Projektordner erst mit dem ersten gespeicherten Bericht\./);
+    await oeffne(encodeURIComponent(P3));
+    assert.equal(await page.textContent('#kopfArt'), 'Brandbericht', 'ohne art: im Browser gemerkte Berichtsart');
+    // m4: Asbestbericht ohne Proben → „Keine Proben“ vor jeder Rückfrage, „Mitteilungen“ bleibt ungeschaffen
+    await oeffne(encodeURIComponent(P3) + '&art=asbest');
+    const dlg2 = dialoge.length;
+    await page.click('#btnErstellen');
+    await page.waitForFunction(() => /Nicht gespeichert – im Asbestbericht ist keine Probe/.test(document.getElementById('fehler').textContent));
+    assert.equal(dialoge.length, dlg2, 'keine Lücken-Rückfrage'); assert.ok(!(await page.evaluate(() => document.getElementById('dlgFrage').open)));
+    assert.deepEqual(await eintraege(P3), ['Fotos']);
+    console.log('ok – Audit Kernkette: M2 Rückfrage, M3 Abgleich, M4 Annahmen, M7 unlesbar, m3 nichts angelegt, m4 keine Proben');
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('ok – BerichtKit im Browser: öffnen, Vorschau, Einstellungen, Word-Datei in „Mitteilungen“, Angaben im Projektordner, Spektron-Leiste');
   } catch (e) {

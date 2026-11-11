@@ -48,12 +48,18 @@ const anlageNr = v => { const m = /(\d+)/.exec(s(v)); return m ? +m[1] : null; }
 /** Bilddokumentation aus FotoKit: Fotos/Bilddokumentation_<Nr>_<Ort>_<Datum>[ (k)][_Teil_i_von_n].pdf (ältere: „… - Teil 1 von 2.pdf“);
     über das ZIP für eine KI erstellt: <Projektnummer>_<Anlage>_Bilddokumentation[_Teil_i_von_n].pdf */
 const BILDDOKU = /^Bilddokumentation(?![a-zäöüß]).*\.pdf$|[_ ]Bilddokumentation(?:[_ -]+Teil[_ ]\d+[_ ]von[_ ]\d+)?\.pdf$/i;
-function bilddokuFinden(fotos, fk) {
-  const gruppen = new Map();
+/* Projektnummer im Dateinamen (26.0512, 2–6 Stellen wie spektron-ordner.js). m9 (Audit 10.11.2026): Eine Bilddokumentation, deren
+   Name ein anderes Projekt nennt, wird nie Anlage (Hinweis, wie beim Probenplan); ohne Nummer im Namen und ohne FotoKit-Vermerk ist
+   nicht prüfbar, zu welchem Projekt sie gehört → gefunden, aber nicht vorgehakt. */
+const NR_IM_NAMEN = /(?<![\d.])(\d{2}\.\d{2,6})(?![\d])/;
+function bilddokuFinden(fotos, fk, projektNr, fremd) {
+  const gruppen = new Map(), nr = s(projektNr);
   for (const f of fotos || []) {
     const name = nfc(f.name); if (!BILDDOKU.test(name)) continue;
+    const imNamen = (NR_IM_NAMEN.exec(name) || [])[1] || '';
+    if (nr && imNamen && imNamen !== nr) { if (fremd && !fremd.some(x => x.nr === imNamen)) fremd.push({ datei: name, nr: imNamen }); continue; }
     const m = TEIL.exec(name), key = name.replace(TEIL, '').toLowerCase();
-    const g = gruppen.get(key) || { teile: new Map(), n: 0, t: 0 }; gruppen.set(key, g);
+    const g = gruppen.get(key) || { teile: new Map(), n: 0, t: 0, ohneNr: !!nr && !imNamen }; gruppen.set(key, g);
     const i = m ? +m[1] : 1, n = m ? +m[2] : 1;
     g.n = Math.max(g.n, n); g.teile.set(i, name); g.t = Math.max(g.t, +f.t || 0);
   }
@@ -69,6 +75,7 @@ function bilddokuFinden(fotos, fk) {
   if (!g) g = [...gruppen.values()].sort((a, b) => b.t - a.t)[0];
   const dateien = dateienVon(g), k = { art: 'bilddoku', dateien, t: g.t, key: schluessel(dateien, g.t), veraltet: null, grund: '', unvollstaendig: false, nrImDokument: null, nrQuelle: '', details: g.n > 1 ? `${g.n} Teile` : '' };
   if (!vollstaendig(g)) { k.unvollstaendig = true; k.grund = `Teil fehlt – gefunden ${g.teile.size} von ${g.n}`; }
+  else if (g.ohneNr && !aufgezeichnet) { k.ohneNr = true; k.grund = 'ohne Projektnummer im Namen – nicht prüfbar, ob sie zu diesem Projekt gehört'; }
   // Stand: FotoKit (ab 1.29) vermerkt die erzeugte PDF (bilddoku.erstellt) und wann sich die Inhalte der Doku zuletzt geändert haben (dokuGeaendert)
   const geaendert = zeit(fk && fk.dokuGeaendert);
   if (aufgezeichnet) {
@@ -181,7 +188,8 @@ function brandgeruchFinden(mitteilungen, protokoll, labelkit) {
 function erkennen(e) {
   e = e || {};
   const out = {};
-  const b = bilddokuFinden(e.fotos, e.fk); if (b) out.bilddoku = b;
+  const fremd = [], b = bilddokuFinden(e.fotos, e.fk, e.projektNr, fremd); if (b) out.bilddoku = b;
+  if (fremd.length) out.bilddokuFremd = fremd;
   for (const art of ['probenplan', 'ergebniskarte']) { const k = planFinden(art, e.plaene, e.plan, e.ordnerName); if (k) out[art] = k; }
   for (const art of Object.keys(WORD)) { const k = wordFinden(art, e.mitteilungen, e.protokoll, e.plan); if (k) out[art] = k; }
   const bg = brandgeruchFinden(e.mitteilungen, e.protokoll, e.labelkit); if (bg) out.brandgeruch = bg;
@@ -218,7 +226,7 @@ function zusammenstellen(o) {
   const anHaken = (art, k, fest) => {
     const w = wahl[art];
     if (w && typeof w === 'object' && w.key === wahlKey(k)) return !!w.an;
-    return fest && k.veraltet !== true && !k.unvollstaendig;
+    return fest && k.veraltet !== true && !k.unvollstaendig && !k.ohneNr;
   };
   const zeile = (art, fest) => {
     const k = gefunden[art], A = ARTEN[art];
@@ -233,7 +241,7 @@ function zusammenstellen(o) {
     const titel = A.titel + (art === 'probenplan' || art === 'ergebniskarte' ? (k.details ? ` (${k.details})` : '') : '');
     if (an) { liste.push({ nr: n, art, titel, dateien: k.dateien, zeilen: [[titel]] }); nr[art] = n; }
     zeilen.push({ art, titel, nr: n, an, fest, dateien: k.dateien, t: k.t, key: wahlKey(k), details: k.details,
-      zustand: k.unvollstaendig ? 'unvollstaendig' : k.veraltet ? 'veraltet' : k.veraltet === null ? 'unbekannt' : 'ok', grund: k.grund, app: A });
+      zustand: k.unvollstaendig ? 'unvollstaendig' : k.ohneNr ? 'ohneNr' : k.veraltet ? 'veraltet' : k.veraltet === null ? 'unbekannt' : 'ok', grund: k.grund, app: A });
     if (art === 'bilddoku' && an) {
       if (k.nrImDokument == null) hinweise.push(`Bilddokumentation: keine Anlagen-Nr. in FotoKit eingetragen – im Bericht ist sie Anlage ${n}.`);
       else if (k.nrImDokument !== n) hinweise.push(`Bilddokumentation trägt „${k.nrQuelle}“, im Bericht ist sie Anlage ${n} – in FotoKit die Anlagen-Nr. ändern und die PDF neu erstellen.`);
@@ -241,10 +249,16 @@ function zusammenstellen(o) {
     // Brandgeruch: Die Nummer steht nur im Titel, wenn sie beim Erstellen eingetragen wurde („Anlage 4“) – dann muss sie passen
     if (art === 'brandgeruch' && an && k.nrImDokument != null && k.nrImDokument !== n)
       hinweis(`Brandgeruch-Anlage trägt „${k.nrQuelle}“, im Bericht ist sie Anlage ${n} – in der Projektzentrale mit „Anlage ${n}“ neu erstellen.`, art, 'öffnen');
+    if (k.ohneNr) {   // m9: vor „veraltet“ – erst klären, ob die PDF überhaupt zu diesem Projekt gehört
+      if (an) hinweis(`${A.titel} ist angehakt, aber ohne Projektnummer im Namen – nicht prüfbar, ob sie zu diesem Projekt gehört.`, art, 'öffnen');
+      else hinweis(`${A.titel} ohne Projektnummer im Namen – nicht prüfbar, ob sie zu diesem Projekt gehört. Nicht im Bericht; in ${A.app} neu erstellen oder trotzdem anhaken.`, art, 'öffnen');
+      return;
+    }
     const mangel = k.unvollstaendig ? 'unvollständig' : k.veraltet ? 'veraltet' : '';
     if (mangel && an) hinweis(`${A.titel} ist angehakt, aber ${k.unvollstaendig ? `unvollständig (${k.grund})` : k.grund} – in ${A.app} neu erstellen.`, art, 'öffnen');
     else if (mangel && fest) hinweis(`${A.titel} ${mangel}${k.unvollstaendig ? ` (${k.grund})` : ''} – nicht im Bericht. In ${A.app} neu erstellen oder trotzdem anhaken.`, art, 'öffnen');
   };
+  (gefunden.bilddokuFremd || []).forEach(x => hinweise.push(`Bilddokumentation „${x.datei}“ gehört zu Projekt ${x.nr} – nicht im Bericht.`));
   profil.fest.filter(a => !ohne.has(a)).forEach(a => zeile(a, true));
   profil.optional.forEach(a => zeile(a, false));
   (o.extra || []).forEach((x, i) => {

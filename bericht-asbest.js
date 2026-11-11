@@ -6,6 +6,7 @@
 'use strict';
 const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./anlagen.js') : null);
 const G = root.BerichtGemeinsam || (typeof require === 'function' ? require('./bericht-gemeinsam.js') : null);
+const V = root.BerichtVorgaben || (typeof require === 'function' ? require('./bericht-vorgaben.js') : null);
 const { s, L, datumDE, liste, zahlwort, zeilen, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, probenSammeln, person,
   pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz, unterschriftenBlock,
   pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
@@ -39,8 +40,16 @@ function bericht(eingabe) {
   // wäre falsch – Datenfehler, nur Entwurf. (Mit ResultKit ab 1.13 kommen Werte stornierter Proben gar nicht erst an.)
   const alleStorniert = !alle.length && nurStorniert.length > 0;
   if (alleStorniert) sperren.push(`Alle Asbestproben in LabelKit sind storniert (${liste(nurStorniert)}) – ohne Probe gibt es keinen Bericht. Gilt eine Probe doch, heb das Storno in LabelKit auf und übernimm die Ergebnisse in ResultKit erneut.`);
-  // LabelKit-Datei eines anderen Projekts: nichts daraus darf in den Bericht
-  labelkitProjektPruefen(e, P, sperren);
+  // Asbestbericht in einem Projekt mit Brand-Proben (Audit M2, Entscheidung 10.11.2026: Rückfrage, keine Sperre). Gleiche Regel wie
+  // die Kachel-Notiz und die Projektzentrale (artAusProben). Der Hinweis steht zuerst; die Rückfrage vor dem Speichern macht app.js.
+  const bp = V ? V.artAusProben(e.lk) : { art: '' };
+  const brandProben = bp.art === 'brand' ? bp.grund.replace(/ und \d+ Asbestproben?$/, '').replace(/, ([^,]*)$/, ' und $1') : '';
+  if (brandProben) {
+    const h = `Die LabelKit-Proben sprechen für den Brandbericht (${bp.grund}). Dieser Asbestbericht beschreibt nur die Asbestproben – vor dem Speichern fragt BerichtKit noch einmal.`;
+    hinweise.unshift(h); hinweisAktionen[h] = { art: 'brand' };
+  }
+  // LabelKit-Datei eines anderen Projekts: nichts daraus darf in den Bericht; ohne Projektnummer ein Hinweis (m12)
+  labelkitProjektPruefen(e, P, sperren, hinweise);
   offen.filter(o => !o.aus).forEach(o => sperren.push(`${o.label}: in LabelKit als Asbestprobe erfasst, aber noch kein Ergebnis in ResultKit – Ergebnis übernehmen oder die Probe unter „Proben“ abwählen.`));
   proben.forEach(p => {
     p.istKmf = f.kmf && p.label in f.kmf ? !!f.kmf[p.label] : (IST_KMF.test(p.material + ' ' + p.matrix) || !!p.kmf.ki || !!p.kmf.who);
@@ -204,6 +213,8 @@ function bericht(eingabe) {
     hinweise: [...new Set(hinweise)], hinweisAktionen, sperren, probenehmerQuelle, versichererQuelle, svQuelle,
     // Annahmen, die mit „✓ stimmt“ bestätigt werden: je eine Meldung (Hinweisliste, am Feld nur „angenommen – bitte prüfen“)
     annahmen: annahmenAus([['probenehmer', probenehmerQuelle], ['versicherer', versichererQuelle], ['sv', svQuelle]]),
+    // Brand-Proben in LabelKit („3 Chlorid-Proben und 5 PAK-Proben“) – für die Rückfrage vor dem Speichern; ohne → nicht im Modell
+    ...(brandProben ? { brandProben } : {}),
   };
   modell.luecken = luecken(modell);
   return modell;

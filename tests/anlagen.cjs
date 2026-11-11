@@ -203,4 +203,43 @@ fall('Im Bericht: Verweis-Satz, Anlagenverzeichnis, Dateien für die Übergabe',
   assert.deepEqual(m.anlagen.map(T.text), ['Anlage 1: Prüfbericht Nr. AR-999-2026-000001-01 (Eurofins Beispiel-Labor GmbH)']);
 });
 
+fall('Audit m9: Bilddokumentation eines anderen Projekts nie Anlage; ohne Nummer im Namen nicht vorgehakt', () => {
+  const eigene = 'Bilddokumentation_99.9001_Musterstadt_2026-10-30.pdf', fremde = 'Bilddokumentation_26.0123_Aachen_2026-11-02.pdf';
+  // fremde PDF ist neuer, keine FotoKit-Aufzeichnung (vor FotoKit 1.29 / KI-ZIP) → früher wurde sie still Anlage 2
+  let g = A.erkennen({ projektNr: '99.9001', fotos: fotos([eigene, t0], [fremde, t0 + 60 * min]), fk: null });
+  assert.deepEqual(g.bilddoku.dateien, ['Fotos/' + eigene]);
+  assert.deepEqual(g.bilddokuFremd, [{ datei: fremde, nr: '26.0123' }]);
+  let r = A.zusammenstellen({ pruefberichte: [{ nr: 'AR-1', pdf: '' }], labor: 'Labor', gefunden: g });
+  assert.ok(r.hinweise.includes(`Bilddokumentation „${fremde}“ gehört zu Projekt 26.0123 – nicht im Bericht.`));
+  assert.equal(r.nr.bilddoku, 2);
+  // nur die fremde da → nicht gefunden + Hinweis
+  g = A.erkennen({ projektNr: '99.9001', fotos: fotos([fremde, t0]), fk: null });
+  assert.equal(g.bilddoku, undefined);
+  r = A.zusammenstellen({ pruefberichte: [{ nr: 'AR-1', pdf: '' }], labor: 'Labor', gefunden: g });
+  assert.equal(r.nr.bilddoku, undefined);
+  assert.ok(r.hinweise.some(h => /gehört zu Projekt 26\.0123/.test(h)) && r.hinweise.some(h => /Bilddokumentation nicht gefunden/.test(h)));
+  // KI-ZIP-Name eines anderen Projekts: auch mit FotoKit-Vermerk nie (Nummer im Namen geht vor)
+  g = A.erkennen({ projektNr: '99.9001', fotos: fotos(['26.0123_Anlage 2_Bilddokumentation.pdf', t0]), fk: fk({ bilddoku: { dateien: ['26.0123_Anlage 2_Bilddokumentation.pdf'], erstellt: iso(t0) } }) });
+  assert.equal(g.bilddoku, undefined, 'KI-ZIP-Name eines anderen Projekts');
+  // ohne Projektnummer im Namen, ohne Vermerk: gefunden, nicht vorgehakt, Hinweis; selbst angehakt → im Bericht mit Hinweis
+  g = A.erkennen({ projektNr: '99.9001', fotos: fotos(['Bilddokumentation.pdf', t0]), fk: null });
+  assert.equal(g.bilddoku.ohneNr, true);
+  r = A.zusammenstellen({ pruefberichte: [{ nr: 'AR-1', pdf: '' }], labor: 'Labor', gefunden: g });
+  assert.equal(r.nr.bilddoku, undefined);
+  assert.equal(r.zeilen.find(z => z.art === 'bilddoku').zustand, 'ohneNr');
+  assert.ok(r.hinweise.includes('Bilddokumentation ohne Projektnummer im Namen – nicht prüfbar, ob sie zu diesem Projekt gehört. Nicht im Bericht; in FotoKit neu erstellen oder trotzdem anhaken.'));
+  const key = r.zeilen.find(z => z.art === 'bilddoku').key;
+  r = A.zusammenstellen({ pruefberichte: [{ nr: 'AR-1', pdf: '' }], labor: 'Labor', gefunden: g, wahl: { bilddoku: { an: true, key } } });
+  assert.equal(r.nr.bilddoku, 2);
+  assert.ok(r.hinweise.some(h => /^Bilddokumentation ist angehakt, aber ohne Projektnummer im Namen/.test(h)));
+  // ohne Nummer, aber von FotoKit für dieses Projekt vermerkt → wie bisher
+  g = A.erkennen({ projektNr: '99.9001', fotos: fotos(['Bilddokumentation.pdf', t0]), fk: fk({ bilddoku: { dateien: ['Bilddokumentation.pdf'], erstellt: iso(t0) } }) });
+  assert.equal(g.bilddoku.ohneNr, undefined);
+  // ältere Benennung mit Leerzeichen und Teilen: eigene Nummer erkannt
+  g = A.erkennen({ projektNr: '26.0123', fotos: fotos(['Bilddokumentation 26.0123 Aachen - Teil 1 von 2.pdf', t0], ['Bilddokumentation 26.0123 Aachen - Teil 2 von 2.pdf', t0]), fk: null });
+  assert.equal(g.bilddoku.dateien.length, 2); assert.equal(g.bilddoku.ohneNr, undefined);
+  // ohne projektNr (Tests, alte Aufrufe): unverändert
+  assert.deepEqual(A.erkennen({ fotos: fotos([fremde, t0]), fk: null }).bilddoku.dateien, ['Fotos/' + fremde]);
+});
+
 console.log(`\n${n} Fälle bestanden.`);
