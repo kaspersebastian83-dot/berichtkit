@@ -306,7 +306,7 @@ function bericht(eingabe) {
   for (const g of rollenGruppen.values()) {
     const eine = g.xs.length === 1, labels = g.xs.map(x => x.label), wer = probe(g.xs);
     if (g.zustand === 'keine') {
-      const h = `${wer} ${eine ? 'wird als normale Probe' : 'werden als normale Proben'} eingeordnet (deine Wahl in BerichtKit, angenommen war ${eine ? ROLLE_NAME[g.rolle] : ROLLE_MEHR[g.rolle]} – ${g.grund}). Das gilt nur in BerichtKit: Die ResultKit-Übersicht und das Datenarchiv der Projektzentrale gehen weiter nach dem Namen. Umbenennen in LabelKit geht nur, solange die Proben noch nicht beim Labor sind.`;
+      const h = `${wer} ${eine ? 'wird als normale Probe' : 'werden als normale Proben'} eingeordnet (deine Wahl in BerichtKit, angenommen war ${eine ? ROLLE_NAME[g.rolle] : ROLLE_MEHR[g.rolle]} – ${g.grund}). Das Datenarchiv der Projektzentrale übernimmt die Wahl, außer dort steht unter „Zuordnen“ eine eigene Korrektur; nur „Übersicht drucken“ in ResultKit geht weiter nach dem Namen. Umbenennen in LabelKit geht nur, solange die Proben noch nicht beim Labor sind.`;
       hinweise.push(h); hinweisAktionen[h] = { rolleZurueck: labels };
     } else rollenAnnahmen.push({ id: 'rolle:' + labels.join(','),
       text: eine ? `${wer} als ${ROLLE_NAME[g.rolle]} angenommen – ${g.grund}. Sie zählt nicht in der Einordnung und steht im Bericht als ${ROLLE_NAME[g.rolle]}.`

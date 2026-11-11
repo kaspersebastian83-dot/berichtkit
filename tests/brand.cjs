@@ -777,7 +777,7 @@ fall('Audit M4: automatisch angenommene Freimessung/Referenz = Annahme; „Norma
   const nein = modell(wisch(proben, { brand: { rolle: { P2: { auto: 'frei', wahl: 'keine' } } } }));
   assert.ok(!nein.annahmen.some(a => a.id === 'rolle:P2'));
   const h = nein.hinweise.find(x => /^Probe 2 wird als normale Probe/.test(x));
-  assert.equal(h, 'Probe 2 wird als normale Probe eingeordnet (deine Wahl in BerichtKit, angenommen war Freimessung – Raum/Ort „F 12 Lager Wand“ beginnt mit „F “). Das gilt nur in BerichtKit: Die ResultKit-Übersicht und das Datenarchiv der Projektzentrale gehen weiter nach dem Namen. Umbenennen in LabelKit geht nur, solange die Proben noch nicht beim Labor sind.');
+  assert.equal(h, 'Probe 2 wird als normale Probe eingeordnet (deine Wahl in BerichtKit, angenommen war Freimessung – Raum/Ort „F 12 Lager Wand“ beginnt mit „F “). Das Datenarchiv der Projektzentrale übernimmt die Wahl, außer dort steht unter „Zuordnen“ eine eigene Korrektur; nur „Übersicht drucken“ in ResultKit geht weiter nach dem Namen. Umbenennen in LabelKit geht nur, solange die Proben noch nicht beim Labor sind.');
   assert.doesNotMatch(h, /LabelKit umbenennen|in LabelKit umbenennen/);
   assert.deepEqual(nein.hinweisAktionen[h], { rolleZurueck: ['P2'] });
   assert.doesNotMatch(alles5(nein), /Freimessungen? \(Probe 2\)|950 µg\/m² \(Probe 2\)\./);
