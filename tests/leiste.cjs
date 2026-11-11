@@ -61,7 +61,7 @@ const ordner = (name, kinder) => ({ kind: 'directory', name, async *values() { y
 function projekt(name, { mitteilungen = [], bk = null, plan = true, beleg = false, pj = null } = {}) {
   return ordner(name, [
     ...(pj ? [datei('_Projekt.json', pj)] : []),
-    ordner('Laboraufträge', [datei('x_Daten.json', '{}')]), ordner('Fotos', [datei('_Bildumbenenner.json', '{}')]), ordner('Laborergebnisse', [datei('_Ergebnisse.json', '{}')]),
+    ordner('Laboraufträge', [datei(((/^\d{2}\.\d{2,6}/.exec(name) || ['x'])[0]) + '_Daten.json', '{}')])   /* Audit o8: „Proben ✓“ nur für eine Datei dieses Projekts */, ordner('Fotos', [datei('_Bildumbenenner.json', '{}')]), ordner('Laborergebnisse', [datei('_Ergebnisse.json', '{}')]),
     ordner('Pläne', plan ? [datei(`Probenplan ${name}.probenplan`, '{}')] : []),
     ordner('Mitteilungen', [...mitteilungen.map(n => datei(n, 'docx')), ...(bk ? [datei('_BerichtKit.json', { format: 'spektron-bericht', version: 1, nurEigene: true, form: {}, ...bk })] : [])]),
     ordner('Abrechnung', beleg ? [datei('x_Aufwand_1.json', '{}')] : []),
