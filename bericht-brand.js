@@ -345,7 +345,7 @@ function bericht(eingabe) {
   if (sd.art === 'unbekannt') v.push({ t: 'p', runs: [gross(brandort), ' ', objekt, ' kam es zu einem Brandschaden. Der genaue Zeitpunkt des Schadens ist nicht bekannt.'] });
   else v.push({ t: 'p', runs: ['Am ', L(sd.datum, 'Schadendatum'), ` kam es ${brandort} `, objekt, ' zu einem Brandschaden.'] });
   v.push({ t: 'p', runs: ['Schadenbedingt kann es auch zur Bildung und Freisetzung von Schadstoffen sowie deren räumlicher Verteilung kommen. Im Wesentlichen können Schadstoffe eine Gefährdung von Mensch und Umwelt und ein erhöhtes Korrosionsrisiko bedingen.'] });
-  v.push({ t: 'p', runs: ['Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polycyclischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar.'] });
+  v.push({ t: 'p', runs: ['Die Gefährdung von menschlicher Gesundheit und Umwelt ergibt sich meist aus den bei der unvollständigen Zersetzung organischer Materialien auftretenden Pyrolyseprodukten. Zur Beurteilung der Belastung mit organischen Schadstoffen stellt die Konzentration an polyzyklischen aromatischen Kohlenwasserstoffen (PAK) in der Regel die geeignete Leitmessgröße dar.'] });
   // Korrosionsabsätze nur mit Chlorid-Proben (Befunde Nr. 7)
   const mitChlorid = lk.clWisch.length + lk.clAndere.length + lk.bohrmehl.length > 0 || rk.cl.length > 0;
   if (mitChlorid) {
@@ -606,7 +606,7 @@ function bericht(eingabe) {
     h2('Organische Schadstoffe');
     const nr53 = `5.${unter}`;
     ohneErgebnis(lk.pakWisch, pakW, 'PAK', nr53);
-    befund.push({ t: 'p', runs: ['Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polycyclische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen.'] });
+    befund.push({ t: 'p', runs: ['Schädliche organische Verbindungen können als Nebenprodukte bei der unvollständigen Verbrennung aller organischen Materialien, wie z. B. Kunststoffe, Textilien, insbesondere Holz oder Papier, gebildet werden. Einige Vertreter dieser Verbindungsklasse sind als gesundheitsgefährdend einzustufen. Erfahrungsgemäß ist die Untersuchung auf polyzyklische aromatische Kohlenwasserstoffe (PAK) geeignet, das gesamte organische Schadstoffpotential abzuschätzen.'] });
     if (pakW.length) {
       befund.push({ t: 'p', runs: [`Gemäß Richtlinien zur Brandschadensanierung, VdS Schadenverhütung im Gesamtverband der Deutschen Versicherungswirtschaft e. V. (GDV), VdS 2357:2014-06, ist die Größenordnung der Hintergrundbelastung bei brandgasbeaufschlagten Oberflächen als Sanierungszielwert anzustreben bzw. zu unterschreiten.`] });
       const refLuecke = { gap: '[Hintergrundreferenz 10 oder 100 µg/m²]' };

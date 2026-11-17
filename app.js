@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.19.1';
-const APP_DATE = '11.11.2026';
+const APP_VERSION = '1.19.2';
+const APP_DATE = '17.11.2026';
 const CHANGELOG = [
+  ['1.19.2', '17.11.2026', 'Schreibweise im Brandbericht: „polyzyklische aromatische Kohlenwasserstoffe“ (Duden) statt „polycyclische“ – in der Einleitung zu den Schadstoffen und im PAK-Befund. Wörtliche Angaben aus Prüfberichten bleiben unverändert.'],
   ['1.19.1', '11.11.2026', 'Hinweis nach „Normale Probe“ im Brandbericht berichtigt: Das Datenarchiv der Projektzentrale übernimmt die Wahl inzwischen; nur „Übersicht drucken“ in ResultKit geht weiter nach dem Namen.'],
   ['1.19.0', '11.11.2026', 'Chlorid genau 10 µg/cm² (bzw. 100 mg/m²) liegt im Brandbericht jetzt „im Bereich“ der korrosionschemisch relevanten Größenordnung (VdS 2357: 5–10 µg/cm²), „oberhalb“ erst darüber – Tabelle, Zähl-Satz und Abschluss in 5.2, gleich wie ResultKit, PlanKit und FotoKit (KORROSION-CHLORID v2); genau 5 bleibt „im Bereich“. Probenplan nach dem Umbenennen des Projektordners: eine PDF unter einem früheren Ordnernamen wird gefunden, aber nicht vorgehakt; passen zwei Probenpläne, wählt BerichtKit keinen still (Hinweis nennt beide, vorgehakt nur der unter dem jetzigen Namen, wenn er der neueste ist); ein früherer, längerer Ordnername gilt nicht mehr als Geschoss. Ohne lesbare PlanKit-Datei wie bisher. Bilddokumentation: BerichtKit prüft selbst, ob seit der PDF Fotos in „Fotos“ dazugekommen oder weggefallen sind oder sich die Deckblattangaben in der Projektzentrale geändert haben – dann „veraltet“, nicht vorgehakt, mit Grund (FotoKit vermerkt es erst beim nächsten Speichern).'],
   ['1.18.1', '11.11.2026', 'LabelKit-Datei nur noch von diesem Projekt (Name beginnt mit der Projektnummer, Regel wie LabelKit 5.1): Die Datei, aus der ResultKit übernommen hat, gilt nur, wenn sie zu diesem Projekt gehört; sonst die Projektdatei nach der Regel – nie mehr die neueste beliebige …_Daten.json. Liegt nur eine fremde Datei da, liest BerichtKit nichts und sagt es in der Quellenliste. Spektron-Leiste: „Proben ✓“ nur für eine Datei dieses Projekts.'],
