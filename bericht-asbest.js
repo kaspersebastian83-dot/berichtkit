@@ -7,7 +7,7 @@
 const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./anlagen.js') : null);
 const G = root.BerichtGemeinsam || (typeof require === 'function' ? require('./bericht-gemeinsam.js') : null);
 const V = root.BerichtVorgaben || (typeof require === 'function' ? require('./bericht-vorgaben.js') : null);
-const { s, L, datumDE, liste, zahlwort, zeilen, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, probenSammeln, person,
+const { s, L, datumDE, liste, zahlwort, zeilen, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, probenSammeln, labelkitAsbest, person,
   pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz, unterschriftenBlock,
   pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
 
@@ -124,9 +124,12 @@ function bericht(eingabe) {
   const pr = [];
   if (!zugestellt) {
     const daten = s(f.probenahmedatum) ? [datumDE(f.probenahmedatum)] : [...new Set(proben.map(p => datumDE(p.datum)).filter(Boolean))];
-    // B5 (Audit Lauf 2): wie im Brandbericht – Probenahmedatum aus LabelKit gegen den Ortstermin der Projektzentrale (nicht bei eigenem Datum im Formular)
+    // B5 (Audit Lauf 2): wie im Brandbericht – Probenahmedatum aller nicht stornierten LabelKit-Asbestproben (auch ohne Ergebnis
+    // oder abgewählt) gegen den Ortstermin der Projektzentrale; nicht bei eigenem Datum im Formular
     const ortstermin = datumDE(P.ortstermin);
-    if (!s(f.probenahmedatum) && ortstermin && daten.some(d => d !== ortstermin)) hinweise.push(`Probenahmedatum in LabelKit (${liste(daten)}) weicht vom Ortstermin der Projektzentrale (${ortstermin}) ab – bitte prüfen.`);
+    const lkDaten = [...new Set([...labelkitAsbest(e.lk).aktiv.values()].map(p => datumDE(p.datum)).filter(Boolean))]
+      .sort((a, b) => a.split('.').reverse().join('').localeCompare(b.split('.').reverse().join('')));
+    if (!s(f.probenahmedatum) && ortstermin && lkDaten.some(d => d !== ortstermin)) hinweise.push(`Probenahmedatum in LabelKit (${liste(lkDaten)}) weicht vom Ortstermin der Projektzentrale (${ortstermin}) ab – bitte prüfen.`);
     pr.push({ t: 'p', runs: ['Am ', daten.length ? liste(daten) : { gap: '[Probenahmedatum]' }, eine ? ' wurde durch ' : ' wurden durch ',
       pn ? pn.satz : { gap: '[Probenehmer]' }, ' (Sachverständigenbüro Dr. Heinz Schiffers & Partner) im Objekt ',
       eine ? 'eine Materialprobe' : `${zahlwort(n)} Materialproben`, ' entnommen. ',

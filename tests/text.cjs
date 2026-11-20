@@ -585,6 +585,14 @@ fall('B5 (Audit Lauf 2): Asbestbericht – Probenahmedatum aus LabelKit gegen de
   assert.ok(!m({ ortstermin: '' }).some(h => /weicht vom Ortstermin/.test(h)), 'kein Ortstermin');
   assert.ok(!m({ ortstermin: '2026-11-18' }, { probenahmedatum: '2026-11-18' }).some(h => /weicht vom Ortstermin/.test(h)), 'eigenes Datum im Formular');
   assert.ok(!m({ ortstermin: '2026-11-18' }, { variante: 'zugestellt', eingangsdatum: '2026-11-19' }).some(h => /weicht vom Ortstermin/.test(h)), 'nicht bei zugestellter Probe');
+  // auch Proben ohne Ergebnis und abgewählte zählen (Codex-Review #30), stornierte nicht
+  const lk2 = D.lk([[1, '2026-11-18', 'Keller', 'Putz', 'Putze / Spachtelmassen'], [2, '2026-11-20', 'Flur', 'Kleber', 'Fliesenkleber'], [3, '2026-11-21', 'Bad', 'Putz', 'Putze / Spachtelmassen']]);
+  lk2.asbestProben[2].storniert = { am: '2026-11-19', kuerzel: 'Ka', grund: 'doppelt' };
+  const m2 = f => T.bericht({ pj: D.pj({ ortstermin: '2026-11-18' }), lk: lk2, erg: D.erg([[1, 'kein']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form(f) }).hinweise;
+  assert.ok(m2().includes('Probenahmedatum in LabelKit (18.11.2026 und 20.11.2026) weicht vom Ortstermin der Projektzentrale (18.11.2026) ab – bitte prüfen.'), 'Probe 2 ohne Ergebnis zählt, stornierte Probe 3 nicht');
+  const lk3 = D.lk([[1, '2026-11-18', 'Keller', 'Putz', 'Putze / Spachtelmassen'], [2, '2026-11-20', 'Flur', 'Kleber', 'Fliesenkleber']]);
+  const m3 = T.bericht({ pj: D.pj({ ortstermin: '2026-11-18' }), lk: lk3, erg: D.erg([[1, 'kein'], [2, 'kein']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form({ aus: { P2: false } }) }).hinweise;
+  assert.ok(m3.some(h => /Probenahmedatum in LabelKit \(18\.11\.2026 und 20\.11\.2026\) weicht/.test(h)), 'abgewählte Probe zählt');
 });
 
 fall('B6 (Audit Lauf 2): fehlende Unterschrift – Hinweis mit „Einstellungen öffnen“, nur wenn bekannt ist, welche es gibt', () => {

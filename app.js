@@ -310,6 +310,7 @@ async function oeffnen(dir) {
   S.ordner = { name: dir.name, nr, kuerzel: '' };
   S.quellen = []; S.thumbs = {}; S.feldbogen = null; S.anlagen = {}; S.planSkalen = null; S.anlagenVorhanden = null; uebergabeZeigen('');
   S.pj = null; S.erg = null; S.lk = null; S.lkDatei = null; S.stempel = null; S.quellenDaten = []; S.meldungen = []; S.quellenLauf = (S.quellenLauf || 0) + 1;
+  S.ergStand = null; ergStandZeigen();   // B2: Stand des vorigen Projekts nicht mitnehmen (auch wenn das Lesen gleich scheitert)
   const q = (ok, text) => S.quellen.push({ ok, text });
   try {
     await archivLesen();
