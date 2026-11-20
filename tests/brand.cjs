@@ -505,9 +505,13 @@ fall('Einordnung wie ResultKit: Chlorid 5 bis einschließlich 10 µg/cm² (umger
     assert.deepEqual(obj(/CHLORID_JE_UG_CM2:Record<string,number>=(\{[^}]*\})/), BW.CHLORID_JE_UG_CM2, 'KORROSION-CHLORID v1 wie ResultKit');
     assert.deepEqual(obj(/const factor=\((\{[^}]*\})/), BW.PAK_JE_UG_M2, 'VdS-Faktor wie ResultKit');
     assert.match(q, /from:5\*f,[^]*from:10\*f/); assert.match(q, /usage==='residential'\?10:100/);
+    // KORROSION-CHLORID v2 (B13, Audit Lauf 2): die Stufe „oberhalb“ zählt in ResultKit erst über 10 (ueber:true) – wie hier
+    assert.match(q, /from:10\*f,color:'#[0-9a-f]{6}',ueber:true\}/, 'ResultKit: oberhalb mit ueber:true');
+    assert.match(q, /stufeErreicht=\(c:\{from:number;ueber\?:boolean\},v:number\)=>c\.ueber\?v>c\.from:v>=c\.from;/, 'ResultKit: stufeErreicht wie hier');
+    assert.deepEqual([BW.chloridStufe({ r: '10', u: 'µg/cm²' }), BW.chloridStufe({ r: '10,01', u: 'µg/cm²' }), BW.chloridStufe({ r: '5', u: 'µg/cm²' })], [1, 2, 1], 'BerichtKit: 10 im Bereich, darüber oberhalb, 5 im Bereich');
     assert.match(q, /RESIDENTIAL=\['Wohnen','Büro','Öffentlich','Gesundheit & Labor'\],INDUSTRIAL=\['Gewerbe\/Industrie','Landwirtschaft'\]/);
-    console.log('   (ResultKit bewertung.ts daneben: Tabellen gleich)');
-  }
+    console.log('   (ResultKit bewertung.ts daneben: Tabellen und KORROSION-CHLORID v2 gleich)');
+  } else assert.ok(!process.env.RESULTKIT_PFLICHT, '../resultkit fehlt (RESULTKIT_PFLICHT) – in der CI muss der Vergleich laufen');
 });
 
 fall('5.3 PAK: fester Text, Referenz aus der Nutzung oder gewählt (mit Begründung), Zähl-Absatz, n. n.-Satz, Referenzprobe/Freimessung, Material, Abschluss', () => {
@@ -801,6 +805,14 @@ fall('Audit M4: gleicher Raum/Ort + gleiche Rolle = eine Annahme (Chlorid und PA
   // nur eine der beiden bestätigt → die andere bleibt als eigene Zeile
   const eine_ = modell(mitForm(F.BR1_voll_Versicherung, { rolle: { P3: { auto: 'referenz', wahl: 'ok' } } }));
   assert.deepEqual(eine_.annahmen.filter(a => a.id.startsWith('rolle:')).map(a => a.id), ['rolle:P6', 'rolle:P7']);
+});
+
+fall('B2 (Audit Lauf 2): Brandbericht – geänderte Prüfberichte und fremdes Projekt sperren, nur LabelKit nicht', () => {
+  const st = { fremd: '', labor: { neu: ['AR-9-02.xml'], fehlt: [], geaendert: [] }, laborAnders: true, labelkitAnders: false, uebernommen: '2026-10-20' };
+  assert.ok(modell(F.BR1_voll_Versicherung, { ergStand: st }).sperren.some(x => /„Laborergebnisse“ haben sich seit der Übernahme in ResultKit \(übernommen am 20\.10\.2026\) geändert \(neu: „AR-9-02\.xml“\)/.test(x)));
+  const ohne = modell(F.BR1_voll_Versicherung).sperren;
+  assert.deepEqual(modell(F.BR1_voll_Versicherung, { ergStand: { ...st, laborAnders: false, labelkitAnders: true } }).sperren, ohne, 'nur LabelKit: keine zusätzliche Sperre');
+  assert.ok(modell(F.BR1_voll_Versicherung, { ergStand: { ...st, laborAnders: false, fremd: '25.0100' } }).sperren.some(x => /gehören zu Projekt 25\.0100/.test(x)));
 });
 
 console.log(`Brandbericht: ${n} Fälle bestanden.`);

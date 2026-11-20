@@ -106,6 +106,15 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   in „Fotos“ (Endungen und Hilfsnamen wie FotoKit) mit `bilddoku.bestand` und Objekt/Schadenereignis/Schadendatum/Ortstermin aus `_Projekt.json`
   (nur gefüllte) mit `projekt` in `_Bildumbenenner.json` (wie FotoKit `applyPJ`). Abweichung → „veraltet“ mit Grund, nicht vorgehakt. Offen: ein unter
   demselben Namen ersetztes Foto sieht BerichtKit nicht; FotoKit-Dateien ohne `bestand` prüfen nur das Deckblatt.
+- **ResultKit-Übernahme gegen den Ordner** (ab 1.20.0, Audit Lauf 2 B2): `_Ergebnisse.json` merkt sich in `dateien` (sonst den Zeilen von
+  `stand`) die Prüfberichte (xml/pdf direkt in „Laborergebnisse“) und die LabelKit-Datei (`Laboraufträge/…`). `ergebnisStand` vergleicht mit dem
+  Ordner: neue, geänderte oder fehlende Prüfberichte → Sperre (Entwurf geht) und gelbe Zeile `#ergStand` mit „In ResultKit erneut übernehmen ↗“; nur
+  die LabelKit-Datei geändert → gelbe Zeile, keine Sperre; `projekt` einer anderen Projektnummer → immer Sperre. Ohne `dateien` und `stand` (sehr
+  alte Datei): unbekannt, nichts davon. Der Fokus-Stempel enthält jetzt auch „Laborergebnisse“.
+- **Asbestbericht – Probenahmedatum gegen den Ortstermin** (ab 1.20.0, B5): wie im Brandbericht ein Hinweis, wenn kein eigenes Datum eingetragen ist
+  und ein LabelKit-Datum vom Ortstermin der Projektzentrale abweicht; nicht bei zugestellter Probe.
+- **Fehlende Unterschrift** (ab 1.20.0, B6): Hinweis mit „Einstellungen öffnen“, wenn im Archivordner unter `_Spektron-Unterschriften` keine PNG für
+  den Unterzeichner liegt; nur mit Archivordner (sonst ist unbekannt, welche es gibt), keine Sperre.
 - **`_BerichtKit.json` nicht lesbar** (ab 1.18.0, M7: kein JSON, leer, Lesefehler, fremdes Format): BerichtKit schreibt sie nie – rote Zeile über den
   Karten, Eingaben bleiben im Browser, ein gespeicherter Bericht wird vorgemerkt. „Neu anlegen …“ legt zuerst den Inhalt byte-gleich als
   `_BerichtKit.unlesbar.json` in denselben Ordner (eine vorhandene Kopie wird nur nach Nennung ihres Datums ersetzt), dann die neue Datei aus dem

@@ -8,7 +8,7 @@ const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./a
 const G = root.BerichtGemeinsam || (typeof require === 'function' ? require('./bericht-gemeinsam.js') : null);
 const V = root.BerichtVorgaben || (typeof require === 'function' ? require('./bericht-vorgaben.js') : null);
 const { s, L, datumDE, liste, zahlwort, zeilen, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, probenSammeln, person,
-  pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz, unterschriftenBlock,
+  pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz, unterschriftenBlock,
   pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
 
 /** Tabelle 1 (Proben und Ergebnisse): Spaltenbreiten in twips, zusammen 9070 = Textbreite. Labor-Nr. breit genug für
@@ -50,6 +50,7 @@ function bericht(eingabe) {
   }
   // LabelKit-Datei eines anderen Projekts: nichts daraus darf in den Bericht; ohne Projektnummer ein Hinweis (m12)
   labelkitProjektPruefen(e, P, sperren, hinweise);
+  ergebnisStandPruefen(e, P, sperren);   // B2: ResultKit-Übernahme passt nicht mehr zu „Laborergebnisse“ oder gehört zu einem anderen Projekt
   offen.filter(o => !o.aus).forEach(o => sperren.push(`${o.label}: in LabelKit als Asbestprobe erfasst, aber noch kein Ergebnis in ResultKit – Ergebnis übernehmen oder die Probe unter „Proben“ abwählen.`));
   proben.forEach(p => {
     p.istKmf = f.kmf && p.label in f.kmf ? !!f.kmf[p.label] : (IST_KMF.test(p.material + ' ' + p.matrix) || !!p.kmf.ki || !!p.kmf.who);
@@ -123,6 +124,9 @@ function bericht(eingabe) {
   const pr = [];
   if (!zugestellt) {
     const daten = s(f.probenahmedatum) ? [datumDE(f.probenahmedatum)] : [...new Set(proben.map(p => datumDE(p.datum)).filter(Boolean))];
+    // B5 (Audit Lauf 2): wie im Brandbericht – Probenahmedatum aus LabelKit gegen den Ortstermin der Projektzentrale (nicht bei eigenem Datum im Formular)
+    const ortstermin = datumDE(P.ortstermin);
+    if (!s(f.probenahmedatum) && ortstermin && daten.some(d => d !== ortstermin)) hinweise.push(`Probenahmedatum in LabelKit (${liste(daten)}) weicht vom Ortstermin der Projektzentrale (${ortstermin}) ab – bitte prüfen.`);
     pr.push({ t: 'p', runs: ['Am ', daten.length ? liste(daten) : { gap: '[Probenahmedatum]' }, eine ? ' wurde durch ' : ' wurden durch ',
       pn ? pn.satz : { gap: '[Probenehmer]' }, ' (Sachverständigenbüro Dr. Heinz Schiffers & Partner) im Objekt ',
       eine ? 'eine Materialprobe' : `${zahlwort(n)} Materialproben`, ' entnommen. ',

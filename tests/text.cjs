@@ -550,4 +550,51 @@ fall('Audit o2: Leerraum um die Kommas und leere Abschnitte zählen beim Beschre
   assert.equal(T.beschreibungWeichtAb('EG Küche, verrußt', 'EG Küche verrußt'), true, 'fehlendes Komma ist ein Unterschied (wie ResultKit)');
 });
 
+fall('B2 (Audit Lauf 2): ResultKit-Übernahme gegen den Ordner – Prüfberichte geändert sperrt, nur LabelKit-Datei nicht, fremdes Projekt sperrt', () => {
+  const lk = { name: '99.9001_Daten.json', size: 900, t: 5 }, xml = { name: 'AR-1-01.xml', size: 100, t: 1 }, pdf = { name: 'AR-1-01.pdf', size: 200, t: 2 };
+  const erg = { format: 'spektron-ergebnisse', version: 1, projekt: '99.9001', uebernommen: '2026-11-18T09:00:00.000Z',
+    stand: 'AR-1-01.pdf|200|2\nAR-1-01.xml|100|1\nLaboraufträge/99.9001_Daten.json|900|5',
+    dateien: [{ name: 'AR-1-01.pdf', size: 200, t: 2 }, { name: 'AR-1-01.xml', size: 100, t: 1 }, { name: 'Laboraufträge/99.9001_Daten.json', size: 900, t: 5 }], berichte: [] };
+  const gleich = T.ergebnisStand(erg, [xml, pdf], lk, '99.9001');
+  assert.deepEqual([gleich.laborAnders, gleich.labelkitAnders, gleich.fremd], [false, false, '']);
+  const neu = T.ergebnisStand(erg, [xml, pdf, { name: 'AR-1-02.xml', size: 120, t: 9 }], lk, '99.9001');
+  assert.deepEqual([neu.laborAnders, neu.labelkitAnders, neu.labor.neu], [true, false, ['AR-1-02.xml']]);
+  const geaendert = T.ergebnisStand(erg, [xml, { ...pdf, t: 7 }], lk, '99.9001');
+  assert.deepEqual([geaendert.labor.geaendert, geaendert.labor.fehlt], [['AR-1-01.pdf'], []]);
+  assert.deepEqual(T.ergebnisStand(erg, [xml], lk, '99.9001').labor.fehlt, ['AR-1-01.pdf']);
+  const nurLk = T.ergebnisStand(erg, [xml, pdf], { ...lk, size: 950, t: 8 }, '99.9001');
+  assert.deepEqual([nurLk.laborAnders, nurLk.labelkitAnders], [false, true]);
+  assert.equal(T.ergebnisStand({ ...erg, dateien: undefined }, [xml, pdf], lk, '99.9001').laborAnders, false, 'ohne „dateien“: Zeilen von „stand“');
+  assert.equal(T.ergebnisStand({ ...erg, projekt: '25.0100' }, [xml, pdf], lk, '99.9001').fremd, '25.0100');
+  assert.equal(T.ergebnisStand(null, [xml], lk, '99.9001'), null, 'ohne Übernahme nichts');
+  assert.equal(T.ergebnisStand({ ...erg, dateien: undefined, stand: undefined }, [xml], lk, '99.9001'), null, 'ohne „dateien“ und „stand“: unbekannt');
+  // Modell: Sperre (Endname), Entwurf bleibt möglich; nur LabelKit geändert → keine Sperre (gelbe Zeile in app.js)
+  const modell = st => T.bericht({ pj: D.pj(), lk: D.lk([[1, '2026-10-16', 'Keller', 'Putz', 'Putze / Spachtelmassen']]), erg: D.erg([[1, 'kein']]), ergStand: st,
+    cfg: D.cfg, mitarbeiter: D.mitarbeiter, ordner: { name: '99.9001 Musterstadt', nr: '99.9001' }, form: form() });
+  assert.deepEqual(modell(gleich).sperren, []);
+  assert.deepEqual(modell(neu).sperren, ['Die Prüfberichte in „Laborergebnisse“ haben sich seit der Übernahme in ResultKit (übernommen am 18.11.2026) geändert (neu: „AR-1-02.xml“) – erst in ResultKit erneut übernehmen. „Entwurf herunterladen“ geht.']);
+  assert.deepEqual(modell(nurLk).sperren, [], 'nur die LabelKit-Datei geändert: keine Sperre');
+  assert.match(modell(T.ergebnisStand({ ...erg, projekt: '25.0100' }, [xml, pdf], lk, '99.9001')).sperren.join(' '), /gehören zu Projekt 25\.0100, nicht zu 99\.9001/);
+  assert.ok(T.alsEntwurf(modell(neu)), 'Entwurf weiter möglich');
+});
+
+fall('B5 (Audit Lauf 2): Asbestbericht – Probenahmedatum aus LabelKit gegen den Ortstermin (wie Brandbericht)', () => {
+  const m = (o, f = {}) => T.bericht({ pj: D.pj(o), lk: D.lk([[1, '2026-11-20', 'Keller', 'Putz', 'Putze / Spachtelmassen']]), erg: D.erg([[1, 'kein']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form(f) }).hinweise;
+  assert.ok(m({ ortstermin: '2026-11-18' }).includes('Probenahmedatum in LabelKit (20.11.2026) weicht vom Ortstermin der Projektzentrale (18.11.2026) ab – bitte prüfen.'));
+  assert.ok(!m({ ortstermin: '2026-11-20' }).some(h => /weicht vom Ortstermin/.test(h)), 'gleiches Datum');
+  assert.ok(!m({ ortstermin: '' }).some(h => /weicht vom Ortstermin/.test(h)), 'kein Ortstermin');
+  assert.ok(!m({ ortstermin: '2026-11-18' }, { probenahmedatum: '2026-11-18' }).some(h => /weicht vom Ortstermin/.test(h)), 'eigenes Datum im Formular');
+  assert.ok(!m({ ortstermin: '2026-11-18' }, { variante: 'zugestellt', eingangsdatum: '2026-11-19' }).some(h => /weicht vom Ortstermin/.test(h)), 'nicht bei zugestellter Probe');
+});
+
+fall('B6 (Audit Lauf 2): fehlende Unterschrift – Hinweis mit „Einstellungen öffnen“, nur wenn bekannt ist, welche es gibt', () => {
+  const m = da => T.bericht({ pj: D.pj(), lk: D.lk([[1, '2026-10-16', 'Keller', 'Putz', 'Putze / Spachtelmassen']]), erg: D.erg([[1, 'kein']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, unterschriftDa: da, form: form() });
+  const ohne = m(k => k !== 'Mes'), h = ohne.hinweise.find(x => /keine Unterschrift hinterlegt/.test(x));
+  assert.equal(h, 'Für Max Messer ist keine Unterschrift hinterlegt („_Spektron-Unterschriften/Mes.png“ im Archivordner) – das Word hat dort nur die leere Linie.');
+  assert.deepEqual(ohne.hinweisAktionen[h], { einstellungen: true });
+  assert.ok(!m(() => true).hinweise.some(x => /keine Unterschrift/.test(x)));
+  assert.ok(!m(undefined).hinweise.some(x => /keine Unterschrift/.test(x)), 'ohne Archivordner kein Hinweis');
+  assert.deepEqual(m(k => k !== 'Mes').sperren, [], 'keine Sperre');
+});
+
 console.log(`\n${n} Fälle bestanden.`);

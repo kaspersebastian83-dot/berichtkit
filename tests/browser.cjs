@@ -400,7 +400,7 @@ const daten = {
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
     await page.click('#btnMehr'); await page.waitForSelector('#mosaikMehrPop');
     assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Word nur herunterladen',
-      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.19.2', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
+      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.20.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
     assert.equal(await page.getAttribute('#mosaikMehrPop a[target=aidkit]', 'href'), '../aidkit/#app-berichtkit');
     await page.keyboard.press('Escape'); await page.waitForSelector('#mosaikMehrPop', { state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'btnMehr', 'Esc: Fokus zurück auf „Mehr …“');
@@ -701,6 +701,53 @@ const daten = {
     assert.match(dlE.suggestedFilename(), /^2\._Mitteilung_99\.9002_ENTWURF\.docx$/);
     assert.deepEqual(await eintraege(P2), vorMitt);
     await dateiIn(P2, '_Spektron/LabelKit/99.9002_Daten.json', JSON.stringify(br.lk));
+
+    // B2 (Audit Lauf 2): ResultKit-Übernahme gegen den Ordner – neue Prüfberichte sperren (Entwurf geht), nur LabelKit geändert: gelbe Zeile ohne Sperre, fremdes Projekt sperrt
+    const meta = pfad => page.evaluate(async ({ P, pfad }) => {
+      let d = await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv')).getDirectoryHandle(P);
+      const t = pfad.split('/'); for (const x of t.slice(0, -1)) d = await d.getDirectoryHandle(x);
+      const f = await (await d.getFileHandle(t.at(-1))).getFile(); return { name: t.at(-1), size: f.size, t: f.lastModified };
+    }, { P: P2, pfad });
+    const weg = pfad => page.evaluate(async ({ P, pfad }) => {
+      let d = await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv')).getDirectoryHandle(P);
+      const t = pfad.split('/'); for (const x of t.slice(0, -1)) d = await d.getDirectoryHandle(x); await d.removeEntry(t.at(-1));
+    }, { P: P2, pfad });
+    const ergP2 = '_Spektron/ResultKit/_Ergebnisse.json', lkP2 = '_Spektron/LabelKit/99.9002_Daten.json', xml1 = 'Laborergebnisse/AR-999-2026-000101-01.xml', xml2 = 'Laborergebnisse/AR-999-2026-000101-02.xml';
+    await dateiIn(P2, xml1, '<xml/>');
+    const mitStand = async (o = {}) => { const x = await meta(xml1), l = await meta(lkP2), dateien = [x, { ...l, name: 'Laboraufträge/' + l.name }];
+      return JSON.stringify({ ...br.erg, uebernommen: '2026-11-18T09:00:00.000Z', dateien, stand: dateien.map(d => `${d.name}|${d.size}|${d.t}`).join('\n'), ...o }); };
+    const sperrenJetzt = () => page.evaluate(() => modell().sperren);
+    await dateiIn(P2, ergP2, await mitStand());
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    assert.ok(await page.isHidden('#ergStand'), 'Übernahme passt: keine gelbe Zeile');
+    const sperrenVorher = await sperrenJetzt();
+    assert.ok(!sperrenVorher.some(x => /seit der Übernahme in ResultKit/.test(x)));
+    await page.waitForTimeout(30); await dateiIn(P2, xml2, '<xml v="2"/>');
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await page.waitForSelector('#ergStand:not([hidden])');
+    assert.match(await page.textContent('#ergStand'), /Die Prüfberichte in „Laborergebnisse“ haben sich seit der Übernahme in ResultKit \(übernommen am 18\.11\.2026\) geändert \(neu: „AR-999-2026-000101-02\.xml“\)\. Unter dem endgültigen Namen speichern geht erst nach „Erneut übernehmen“ – „Entwurf herunterladen“ geht\.\s*In ResultKit erneut übernehmen ↗/);
+    assert.equal(await page.getAttribute('#ergStand a', 'href'), '../resultkit/#projekt=' + encodeURIComponent(P2));
+    await page.waitForFunction(() => /Gesperrt: Die Prüfberichte/.test(document.getElementById('hinweise').textContent));
+    assert.match(await page.textContent('#hinweise'), /Gesperrt: Die Prüfberichte in „Laborergebnisse“ haben sich seit der Übernahme/);
+    assert.ok(await page.isHidden('#btnErstellen')); assert.ok(await page.isVisible('#btnLaden'));
+    const vorB2 = await eintraege(P2);
+    await statusLeer(); await page.click('#btnLaden');   // eben erst neu gelesen: einmal ansehen, dann noch einmal
+    await page.waitForSelector('#status .warn');
+    const [dlB2] = await Promise.all([page.waitForEvent('download'), page.click('#btnLaden')]);
+    assert.match(dlB2.suggestedFilename(), /_ENTWURF\.docx$/, 'Entwurf geht'); assert.deepEqual(await eintraege(P2), vorB2);
+    // nur die LabelKit-Datei neu geschrieben: gelbe Zeile, keine Sperre
+    await weg(xml2); await page.waitForTimeout(30); await dateiIn(P2, lkP2, JSON.stringify(br.lk));
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    await page.waitForSelector('#ergStand:not([hidden])');
+    assert.match(await page.textContent('#ergStand'), /Die LabelKit-Datei hat sich seit der Übernahme in ResultKit \(übernommen am 18\.11\.2026\) geändert – bitte prüfen/);
+    assert.deepEqual(await sperrenJetzt(), sperrenVorher, 'nur LabelKit: keine Sperre');
+    // Übernahme aus einem anderen Projekt: immer gesperrt
+    await dateiIn(P2, ergP2, await mitStand({ projekt: '99.9555' }));
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    assert.match(await page.textContent('#ergStand'), /gehören zu Projekt 99\.9555, nicht zu 99\.9002/);
+    assert.ok((await sperrenJetzt()).some(x => /gehören zu Projekt 99\.9555, nicht zu 99\.9002/.test(x)));
+    await dateiIn(P2, ergP2, JSON.stringify(br.erg)); await weg(xml1);
+    console.log('ok – B2: Prüfberichte geändert sperrt (Entwurf geht), nur LabelKit gelbe Zeile, fremdes Projekt sperrt');
 
     // M7: abgeschnittene _BerichtKit.json mit getipptem Text → beim Öffnen und Tippen unverändert; „Neu anlegen“ bewahrt sie auf
     const kaputt = '{"format":"spektron-bericht","version":1,"nurEigene":true,"art":"brand","form":{"brand":{"schadenbild":"Der Brand ereignete sich in der Küche, Decke stark verru';

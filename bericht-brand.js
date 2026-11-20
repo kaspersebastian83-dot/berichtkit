@@ -29,7 +29,7 @@ const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./a
 const G = root.BerichtGemeinsam || (typeof require === 'function' ? require('./bericht-gemeinsam.js') : null);
 const BW = root.BerichtBewertung || (typeof require === 'function' ? require('./bericht-bewertung.js') : null);
 const { s, L, datumDE, liste, zahlwort, PNR, tidy, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, istStorniert, probenSammeln,
-  person, nominativ, pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
+  person, nominativ, pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
   unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
 
 const TITEL = ['Sanierungsvorschlag', 'Untersuchungsbericht'];
@@ -260,6 +260,7 @@ function bericht(eingabe) {
   const offen = offenAlle.map(o => ({ ...o, aus: !!(f.aus && f.aus[o.label] === false) }));
   storniert.forEach(x => hinweise.push(`${x.label} ist in LabelKit storniert – der Laborwert${x.bericht ? ` (Prüfbericht ${x.bericht})` : ''} kommt nicht in den Bericht.`));
   labelkitProjektPruefen(e, P, sperren, hinweise);
+  ergebnisStandPruefen(e, P, sperren);   // B2: ResultKit-Übernahme passt nicht mehr zu „Laborergebnisse“ oder gehört zu einem anderen Projekt
   offen.filter(o => !o.aus).forEach(o => sperren.push(`${o.label}: in LabelKit als Asbestprobe erfasst, aber noch kein Ergebnis in ResultKit – Ergebnis übernehmen oder die Probe unter „Proben“ abwählen.`));
   proben.forEach(p => {
     p.istKmf = f.kmf && p.label in f.kmf ? !!f.kmf[p.label] : (IST_KMF.test(p.material + ' ' + p.matrix) || !!p.kmf.ki || !!p.kmf.who);
