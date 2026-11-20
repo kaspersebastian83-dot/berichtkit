@@ -287,6 +287,47 @@ function labelkitProjektPruefen(e, P, sperren, hinweise) {
   else if (e.lk && !lkNr && hinweise) hinweise.push(`Die LabelKit-Datei enthält keine Projektnummer (ältere Datei) – ob sie zu ${nr ? 'Projekt ' + nr : 'diesem Projekt'} gehört, kann BerichtKit nicht prüfen. Bitte in LabelKit nachsehen.`);
 }
 
+/* ---------- B2 (Audit Lauf 2, Entscheidung 20.11.2026): passt die ResultKit-Übernahme noch zum Ordner? ----------
+   Wie ResultKit seinen Stand bildet (src/main.ts einlesen, standKennung): die Dateien *.xml/*.pdf direkt in „Laborergebnisse“ (Name|Größe|Zeit)
+   und die LabelKit-Datei dieses Projekts als „Laboraufträge/<Name>“. Beide Teile getrennt: geänderte Prüfberichte sperren das Speichern
+   unter dem Endnamen, eine nur geänderte LabelKit-Datei nicht (gelbe Zeile). Eine Übernahme aus einem anderen Projekt sperrt immer. */
+const LK_PFAD = 'Laboraufträge/';
+/** erg: _Ergebnisse.json · labor: [{ name, size, t }] jetzt in „Laborergebnisse“ · lk: { name, size, t } | null (Wahl wie ResultKit) ·
+    projektNr: aus dem Ordnernamen → null ohne Übernahme, sonst { fremd, labor: { neu, fehlt, geaendert }, laborAnders, labelkitAnders, uebernommen } */
+function ergebnisStand(erg, labor, lk, projektNr) {
+  if (!erg || typeof erg !== 'object') return null;
+  // ohne „dateien“ und „stand“ (sehr alte Datei) ist der Stand unbekannt – dann weder gelbe Zeile noch Sperre
+  if (!Array.isArray(erg.dateien) && !s(erg.stand)) return null;
+  const ep = s(erg.projekt), fremd = ep && s(projektNr) && ep !== s(projektNr) ? ep : '';
+  const eintrag = d => (d && typeof d.name === 'string' ? { name: d.name, k: `${Number(d.size)}|${Number(d.t)}` } : null);
+  // dateien (ab ResultKit 1.x immer dabei); sonst die Zeilen von stand („Name|Größe|Zeit“)
+  const alt = (Array.isArray(erg.dateien) ? erg.dateien.map(eintrag)
+    : String(erg.stand || '').split('\n').map(z => { const m = /^(.*)\|(\d+)\|(\d+)$/.exec(z); return m ? { name: m[1], k: `${m[2]}|${m[3]}` } : null; })).filter(Boolean);
+  const altLabor = new Map(alt.filter(d => !d.name.startsWith(LK_PFAD)).map(d => [d.name, d.k]));
+  const altLk = alt.filter(d => d.name.startsWith(LK_PFAD)).map(d => d.name + '|' + d.k).sort().join('\n');
+  const jetzt = new Map((labor || []).map(eintrag).filter(Boolean).map(d => [d.name, d.k]));
+  const neu = [...jetzt.keys()].filter(n => !altLabor.has(n)).sort(), fehlt = [...altLabor.keys()].filter(n => !jetzt.has(n)).sort();
+  const geaendert = [...jetzt.keys()].filter(n => altLabor.has(n) && altLabor.get(n) !== jetzt.get(n)).sort();
+  const l = eintrag(lk), lkJetzt = l ? LK_PFAD + l.name + '|' + l.k : '';
+  return { fremd, labor: { neu, fehlt, geaendert }, laborAnders: !!(neu.length || fehlt.length || geaendert.length), labelkitAnders: lkJetzt !== altLk,
+    uebernommen: /^\d{4}-\d{2}-\d{2}/.test(s(erg.uebernommen)) ? s(erg.uebernommen).slice(0, 10) : '' };
+}
+/** Satz zum Stand (gelbe Zeile und Sperre): was sich seit der Übernahme in „Laborergebnisse“ geändert hat */
+function ergebnisStandText(st) {
+  const namen = xs => xs.slice(0, 3).map(n => `„${n}“`).join(', ') + (xs.length > 3 ? ` und ${xs.length - 3} weitere` : '');
+  const teile = [st.labor.neu.length ? 'neu: ' + namen(st.labor.neu) : '', st.labor.geaendert.length ? 'geändert: ' + namen(st.labor.geaendert) : '',
+    st.labor.fehlt.length ? 'nicht mehr da: ' + namen(st.labor.fehlt) : ''].filter(Boolean).join('; ');
+  const am = st.uebernommen ? ` (übernommen am ${datumDE(st.uebernommen)})` : '';
+  return { am, teile };
+}
+/** Sperren aus dem Stand (Modell): fremdes Projekt immer, geänderte Prüfberichte; die nur geänderte LabelKit-Datei zeigt app.js als gelbe Zeile */
+function ergebnisStandPruefen(e, P, sperren) {
+  const st = e.ergStand; if (!st) return;
+  const nr = s(e.ordner && e.ordner.nr) || P.nr, { am, teile } = ergebnisStandText(st);
+  if (st.fremd) sperren.push(`Die Laborergebnisse aus ResultKit („_Ergebnisse.json“) gehören zu Projekt ${st.fremd}, nicht zu ${nr} – in ResultKit in diesem Projekt erneut übernehmen.`);
+  if (st.laborAnders) sperren.push(`Die Prüfberichte in „Laborergebnisse“ haben sich seit der Übernahme in ResultKit${am} geändert (${teile}) – erst in ResultKit erneut übernehmen. „Entwurf herunterladen“ geht.`);
+}
+
 /** Deckblatt-Feldblock „mit Versicherung“ (VN · Risiko · Versicherer) oder „ohne“ (Auftraggeber · Schadenort), dazu Schaden-Nr.
     → { vfall, felder, versicherer, versichererQuelle } */
 function deckblattFelder(P, f, hinweise) {
@@ -378,6 +419,11 @@ function unterschriftenBlock(e, f, personen, zugestellt, hinweise, hinweisAktion
       : { angenommen: true, text: `Unterschrift: ${sv.name} angenommen (${svV.grund}) – bitte prüfen.` })
     : null;
   [sv, pn, mt].filter((p, i, xs) => p && xs.findIndex(q => q && q.kuerzel === p.kuerzel) === i).forEach(p => { if (!p.geschlecht) hinweise.push(`${p.name}: in den Einstellungen fehlt Frau/Herr.`); });
+  // B6 (Audit Lauf 2): Unterschrift-PNG fehlt – nur, wenn app.js weiß, welche es gibt (e.unterschriftDa); keine Sperre
+  if (typeof e.unterschriftDa === 'function') for (const u of unterschriften) if (u.kuerzel && !e.unterschriftDa(u.kuerzel)) {
+    const h = `Für ${typeof u.name === 'string' ? u.name : u.kuerzel} ist keine Unterschrift hinterlegt („_Spektron-Unterschriften/${u.kuerzel}.png“ im Archivordner) – das Word hat dort nur die leere Linie.`;
+    hinweise.push(h); hinweisAktionen[h] = { einstellungen: true };
+  }
   return { unterschriften, svQuelle };
 }
 
@@ -486,7 +532,7 @@ const API = { VERSION: 1, ABGLEICH_SPERRT,
   namensteile, anredeStandard, person, nominativ, rolleFestgelegt, svVorschlag, rollentext, pnQuelle,
   // Projekt, Deckblatt, Kopf, Auftraggeber
   istVersicherer, versicherungsfallAuto, projektNummer, gleichesProjekt, projektSicht, mitArtikel, objektImSatz,
-  labelkitProjektPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
+  labelkitProjektPruefen, ergebnisStand, ergebnisStandText, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
   // Unterschriften, Anlagen, Kennzeilen, Annahmen
   auftragKarte, abgleichVon, unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus };
 if (typeof module === 'object' && module.exports) module.exports = API;

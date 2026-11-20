@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.19.2';
+const APP_VERSION = '1.20.0';
 const APP_DATE = '17.11.2026';
 const CHANGELOG = [
+  ['1.20.0', '20.11.2026', 'Laborergebnisse: Haben sich die Prüfberichte in „Laborergebnisse“ seit der Übernahme in ResultKit geändert (neu, geändert, nicht mehr da) oder gehört die Übernahme zu einem anderen Projekt, ist Speichern unter dem endgültigen Namen gesperrt – gelbe Zeile mit „In ResultKit erneut übernehmen“, „Entwurf herunterladen“ geht. Hat sich nur die LabelKit-Datei geändert, zeigt die gelbe Zeile das ohne Sperre. Asbestbericht: Hinweis, wenn das Probenahmedatum aus LabelKit vom Ortstermin der Projektzentrale abweicht (wie im Brandbericht; nicht bei zugestellter Probe). Hinweis mit „Einstellungen öffnen“, wenn für den Unterzeichner keine Unterschrift hinterlegt ist.'],
   ['1.19.2', '17.11.2026', 'Schreibweise im Brandbericht: „polyzyklische aromatische Kohlenwasserstoffe“ (Duden) statt „polycyclische“ – in der Einleitung zu den Schadstoffen und im PAK-Befund. Wörtliche Angaben aus Prüfberichten bleiben unverändert.'],
   ['1.19.1', '11.11.2026', 'Hinweis nach „Normale Probe“ im Brandbericht berichtigt: Das Datenarchiv der Projektzentrale übernimmt die Wahl inzwischen; nur „Übersicht drucken“ in ResultKit geht weiter nach dem Namen.'],
   ['1.19.0', '11.11.2026', 'Chlorid genau 10 µg/cm² (bzw. 100 mg/m²) liegt im Brandbericht jetzt „im Bereich“ der korrosionschemisch relevanten Größenordnung (VdS 2357: 5–10 µg/cm²), „oberhalb“ erst darüber – Tabelle, Zähl-Satz und Abschluss in 5.2, gleich wie ResultKit, PlanKit und FotoKit (KORROSION-CHLORID v2); genau 5 bleibt „im Bereich“. Probenplan nach dem Umbenennen des Projektordners: eine PDF unter einem früheren Ordnernamen wird gefunden, aber nicht vorgehakt; passen zwei Probenpläne, wählt BerichtKit keinen still (Hinweis nennt beide, vorgehakt nur der unter dem jetzigen Namen, wenn er der neueste ist); ein früherer, längerer Ordnername gilt nicht mehr als Geschoss. Ohne lesbare PlanKit-Datei wie bisher. Bilddokumentation: BerichtKit prüft selbst, ob seit der PDF Fotos in „Fotos“ dazugekommen oder weggefallen sind oder sich die Deckblattangaben in der Projektzentrale geändert haben – dann „veraltet“, nicht vorgehakt, mit Grund (FotoKit vermerkt es erst beim nächsten Speichern).'],
@@ -309,6 +310,7 @@ async function oeffnen(dir) {
   S.ordner = { name: dir.name, nr, kuerzel: '' };
   S.quellen = []; S.thumbs = {}; S.feldbogen = null; S.anlagen = {}; S.planSkalen = null; S.anlagenVorhanden = null; uebergabeZeigen('');
   S.pj = null; S.erg = null; S.lk = null; S.lkDatei = null; S.stempel = null; S.quellenDaten = []; S.meldungen = []; S.quellenLauf = (S.quellenLauf || 0) + 1;
+  S.ergStand = null; ergStandZeigen();   // B2: Stand des vorigen Projekts nicht mitnehmen (auch wenn das Lesen gleich scheitert)
   const q = (ok, text) => S.quellen.push({ ok, text });
   try {
     await archivLesen();
@@ -335,7 +337,7 @@ async function oeffnen(dir) {
   if (window.MosaikLeiste) MosaikLeiste.aktualisieren();
 }
 async function archivLesen() {
-  S.mitarbeiter = []; S.cfg = { personen: {} }; S.cfgText = null; S.sig = {};
+  S.mitarbeiter = []; S.cfg = { personen: {} }; S.cfgText = null; S.sig = {}; S.sigGelesen = false;
   if (S.archivOk && S.archiv) {
     const ma = await leseJson(S.archiv, MA_DATEI).catch(() => null);
     if (ma && ma.data && ma.data.format === 'spektron-mitarbeiter' && Array.isArray(ma.data.personen)) S.mitarbeiter = ma.data.personen.filter(p => p && p.ordnerKuerzel && p.aktiv !== false);
@@ -350,6 +352,7 @@ async function archivLesen() {
         S.sig[sigKey(h.name.replace(/\.png$/i, ''))] = { data, w: bmp.width, h: bmp.height, url: URL.createObjectURL(f) }; bmp.close();
       } catch (e) { /* unlesbares Bild: ohne Unterschrift */ }
     }
+    S.sigGelesen = true;   // B6: erst jetzt weiß BerichtKit, welche Unterschriften fehlen (ohne Archivordner kein Hinweis)
   } else {
     S.cfgOrt = 'lokal';
     try { const c = JSON.parse(localStorage.getItem('berichtkit:cfg') || 'null'); if (c && c.format === 'spektron-berichtkit') S.cfg = { personen: {}, ...c }; } catch (e) { /* leer */ }
@@ -358,9 +361,17 @@ async function archivLesen() {
 /* ---------- Projektdaten, ResultKit, LabelKit lesen ----------
    Gelesen beim Öffnen – und erneut, wenn sich eine der Dateien geändert hat (Stempel Name|Größe|Zeit): beim Zurückkommen ins
    Fenster (z. B. nach „Übernehmen“ in ResultKit) und vor dem Speichern/Herunterladen. Sonst landen alte Laborwerte im Word. */
-const QUELLE_NAME = { projekt: 'Projektdaten (Projektzentrale)', ergebnisse: 'Laborergebnisse (ResultKit)', labelkit: 'Proben (LabelKit)' };
+const QUELLE_NAME = { projekt: 'Projektdaten (Projektzentrale)', ergebnisse: 'Laborergebnisse (ResultKit)', labelkit: 'Proben (LabelKit)', labor: 'Prüfberichte in „Laborergebnisse“' };
+/** B2: Prüfberichte direkt in „Laborergebnisse“ wie ResultKit (findSubdir, nur *.xml/*.pdf der obersten Ebene) → [{ name, size, t }] */
+async function laborDateien(dir) {
+  let d = null; try { d = await dir.getDirectoryHandle('Laborergebnisse'); } catch (e) {
+    for await (const h of dir.values()) if (h.kind === 'directory' && h.name.normalize('NFC').toLowerCase() === 'laborergebnisse') { d = h; break; } }
+  const out = []; if (!d) return out;
+  for await (const h of d.values()) if (h.kind === 'file' && /\.(xml|pdf)$/i.test(h.name)) { const f = await h.getFile(); out.push({ name: h.name, size: f.size, t: f.lastModified }); }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+}
 async function quellenLesen(dir) {
-  const r = { pj: null, erg: null, lk: null, lkDatei: null, feldbogen: null, quellen: [] }, q = (ok, text) => r.quellen.push({ ok, text });
+  const r = { pj: null, erg: null, lk: null, lkDatei: null, feldbogen: null, ergStand: null, quellen: [] }, q = (ok, text) => r.quellen.push({ ok, text });
   // Projektdaten (Projektzentrale)
   const op = await SO.ort(dir, 'projekt');
   const rp = op.dir ? await leseJson(op.dir, '_Projekt.json') : null;
@@ -377,9 +388,10 @@ async function quellenLesen(dir) {
   // ResultKit den Auftrag übernommen hat (auftrag.quelle), geht vor – aber nur, wenn sie nach dem Namen zu diesem Projekt gehört.
   // Sonst die Projektdatei nach der Regel; fremde Dateien werden nie gelesen. Fremde Projektnummer im Inhalt sperrt weiter das Speichern.
   const ol = await SO.ort(dir, 'labelkit'), quelle = String((r.erg && r.erg.auftrag && r.erg.auftrag.quelle) || '').trim();
-  let lkFremd = '';
+  let lkFremd = '', lkStand = null;
   if (ol.dir) {
     const w = await SO.labelkitWahl(ol.dir, dir.name), nr = SO.projektNr(dir.name);
+    lkStand = w.datei ? w.datei.file : null;   // B2: dieselbe Datei wie ResultKit für seinen Stand
     let datei = w.datei ? w.datei.file : null, genau = !!datei && datei.name === quelle;
     if (!genau && quelle && w.eigene.includes(quelle)) try { datei = await (await ol.dir.getFileHandle(quelle)).getFile(); genau = true; } catch (e) { /* inzwischen weg: Projektdatei nach der Regel */ }
     const fremd = w.fremd.length ? `„${w.fremd[0]}“${w.fremd.length > 1 ? ` und ${w.fremd.length - 1} weitere` : ''}` : '';
@@ -399,12 +411,27 @@ async function quellenLesen(dir) {
     }
   }
   if (!r.lk) q(false, lkFremd || 'Keine LabelKit-Daten – Material und Entnahmestelle fehlen dann.');
+  // B2 (Audit Lauf 2): passt die Übernahme noch zum Ordner? Prüfberichte geändert → Sperre (Modell), nur LabelKit-Datei → gelbe Zeile
+  if (r.erg) r.ergStand = T.ergebnisStand(r.erg, await laborDateien(dir).catch(() => []), lkStand && { name: lkStand.name, size: lkStand.size, t: lkStand.lastModified }, SO.projektNr(dir.name));
   // Probenehmer laut Feldbogen (asbestmat) – zugeordnet nur bei genauem Namen oder Kürzel
   const fp = ((r.lk && r.lk.feldprotokolle) || []).find(x => x && x.typ === 'asbestmat' && x.kopf && x.kopf.probenehmer);
   r.feldbogen = fp ? { text: String(fp.kopf.probenehmer).trim(), kuerzel: personFinden(fp.kopf.probenehmer) } : null;
   return r;
 }
-function quellenUebernehmen(r) { S.pj = r.pj; S.erg = r.erg; S.lk = r.lk; S.lkDatei = r.lkDatei; S.feldbogen = r.feldbogen; S.quellenDaten = r.quellen; }
+function quellenUebernehmen(r) { S.pj = r.pj; S.erg = r.erg; S.lk = r.lk; S.lkDatei = r.lkDatei; S.feldbogen = r.feldbogen; S.quellenDaten = r.quellen; S.ergStand = r.ergStand; ergStandZeigen(); }
+/** B2: gelbe Zeile über den Karten, wenn die ResultKit-Übernahme nicht mehr zum Ordner passt – mit Sprung nach ResultKit */
+function ergStandZeigen() {
+  const el = $('ergStand'), st = S.ergStand; if (!el) return;
+  const teile = [];
+  if (st && S.dir) {
+    const { am, teile: was } = T.ergebnisStandText(st), nr = S.ordner && S.ordner.nr;
+    if (st.fremd) teile.push(`⚠ Die Laborergebnisse aus ResultKit gehören zu Projekt ${esc(st.fremd)}, nicht zu ${esc(nr || 'diesem Projekt')}. Unter dem endgültigen Namen speichern geht erst nach einer Übernahme in diesem Projekt.`);
+    if (st.laborAnders) teile.push(`⚠ Die Prüfberichte in „Laborergebnisse“ haben sich seit der Übernahme in ResultKit${esc(am)} geändert (${esc(was)}). Unter dem endgültigen Namen speichern geht erst nach „Erneut übernehmen“ – „Entwurf herunterladen“ geht.`);
+    else if (st.labelkitAnders && !st.fremd) teile.push(`⚠ Die LabelKit-Datei hat sich seit der Übernahme in ResultKit${esc(am)} geändert – bitte prüfen (neue oder stornierte Proben?) und bei Bedarf in ResultKit erneut übernehmen.`);
+  }
+  el.hidden = !teile.length;
+  el.innerHTML = teile.length ? teile.join('<br>') + ` <a href="../resultkit/#projekt=${encodeURIComponent(S.dir.name)}" target="resultkit">In ResultKit erneut übernehmen ↗</a>` : '';
+}
 /** Stempel der drei Quellen: { projekt, ergebnisse, labelkit } – je „Name|Größe|Zeit“, LabelKit alle *_Daten.json */
 async function quellenStempel(dir) {
   const st = f => `${f.name}|${f.size}|${f.lastModified}`;
@@ -417,7 +444,8 @@ async function quellenStempel(dir) {
     for await (const h of o.dir.values()) if (h.kind === 'file' && /_Daten\.json$/i.test(h.name)) try { l.push(st(await h.getFile())); } catch (e) { /* gerade in Arbeit */ }
     return l.sort().join('\n');
   };
-  return { projekt: await datei('projekt', '_Projekt.json'), ergebnisse: await datei('resultkit', '_Ergebnisse.json'), labelkit: await lk() };
+  const labor = async () => (await laborDateien(dir).catch(() => [])).map(d => `${d.name}|${d.size}|${d.t}`).join('\n');
+  return { projekt: await datei('projekt', '_Projekt.json'), ergebnisse: await datei('resultkit', '_Ergebnisse.json'), labelkit: await lk(), labor: await labor() };
 }
 /** Haben sich Projektdaten, LabelKit oder ResultKit seit dem Lesen geändert? Dann neu lesen, Vorgaben neu berechnen und bleibend melden.
     → Liste der geänderten Quellen (leer = nichts geändert) */
@@ -860,7 +888,8 @@ async function brandRueckfrage(m, was) {
 /* ---------- Modell ---------- */
 function modell(ueber) {
   const da = S.anlagenVorhanden, form = { ...S.form, ...(ueber || {}), anlagenExtra: (S.form.anlagenExtra || []).map(x => ({ ...x, fehlt: !!da && !da.has(x.pfad) })) };
-  return T.bericht({ pj: S.pj, ordner: S.ordner, lk: S.lk, erg: S.erg, cfg: S.cfg, mitarbeiter: S.mitarbeiter, fotos: S.fotoListe, feldbogen: S.feldbogen, anlagen: S.anlagen, planSkalen: S.planSkalen,
+  return T.bericht({ pj: S.pj, ordner: S.ordner, lk: S.lk, erg: S.erg, ergStand: S.ergStand, cfg: S.cfg, mitarbeiter: S.mitarbeiter, fotos: S.fotoListe, feldbogen: S.feldbogen, anlagen: S.anlagen, planSkalen: S.planSkalen,
+    unterschriftDa: S.sigGelesen ? k => !!S.sig[sigKey(k)] : undefined,
     fotoKit: S.fk && S.fk.bilder && typeof S.fk.bilder === 'object' ? S.fk.bilder : null, form });
 }
 

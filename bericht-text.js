@@ -44,6 +44,8 @@ const API = { VERSION: 1, BERICHTSARTEN, berichtsart, bericht,
   brandVorgabe: ARTEN.brand.vorgabe, brandObjektart: ARTEN.brand.objektart, nominativ: G.nominativ,
   // Brandbericht 6.: Unterabschnitte in Reihenfolge der Umfang-Haken [Haken, Feld, Titel, Lücke] (Formular zeigt die passenden Felder)
   brandSanierung: ARTEN.brand.SAN, freitext: G.freitext,
+  // B2 (Audit Lauf 2): passt die ResultKit-Übernahme noch zum Ordner (app.js rechnet, das Modell sperrt)
+  ergebnisStand: G.ergebnisStand, ergebnisStandText: G.ergebnisStandText,
   // unverändert wie bis 1.9.0 (app.js, Tests)
   istStorniert: G.istStorniert, istVersicherer: G.istVersicherer, svVorschlag: G.svVorschlag, rolleFestgelegt: G.rolleFestgelegt,
   alsEntwurf: G.alsEntwurf, beschreibungKey: G.beschreibungKey, beschreibungWeichtAb: G.beschreibungWeichtAb, asbestBefund: G.asbestBefund,
