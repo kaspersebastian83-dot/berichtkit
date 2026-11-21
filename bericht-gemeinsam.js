@@ -180,11 +180,15 @@ const matrixMaterial = m => MATRIX_MATERIAL[s(m).normalize('NFC')] || '';
 const RAUM_KUERZEL = { SZ: 'Schlafzimmer', WZ: 'Wohnzimmer', KiZ: 'Kinderzimmer', GZ: 'Gästezimmer',
   HWR: 'Hauswirtschaftsraum', TRH: 'Treppenhaus' };
 const RAUM_RE = new RegExp(`(?<![\\p{L}\\p{N}])(${Object.keys(RAUM_KUERZEL).join('|')})(?![\\p{L}\\p{N}])`, 'gu');
-/** „Bodenaufbau SZ Unterseite“ → { text: „Bodenaufbau Schlafzimmer Unterseite“, ersetzt: ['SZ'] } */
+/* Kern-IDs (Bohrkerne, „EG-WZ-B-7-T2“) bleiben unberührt – auch alte mit KZ/TH (Audit Lauf 4, D14). Muster wie AidKit konventionen.js
+   MUSTER, nur ohne ^/$ (im Text gesucht); tests/text.cjs vergleicht mit ../aidkit. */
+const KERN_ID_RE = /(?<![\p{L}\p{N}-])(?:F-)?(?:REF-\d{1,2}|(?:KG|UG|EG|[1-9]OG|DG)-[A-Z]{2,3}[1-9]?-(?:[A-H]|BO|DE)-[1-9]\d?[a-z]?)(?:-T[1-9])?(?![\p{L}\p{N}])/gu;
+/** „Bodenaufbau SZ Unterseite“ → { text: „Bodenaufbau Schlafzimmer Unterseite“, ersetzt: ['SZ'] }; Kern-IDs bleiben, wie sie sind */
 function raumAusschreiben(v) {
-  const ersetzt = [];
-  const text = s(v).replace(RAUM_RE, k => { ersetzt.push(k); return RAUM_KUERZEL[k]; });
-  return { text, ersetzt };
+  const ersetzt = [], roh = s(v), teil = t => t.replace(RAUM_RE, k => { ersetzt.push(k); return RAUM_KUERZEL[k]; });
+  let text = '', ab = 0;
+  for (const m of roh.matchAll(KERN_ID_RE)) { text += teil(roh.slice(ab, m.index)) + m[0]; ab = m.index + m[0].length; }
+  return { text: text + teil(roh.slice(ab)), ersetzt };
 }
 /** In LabelKit storniert (ab 4.49.0: storniert = {am, kuerzel, grund})? Jede Angabe zählt, auch ein einfaches true.
     Stornierte Proben sind keine Proben mehr: nicht anbieten, nicht zählen, nicht abgleichen – die Nummer bleibt aber vergeben,
@@ -526,7 +530,7 @@ const API = { VERSION: 1, ABGLEICH_SPERRT,
   // Helfer
   s, L, datumDE, liste, zahlwort, zeilen, nameVon, PNR, gleicherName, text, luecken, alsEntwurf, freitext, textRuns,
   // Proben und Befund
-  tidy, beschreibungKey, beschreibungWeichtAb, asbestBefund, kmfWerte, IST_KMF, matrixMaterial, RAUM_KUERZEL, raumAusschreiben,
+  tidy, beschreibungKey, beschreibungWeichtAb, asbestBefund, kmfWerte, IST_KMF, matrixMaterial, RAUM_KUERZEL, KERN_ID_RE, raumAusschreiben,
   istStorniert, labelkitAsbest, probenSammeln,
   // Personen
   namensteile, anredeStandard, person, nominativ, rolleFestgelegt, svVorschlag, rollentext, pnQuelle,

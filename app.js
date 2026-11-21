@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.20.0';
-const APP_DATE = '17.11.2026';
+const APP_VERSION = '1.20.1';
+const APP_DATE = '21.11.2026';
 const CHANGELOG = [
+  ['1.20.1', '21.11.2026', 'Raumkürzel: Kern-IDs (Bohrkerne) in der Entnahmestelle bleiben unverändert – aus „EG-WZ-B-7-T2“ wird nicht mehr „EG-Wohnzimmer-B-7-T2“. Gilt auch für alte IDs mit KZ/TH und neue mit KIZ/TRH. Im übrigen Text werden SZ, WZ, KiZ, GZ, HWR, TRH weiter ausgeschrieben.'],
   ['1.20.0', '20.11.2026', 'Laborergebnisse: Haben sich die Prüfberichte in „Laborergebnisse“ seit der Übernahme in ResultKit geändert (neu, geändert, nicht mehr da) oder gehört die Übernahme zu einem anderen Projekt, ist Speichern unter dem endgültigen Namen gesperrt – gelbe Zeile mit „In ResultKit erneut übernehmen“, „Entwurf herunterladen“ geht. Hat sich nur die LabelKit-Datei geändert, zeigt die gelbe Zeile das ohne Sperre. Asbestbericht: Hinweis, wenn das Probenahmedatum aus LabelKit vom Ortstermin der Projektzentrale abweicht (wie im Brandbericht; nicht bei zugestellter Probe). Hinweis mit „Einstellungen öffnen“, wenn für den Unterzeichner keine Unterschrift hinterlegt ist.'],
   ['1.19.2', '17.11.2026', 'Schreibweise im Brandbericht: „polyzyklische aromatische Kohlenwasserstoffe“ (Duden) statt „polycyclische“ – in der Einleitung zu den Schadstoffen und im PAK-Befund. Wörtliche Angaben aus Prüfberichten bleiben unverändert.'],
   ['1.19.1', '11.11.2026', 'Hinweis nach „Normale Probe“ im Brandbericht berichtigt: Das Datenarchiv der Projektzentrale übernimmt die Wahl inzwischen; nur „Übersicht drucken“ in ResultKit geht weiter nach dem Namen.'],

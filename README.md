@@ -58,6 +58,10 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   Die Büroaufgaben (`_Spektron/Buero`, bzw. `_Buero`) werden dafür nur gelesen.
 - **Laborwerte und Probenbezeichnungen werden nie bearbeitet.** Ergebnistexte kommen wörtlich aus dem Prüfbericht (über ResultKit).
   Einzige Ausnahme: ein KI-Wert, der nicht in den Labordaten steht, kann aus dem PDF eingetragen werden (im Formular markiert).
+- **Raumkürzel in der Entnahmestelle** (Tabelle, Abb.-Unterschriften): SZ, WZ, KiZ, GZ, HWR, TRH werden als ganzes Wort ausgeschrieben
+  (`bericht-gemeinsam.js` `raumAusschreiben`, mit Hinweis). **Kern-IDs bleiben unberührt** (ab 1.20.1, Audit Lauf 4 D14): „EG-WZ-B-7-T2“,
+  alte IDs mit KZ/TH („EG-KZ-B-7-T1“, „EG-TH-A-3“) und neue mit KIZ/TRH erscheinen wie in LabelKit. Muster `KERN_ID_RE` wie AidKit
+  `konventionen.js` `MUSTER` (`tests/text.cjs` vergleicht mit `../aidkit`; LektorKit trägt eine Kopie).
 - **Nichts wird erfunden.** Fehlt eine Angabe, steht sie im Bericht als gelb markierte Lücke, z. B. `[Auftragsdatum]`, mit einem
   Word-Kommentar am Rand („Noch ausfüllen: Auftragsdatum“, Autor „BerichtKit“) – in Word mit Überprüfen › Nächster Kommentar von
   Lücke zu Lücke; ist die Stelle gefüllt, den Kommentar löschen. Ausnahme: Lücken in der Kopfzeile der Folgeseiten bleiben nur gelb
@@ -191,7 +195,7 @@ Modell kennt keine Kommentare.
 ## Tests
 
 ```
-node tests/text.cjs              # alle Berichtsvarianten (Textbausteine)
+node tests/text.cjs              # alle Berichtsvarianten (Textbausteine); mit ../aidkit: Kern-ID-Muster gleich (AIDKIT_PFLICHT)
 node tests/anlagen.cjs           # Anlagen: erkennen, Hausreihenfolge, veraltet, mehrteilig
 node tests/berichtsart.cjs       # Berichtsart wählen, Bausteine, Word: Spaltenbreiten je Tabelle, Unterüberschrift
 node tests/asbest-golden.cjs     # Asbestbericht festgeschrieben (Beispielberichte); gewollte Änderung: --neu, Diff ansehen
