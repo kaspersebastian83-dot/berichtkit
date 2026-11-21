@@ -181,8 +181,8 @@ const RAUM_KUERZEL = { SZ: 'Schlafzimmer', WZ: 'Wohnzimmer', KiZ: 'Kinderzimmer'
   HWR: 'Hauswirtschaftsraum', TRH: 'Treppenhaus' };
 const RAUM_RE = new RegExp(`(?<![\\p{L}\\p{N}])(${Object.keys(RAUM_KUERZEL).join('|')})(?![\\p{L}\\p{N}])`, 'gu');
 /* Kern-IDs (Bohrkerne, „EG-WZ-B-7-T2“) bleiben unberührt – auch alte mit KZ/TH (Audit Lauf 4, D14). Muster wie AidKit konventionen.js
-   MUSTER, nur ohne ^/$ (im Text gesucht); tests/text.cjs vergleicht mit ../aidkit. */
-const KERN_ID_RE = /(?<![\p{L}\p{N}-])(?:F-)?(?:REF-\d{1,2}|(?:KG|UG|EG|[1-9]OG|DG)-[A-Z]{2,3}[1-9]?-(?:[A-H]|BO|DE)-[1-9]\d?[a-z]?)(?:-T[1-9])?(?![\p{L}\p{N}])/gu;
+   MUSTER, nur ohne ^/$: im Text gesucht, davor und danach kein Buchstabe, keine Ziffer, kein Bindestrich (also nur die ganze ID, nie ihr Anfang); tests/text.cjs vergleicht mit ../aidkit. */
+const KERN_ID_RE = /(?<![\p{L}\p{N}-])(?:F-)?(?:REF-\d{1,2}|(?:KG|UG|EG|[1-9]OG|DG)-[A-Z]{2,3}[1-9]?-(?:[A-H]|BO|DE)-[1-9]\d?[a-z]?)(?:-T[1-9])?(?![\p{L}\p{N}-])/gu;
 /** „Bodenaufbau SZ Unterseite“ → { text: „Bodenaufbau Schlafzimmer Unterseite“, ersetzt: ['SZ'] }; Kern-IDs bleiben, wie sie sind */
 function raumAusschreiben(v) {
   const ersetzt = [], roh = s(v), teil = t => t.replace(RAUM_RE, k => { ersetzt.push(k); return RAUM_KUERZEL[k]; });

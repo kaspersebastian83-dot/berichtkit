@@ -451,6 +451,9 @@ fall('Raum-Kürzel in der Entnahmestelle werden für den Bericht ausgeschrieben 
   assert.equal(T.raumAusschreiben('EG-WZ-B-7-T2/EG-SZ-A-1, TRH').text, 'EG-WZ-B-7-T2/EG-SZ-A-1, Treppenhaus');
   // kein Kern (ohne Wand und Nummer): ausgeschrieben wie bisher
   assert.equal(T.raumAusschreiben('EG-WZ Wand').text, 'EG-Wohnzimmer Wand');
+  // nur gültige Kern-IDs (wie AidKit) bleiben – keine verlängerte („EG-WZ-B-7-T2-T3“)
+  assert.equal(T.raumAusschreiben('EG-WZ-B-7-T2-T3').text, 'EG-Wohnzimmer-B-7-T2-T3');
+  assert.equal(T.raumAusschreiben('EG-WZ-B-7-T2 – Wand').text, 'EG-WZ-B-7-T2 – Wand');
   // ohne Kürzel kein Hinweis
   const m2 = T.bericht({ pj: D.pj(), lk: D.lk([[1, '2026-10-08', 'EG Flur', 'Putz', 'Putze / Spachtelmassen']]), erg: D.erg([[1, 'kein']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form() });
   assert.ok(!m2.hinweise.some(h => /Abkürzungen ausgeschrieben/.test(h)));
@@ -618,7 +621,8 @@ fall('D14 (Audit Lauf 4): Kern-ID-Muster gleich wie AidKit konventionen.js (fall
   const G = require('../bericht-gemeinsam.js'), datei = path.join(__dirname, '..', '..', 'aidkit', 'konventionen.js');
   if (!fs.existsSync(datei)) { assert.ok(!process.env.AIDKIT_PFLICHT, '../aidkit fehlt (AIDKIT_PFLICHT) – in der CI muss der Vergleich laufen'); console.log('   (AidKit nicht daneben – übersprungen)'); return; }
   const K = require(datei), passt = id => !!K.pruefeId(id).teile; // teile = AidKit MUSTER passt
-  const ganz = id => { G.KERN_ID_RE.lastIndex = 0; const m = G.KERN_ID_RE.exec(id); return !!m && m[0] === id; };
+  // im Text gesucht: entweder genau die ganze ID oder gar nichts – nie nur ein Anfang („EG-WZ-B-7-T2-T3“, Codex PR #31)
+  const ganz = id => { const t = [...id.matchAll(G.KERN_ID_RE)].map(m => m[0]); assert.ok(!t.length || (t.length === 1 && t[0] === id), id + ': Teiltreffer ' + t.join(', ')); return t.length === 1; };
   for (const id of ['EG-WZ-B-7-T2', 'EG-KZ-B-7-T1', 'EG-TH-A-3', 'EG-KZ2-B-7-T1', '1OG-KIZ-C-12a', '1OG-TRH-A-1', 'F-DG-SZ-BO-2', 'EG-HWR-DE-1-T3',
     'REF-3', 'F-REF-12-T2', 'KG-BAD-H-99', 'UG-WC-A-1', '9OG-FL1-B-2', 'EG-KiZ-B-7', 'eg-WZ-B-7', 'EG-WZ-B-0', 'EG-WZ-I-1', 'EG-WZ-B-7-T0',
     'EG-WZ-B-100', 'EG-W-B-7', 'EG-WZZZ-B-7', 'OG-WZ-B-7', 'REF-123', 'EG-WZ-B-7-T2-T3', 'EG-WZ'])
