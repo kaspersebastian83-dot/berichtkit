@@ -32,8 +32,16 @@ jobs:
       - run: node tests/spektron-ordner.cjs
         env:
           SPEKTRON_ORDNER_PFLICHT: '1'
+      - name: AidKit daneben holen (Kern-ID-Muster wie konventionen.js)
+        env:
+          ZWEIG: ${{ github.head_ref }}
+          BASIS: ${{ github.base_ref }}
+        # gleichnamiger Zweig, sonst der Basiszweig des PRs, sonst main
+        run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/aidkit.git ../aidkit 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/aidkit.git ../aidkit 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/aidkit.git ../aidkit
       - name: Textbausteine (alle Berichtsvarianten)
         run: node tests/text.cjs
+        env:
+          AIDKIT_PFLICHT: '1'
       - name: Anlagen (erkennen, Hausreihenfolge, veraltet)
         run: node tests/anlagen.cjs
       - name: Berichtsart, gemeinsame Bausteine, Word-Tabellen und Unterüberschriften
