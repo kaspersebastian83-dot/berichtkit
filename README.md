@@ -47,6 +47,9 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
 - **Daten neu lesen:** `_Projekt.json`, die LabelKit-Datei und `_Ergebnisse.json` werden beim Zurückkommen ins Fenster (z. B. nach „Übernehmen“
   in ResultKit) und vor dem Speichern/Herunterladen verglichen (Name, Größe, Änderungszeit) und bei Änderung neu gelesen – mit bleibendem Hinweis
   „Daten neu gelesen: …“. Vor dem Speichern hält BerichtKit dann an: erst die neue Vorschau ansehen, dann noch einmal klicken.
+- **Gegenlesen (ab 1.21.0, Audit D19):** nach dem Speichern neben „Ans Büro übergeben →“ der Knopf „Gegenlesen (LektorKit) ↗“ – Fenster `lektorkit`, `../lektorkit/#projekt=<Ordnername>&datei=Mitteilungen/<Datei>.docx`.
+- **Kopfband kompakt (ab 1.21.0, Audit E7):** `MosaikLeiste.start('bericht', {kopfband: true, kompakt: true})` – 56 px wie LabelKit, FotoKit, PlanKit, ResultKit (bei 1190 px bisher 160 px, zweizeilig). Block unverändert.
+- **Übernahme ohne Dateivermerk (ab 1.21.0, Nachtrag Audit Lauf 2):** `_Ergebnisse.json` ohne `dateien` und ohne `stand` (alte ResultKit-Fassung) → `ergebnisStand` gibt `{ unbekannt: true, fremd, … }`; gelbe Zeile „… keinen Vermerk, aus welchen Dateien sie stammt – bitte in ResultKit erneut übernehmen“ mit Sprung, keine Sperre. Ein fremdes Projekt sperrt weiter.
 - **Offline:** Service Worker „Netz zuerst“ wie in der Projektzentrale (`sw.js`).
 - **Handbuch:** „Mehr …“ › „📘 Handbuch ↗“ öffnet AidKit, Kapitel `#app-berichtkit` („BerichtKit Schritt für Schritt“).
 
@@ -206,6 +209,7 @@ node tests/luecken-kommentare.cjs  # Word-Kommentar je Lücke (Asbest und Brand,
                                    # (--beispiel <datei.docx> schreibt eine Datei mit vielen Lücken zum Ansehen)
 node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich wie LabelKit (falls ../labelkit daneben)
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)
+node tests/kopien-resultkit.mjs  # Beschreibungsvergleich (beschreibungKey/beschreibungWeichtAb) gleich wie ResultKit src/ergebnisse.ts (../resultkit; RESULTKIT_PFLICHT)
 node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei; ab 1.18.0 Audit-Fälle M2/M3/M4/M7/m3/m4 (Playwright)
 node tests/render-beispiele.cjs <Ordner>   # Beispielberichte als .docx zum Ansehen (nicht in CI)
 ```

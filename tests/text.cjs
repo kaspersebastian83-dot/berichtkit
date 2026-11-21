@@ -578,7 +578,11 @@ fall('B2 (Audit Lauf 2): ResultKit-Übernahme gegen den Ordner – Prüfberichte
   assert.equal(T.ergebnisStand({ ...erg, dateien: undefined }, [xml, pdf], lk, '99.9001').laborAnders, false, 'ohne „dateien“: Zeilen von „stand“');
   assert.equal(T.ergebnisStand({ ...erg, projekt: '25.0100' }, [xml, pdf], lk, '99.9001').fremd, '25.0100');
   assert.equal(T.ergebnisStand(null, [xml], lk, '99.9001'), null, 'ohne Übernahme nichts');
-  assert.equal(T.ergebnisStand({ ...erg, dateien: undefined, stand: undefined }, [xml], lk, '99.9001'), null, 'ohne „dateien“ und „stand“: unbekannt');
+  // Nachtrag Lauf 2 (Audit Lauf 5): ohne „dateien“ und „stand“ (Übernahme aus einer alten ResultKit-Fassung) ist der Stand unbekannt –
+  // gelbe Zeile (app.js), keine Sperre; ein fremdes Projekt sperrt weiter
+  const unb = T.ergebnisStand({ ...erg, dateien: undefined, stand: undefined }, [xml], lk, '99.9001');
+  assert.deepEqual([unb.unbekannt, unb.fremd, unb.laborAnders, unb.labelkitAnders], [true, '', false, false], 'ohne „dateien“ und „stand“: unbekannt');
+  assert.equal(T.ergebnisStand({ ...erg, dateien: undefined, stand: undefined, projekt: '25.0100' }, [xml], lk, '99.9001').fremd, '25.0100');
   // Modell: Sperre (Endname), Entwurf bleibt möglich; nur LabelKit geändert → keine Sperre (gelbe Zeile in app.js)
   const modell = st => T.bericht({ pj: D.pj(), lk: D.lk([[1, '2026-10-16', 'Keller', 'Putz', 'Putze / Spachtelmassen']]), erg: D.erg([[1, 'kein']]), ergStand: st,
     cfg: D.cfg, mitarbeiter: D.mitarbeiter, ordner: { name: '99.9001 Musterstadt', nr: '99.9001' }, form: form() });
@@ -587,6 +591,8 @@ fall('B2 (Audit Lauf 2): ResultKit-Übernahme gegen den Ordner – Prüfberichte
   assert.deepEqual(modell(nurLk).sperren, [], 'nur die LabelKit-Datei geändert: keine Sperre');
   assert.match(modell(T.ergebnisStand({ ...erg, projekt: '25.0100' }, [xml, pdf], lk, '99.9001')).sperren.join(' '), /gehören zu Projekt 25\.0100, nicht zu 99\.9001/);
   assert.ok(T.alsEntwurf(modell(neu)), 'Entwurf weiter möglich');
+  assert.deepEqual(modell(unb).sperren, [], 'Stand unbekannt: keine Sperre');
+  assert.match(modell(T.ergebnisStand({ ...erg, dateien: undefined, stand: undefined, projekt: '25.0100' }, [xml], lk, '99.9001')).sperren.join(' '), /gehören zu Projekt 25\.0100/, 'unbekannt, aber fremd: Sperre');
 });
 
 fall('B5 (Audit Lauf 2): Asbestbericht – Probenahmedatum aus LabelKit gegen den Ortstermin (wie Brandbericht)', () => {

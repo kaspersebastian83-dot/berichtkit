@@ -297,12 +297,14 @@ function labelkitProjektPruefen(e, P, sperren, hinweise) {
    unter dem Endnamen, eine nur geänderte LabelKit-Datei nicht (gelbe Zeile). Eine Übernahme aus einem anderen Projekt sperrt immer. */
 const LK_PFAD = 'Laboraufträge/';
 /** erg: _Ergebnisse.json · labor: [{ name, size, t }] jetzt in „Laborergebnisse“ · lk: { name, size, t } | null (Wahl wie ResultKit) ·
-    projektNr: aus dem Ordnernamen → null ohne Übernahme, sonst { fremd, labor: { neu, fehlt, geaendert }, laborAnders, labelkitAnders, uebernommen } */
+    projektNr: aus dem Ordnernamen → null ohne Übernahme, sonst { fremd, labor: { neu, fehlt, geaendert }, laborAnders, labelkitAnders, uebernommen[, unbekannt] } */
 function ergebnisStand(erg, labor, lk, projektNr) {
   if (!erg || typeof erg !== 'object') return null;
-  // ohne „dateien“ und „stand“ (sehr alte Datei) ist der Stand unbekannt – dann weder gelbe Zeile noch Sperre
-  if (!Array.isArray(erg.dateien) && !s(erg.stand)) return null;
   const ep = s(erg.projekt), fremd = ep && s(projektNr) && ep !== s(projektNr) ? ep : '';
+  // ohne „dateien“ und „stand“ (Übernahme aus einer alten ResultKit-Fassung) ist der Stand unbekannt: gelbe Zeile, keine Sperre
+  // (Nachtrag Audit Lauf 2, gebaut in Lauf 5). Ein fremdes Projekt sperrt weiter.
+  if (!Array.isArray(erg.dateien) && !s(erg.stand)) return { unbekannt: true, fremd, labor: { neu: [], fehlt: [], geaendert: [] }, laborAnders: false, labelkitAnders: false,
+    uebernommen: /^\d{4}-\d{2}-\d{2}/.test(s(erg.uebernommen)) ? s(erg.uebernommen).slice(0, 10) : '' };
   const eintrag = d => (d && typeof d.name === 'string' ? { name: d.name, k: `${Number(d.size)}|${Number(d.t)}` } : null);
   // dateien (ab ResultKit 1.x immer dabei); sonst die Zeilen von stand („Name|Größe|Zeit“)
   const alt = (Array.isArray(erg.dateien) ? erg.dateien.map(eintrag)
