@@ -335,6 +335,12 @@ const daten = {
     assert.equal(await page.getAttribute('#btnUebergabe', 'href'),
       '../Projektzentrale/#projekt=' + encodeURIComponent(PROJEKT) + '&uebergabe=' + encodeURIComponent('Mitteilungen/1._Mitteilung_99.9001.docx'));
     assert.ok(await page.isVisible('#btnUebergabe'));
+    // D19 (Audit Lauf 4/5): daneben „Gegenlesen (LektorKit) ↗“ – eigenes Fenster, Projekt und Datei vorbelegt
+    assert.ok(await page.isVisible('#btnLektor'));
+    assert.equal(await page.getAttribute('#btnLektor', 'href'),
+      '../lektorkit/#projekt=' + encodeURIComponent(PROJEKT) + '&datei=' + encodeURIComponent('Mitteilungen/1._Mitteilung_99.9001.docx'));
+    assert.equal(await page.getAttribute('#btnLektor', 'target'), 'lektorkit');
+    assert.equal(await page.evaluate(() => new URLSearchParams(new URL(document.getElementById('btnLektor').href).hash.slice(1)).get('datei')), 'Mitteilungen/1._Mitteilung_99.9001.docx', 'LektorKit liest die Datei so');
     // Zwei Rechner gleichzeitig: Ein Kollege ändert ein anderes Feld direkt in der Datei, hier wird gleichzeitig das Datum geändert –
     // beide Änderungen bleiben erhalten, die des Kollegen erscheint auch hier.
     const lesen = () => page.evaluate(async P => {
@@ -400,7 +406,7 @@ const daten = {
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
     await page.click('#btnMehr'); await page.waitForSelector('#mosaikMehrPop');
     assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Word nur herunterladen',
-      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.20.1', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
+      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.21.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
     assert.equal(await page.getAttribute('#mosaikMehrPop a[target=aidkit]', 'href'), '../aidkit/#app-berichtkit');
     await page.keyboard.press('Escape'); await page.waitForSelector('#mosaikMehrPop', { state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'btnMehr', 'Esc: Fokus zurück auf „Mehr …“');
@@ -746,8 +752,16 @@ const daten = {
     await oeffne(encodeURIComponent(P2) + '&art=brand');
     assert.match(await page.textContent('#ergStand'), /gehören zu Projekt 99\.9555, nicht zu 99\.9002/);
     assert.ok((await sperrenJetzt()).some(x => /gehören zu Projekt 99\.9555, nicht zu 99\.9002/.test(x)));
+    // Nachtrag Lauf 2 (gebaut in Lauf 5): Übernahme ohne „dateien“ und „stand“ (alte ResultKit-Fassung) → gelbe Zeile, keine Sperre
+    { const alt = JSON.parse(await mitStand()); delete alt.dateien; delete alt.stand; await dateiIn(P2, ergP2, JSON.stringify(alt)); }
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    await page.waitForSelector('#ergStand:not([hidden])');
+    assert.match(await page.textContent('#ergStand'), /^⚠ Die Übernahme aus ResultKit hat keinen Vermerk, aus welchen Dateien sie stammt – bitte in ResultKit erneut übernehmen\. In ResultKit erneut übernehmen ↗$/);
+    assert.equal(await page.getAttribute('#ergStand a', 'href'), '../resultkit/#projekt=' + encodeURIComponent(P2));
+    assert.ok(!(await sperrenJetzt()).some(x => /ResultKit/.test(x)), 'Stand unbekannt: keine Sperre');
+    assert.ok(await page.isVisible('#btnErstellen'), 'Speichern bleibt frei');
     await dateiIn(P2, ergP2, JSON.stringify(br.erg)); await weg(xml1);
-    console.log('ok – B2: Prüfberichte geändert sperrt (Entwurf geht), nur LabelKit gelbe Zeile, fremdes Projekt sperrt');
+    console.log('ok – B2: Prüfberichte geändert sperrt (Entwurf geht), nur LabelKit gelbe Zeile, fremdes Projekt sperrt, Stand unbekannt gelbe Zeile ohne Sperre');
 
     // M7: abgeschnittene _BerichtKit.json mit getipptem Text → beim Öffnen und Tippen unverändert; „Neu anlegen“ bewahrt sie auf
     const kaputt = '{"format":"spektron-bericht","version":1,"nurEigene":true,"art":"brand","form":{"brand":{"schadenbild":"Der Brand ereignete sich in der Küche, Decke stark verru';

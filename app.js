@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.20.1';
+const APP_VERSION = '1.21.0';
 const APP_DATE = '21.11.2026';
 const CHANGELOG = [
+  ['1.21.0', '21.11.2026', 'Nach dem Speichern steht neben „Ans Büro übergeben →“ der Knopf „Gegenlesen (LektorKit) ↗“: LektorKit öffnet sich mit genau diesem Bericht – Werte, Proben, Daten und Namen gegen die Projektdaten prüfen, ohne Projekt und Datei zu suchen. Das Kopfband oben ist schmaler (wie in LabelKit, FotoKit, PlanKit und ResultKit) – bei 1190 px Breite 56 statt 160 px, mehr Platz für Formular und Vorschau. Stammen die Laborergebnisse aus einer alten ResultKit-Fassung ohne Vermerk, aus welchen Dateien sie kommen, steht jetzt eine gelbe Zeile mit „In ResultKit erneut übernehmen ↗“ (keine Sperre; bisher stand dazu nichts).'],
   ['1.20.1', '21.11.2026', 'Raumkürzel: Kern-IDs (Bohrkerne) in der Entnahmestelle bleiben unverändert – aus „EG-WZ-B-7-T2“ wird nicht mehr „EG-Wohnzimmer-B-7-T2“. Gilt auch für alte IDs mit KZ/TH und neue mit KIZ/TRH. Im übrigen Text werden SZ, WZ, KiZ, GZ, HWR, TRH weiter ausgeschrieben.'],
   ['1.20.0', '20.11.2026', 'Laborergebnisse: Haben sich die Prüfberichte in „Laborergebnisse“ seit der Übernahme in ResultKit geändert (neu, geändert, nicht mehr da) oder gehört die Übernahme zu einem anderen Projekt, ist Speichern unter dem endgültigen Namen gesperrt – gelbe Zeile mit „In ResultKit erneut übernehmen“, „Entwurf herunterladen“ geht. Hat sich nur die LabelKit-Datei geändert, zeigt die gelbe Zeile das ohne Sperre. Asbestbericht: Hinweis, wenn das Probenahmedatum aus LabelKit vom Ortstermin der Projektzentrale abweicht (wie im Brandbericht; nicht bei zugestellter Probe). Hinweis mit „Einstellungen öffnen“, wenn für den Unterzeichner keine Unterschrift hinterlegt ist.'],
   ['1.19.2', '17.11.2026', 'Schreibweise im Brandbericht: „polyzyklische aromatische Kohlenwasserstoffe“ (Duden) statt „polycyclische“ – in der Einleitung zu den Schadstoffen und im PAK-Befund. Wörtliche Angaben aus Prüfberichten bleiben unverändert.'],
@@ -130,7 +131,7 @@ async function start() {
   $('version').textContent = 'v' + APP_VERSION;
   if (!start.einmal) {
     start.einmal = true;
-    if (window.MosaikLeiste) MosaikLeiste.start('bericht', { version: APP_VERSION, kopfband: true });   // Kopfband (Leiste v3)
+    if (window.MosaikLeiste) MosaikLeiste.start('bericht', { version: APP_VERSION, kopfband: true, kompakt: true });   // Kopfband (Leiste v3), kompakt 56 px wie LabelKit, FotoKit, PlanKit, ResultKit (Audit Lauf 5, E7)
     // offline nutzbar wie die Projektzentrale; nicht beim lokalen Testserver (127.0.0.1), damit Tests immer die aktuelle Fassung laden
     if (/^https?:$/.test(location.protocol) && location.hostname !== '127.0.0.1' && 'serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
@@ -428,6 +429,7 @@ function ergStandZeigen() {
     const { am, teile: was } = T.ergebnisStandText(st), nr = S.ordner && S.ordner.nr;
     if (st.fremd) teile.push(`⚠ Die Laborergebnisse aus ResultKit gehören zu Projekt ${esc(st.fremd)}, nicht zu ${esc(nr || 'diesem Projekt')}. Unter dem endgültigen Namen speichern geht erst nach einer Übernahme in diesem Projekt.`);
     if (st.laborAnders) teile.push(`⚠ Die Prüfberichte in „Laborergebnisse“ haben sich seit der Übernahme in ResultKit${esc(am)} geändert (${esc(was)}). Unter dem endgültigen Namen speichern geht erst nach „Erneut übernehmen“ – „Entwurf herunterladen“ geht.`);
+    else if (st.unbekannt && !st.fremd) teile.push('⚠ Die Übernahme aus ResultKit hat keinen Vermerk, aus welchen Dateien sie stammt – bitte in ResultKit erneut übernehmen.');
     else if (st.labelkitAnders && !st.fremd) teile.push(`⚠ Die LabelKit-Datei hat sich seit der Übernahme in ResultKit${esc(am)} geändert – bitte prüfen (neue oder stornierte Proben?) und bei Bedarf in ResultKit erneut übernehmen.`);
   }
   el.hidden = !teile.length;
@@ -1441,6 +1443,9 @@ function uebergabeZeigen(datei) {
   const a = $('btnUebergabe'); if (!a) return;
   a.hidden = !datei || !S.dir;
   a.href = datei && S.dir ? `../Projektzentrale/#projekt=${encodeURIComponent(S.dir.name)}&uebergabe=${encodeURIComponent('Mitteilungen/' + datei)}` : '#';
+  // D19 (Audit Lauf 4): gleich danach gegenlesen – LektorKit öffnet Projekt und Datei direkt (#projekt=…&datei=Mitteilungen/…)
+  const l = $('btnLektor');
+  if (l){ l.hidden = a.hidden; l.href = datei && S.dir ? `../lektorkit/#projekt=${encodeURIComponent(S.dir.name)}&datei=${encodeURIComponent('Mitteilungen/' + datei)}` : '#'; }
   aktionenZeigen();
 }
 /** „Ans Büro übergeben →“: im Fenster „projektzentrale“ (wie ⌂ in der Leiste) – die Leiste lädt dort neu, auch wenn nur #… anders ist */

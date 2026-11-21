@@ -199,7 +199,7 @@ ul.hinweise li.luecke{background:var(--gap);border-radius:4px;padding:0 4px;list
 .leiste .status{font-size:13px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .leiste .haupt{flex:none;height:var(--sp-h-haupt);padding:0 24px;border-radius:12px;border:1px solid #8a4f2c;background:var(--sp-app-dunkel);color:#fff;font-size:17px;font-weight:700;display:inline-flex;align-items:center;text-decoration:none;box-shadow:0 2px 6px rgba(120,60,20,.25)}
 .leiste .haupt:hover{background:var(--sp-app);color:#fff;border-color:var(--sp-app-dunkel)}
-.leiste a.knopf:not(.haupt){border:1px solid var(--line2);background:var(--panel);color:var(--text);border-radius:7px;padding:6px 13px;text-decoration:none}
+.leiste a.knopf:not(.haupt){border:1px solid var(--line2);background:var(--panel);color:var(--text);border-radius:7px;padding:6px 13px;text-decoration:none;white-space:nowrap}
 .leiste a.knopf[hidden]{display:none}
 .ueber-liste{margin:8px 0 0;padding-left:18px;font-size:12.5px;line-height:1.5;max-height:55vh;overflow:auto}.ueber-liste li+li{margin-top:6px}
 .start{max-width:560px;margin:60px auto;text-align:center}
@@ -381,6 +381,7 @@ dialog .knoepfe{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px;
     <span class="status" id="status"></span>
     <button type="button" id="btnLaden" hidden title="Word-Datei mit „ENTWURF“ herunterladen – speichern in „Mitteilungen“ ist gesperrt, siehe Hinweise">Entwurf herunterladen →</button>
     <button type="button" id="btnErstellen" class="haupt">Bericht als Word speichern →</button>
+    <a class="knopf" id="btnLektor" hidden target="lektorkit" rel="noopener" title="Öffnet LektorKit (eigenes Fenster) mit diesem Bericht – Werte, Proben, Daten und Namen gegen die Projektdaten gegenlesen">Gegenlesen (LektorKit) ↗</a>
     <a class="knopf haupt" id="btnUebergabe" hidden target="projektzentrale" title="Öffnet die Projektzentrale (eigenes Fenster) – Word-Datei und Prüfberichte sind für die Übergabe vorbelegt">Ans Büro übergeben →</a>
   </span>
 </div>

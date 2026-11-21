@@ -56,6 +56,10 @@ jobs:
           BASIS: ${{ github.base_ref }}
         # gleichnamiger Zweig, sonst der Basiszweig des PRs, sonst main (Repo resultkit, Ordner resultkit)
         run: git clone --quiet --depth 1 --branch "$ZWEIG" https://github.com/kaspersebastian83-dot/resultkit.git ../resultkit 2>/dev/null || git clone --quiet --depth 1 --branch "$BASIS" https://github.com/kaspersebastian83-dot/resultkit.git ../resultkit 2>/dev/null || git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/resultkit.git ../resultkit
+      - name: Beschreibungsvergleich gleich wie ResultKit (E4 #11)
+        run: node tests/kopien-resultkit.mjs
+        env:
+          RESULTKIT_PFLICHT: '1'
       - name: Brandbericht – Regeln (Gerüst, 5. Befund, Einordnung, Rolle wie Projektzentrale)
         run: node tests/brand.cjs
         env:
