@@ -229,6 +229,7 @@ node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich w
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)
 node tests/kopien-resultkit.mjs  # Beschreibungsvergleich (beschreibungKey/beschreibungWeichtAb) gleich wie ResultKit src/ergebnisse.ts (../resultkit; RESULTKIT_PFLICHT)
 node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei; ab 1.18.0 Audit-Fälle M2/M3/M4/M7/m3/m4 (Playwright)
+node tests/fotos-unterordner.cjs # im Browser: Fotos in Unterordnern von „Fotos“ (FotoKit ab 2.7.0) – Vorschau und Word über „Unterordner/Datei“, nur eine Ebene (Playwright)
 node tests/render-beispiele.cjs <Ordner>   # Beispielberichte als .docx zum Ansehen (nicht in CI)
 ```
 

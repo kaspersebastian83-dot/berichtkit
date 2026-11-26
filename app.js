@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.23.0';
+const APP_VERSION = '1.23.1';
 const APP_DATE = '26.11.2026';
 const CHANGELOG = [
+  ['1.23.1', '26.11.2026', 'Fotos in Unterordnern von „Fotos“ (vor FotoKit 2.7.0): Führt FotoKit ein Foto unter „Unterordner/Datei“ (z. B. „Bilder A/IMG_0001.jpg“), lesen Vorschau und Word-Datei es jetzt dort – bisher stand an der Stelle [Foto fehlt: …]. Genau eine Ebene unter „Fotos“; ein Ordner, dessen Name leer ist, „..“ heißt oder mit „_“ oder „.“ beginnt, wird nicht gelesen (dann wie bisher [Foto fehlt: …]). Fotos direkt in „Fotos“ wie bisher. Bilddoku-Suche und -Stand (Anlagen) unverändert.'],
   ['1.23.0', '26.11.2026', 'Brandbericht, 5.6 Sensorische Prüfung auf Brandgeruch: nach dem Ergebnis-Satz steht die Tabelle der Einzelbewertungen (Nr. · Probe · Person 1–5), zusätzlich zur Anlage der Projektzentrale (Rückmeldung R-20261126-135349-SK). Gleiche Proben und Nummern wie die Sätze und die Anlage (stornierte fehlen, die übrigen behalten ihren Platz in der LabelKit-Liste); „ohne“ steht wie im Methodensatz als „–“. Die Tabelle läuft in der Nummerierung nach Chlorid, PAK und Asbest weiter; der Schluss-Satz nennt dann Tabelle und Anlage. Sind die Bewertungen noch verdeckt (Blind-Modus) oder fehlt eine, gibt es keine Tabelle – wie bisher die Lücke und der Hinweis.'],
   ['1.22.0', '26.11.2026', 'Brandbericht, 5.2 Korrosionsschäden: Chlorid-Wischproben stehen im Bericht immer in µg/cm² – auch wenn der Prüfbericht mg/m² angibt (Rückmeldung R-20261117-143433-VD). Spanne, höchster Wert, Satz bei einer Probe, Referenzprobe/Freimessung und Tabelle (Kopf „Chlorid [µg/cm²]“) zeigen den Wert mit um eine Stelle verschobenem Komma (47 mg/m² → 4,7 µg/cm², „< 5“ → „< 0,5“) – keine Rundung. Eingeordnet wird wie bisher mit dem Wert des Prüfberichts. Wurde umgerechnet, steht in 5.2 der Satz „Der Prüfbericht (Anlage n) weist die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).“, dazu ein Hinweis (keine Sperre). Werte, die sich nicht einordnen lassen (z. B. „1.250“, „µg/Probe“, „n. b.“), sowie Chlorid-Material- und Bohrmehlproben bleiben wie im Prüfbericht. Bleibt so ein Wert aus einem umgerechneten Prüfbericht in mg/m² in der Tabelle stehen, weist ein Hinweis darauf hin, den Vermerk in Word anzupassen.'],
   ['1.21.0', '21.11.2026', 'Nach dem Speichern steht neben „Ans Büro übergeben →“ der Knopf „Gegenlesen (LektorKit) ↗“: LektorKit öffnet sich mit genau diesem Bericht – Werte, Proben, Daten und Namen gegen die Projektdaten prüfen, ohne Projekt und Datei zu suchen. Das Kopfband oben ist schmaler (wie in LabelKit, FotoKit, PlanKit und ResultKit) – bei 1190 px Breite 56 statt 160 px, mehr Platz für Formular und Vorschau. Stammen die Laborergebnisse aus einer alten ResultKit-Fassung ohne Vermerk, aus welchen Dateien sie kommen, steht jetzt eine gelbe Zeile mit „In ResultKit erneut übernehmen ↗“ (keine Sperre; bisher stand dazu nichts).'],
@@ -1279,9 +1280,19 @@ const fotosFehlen = () => Object.keys(S.thumbs).filter(d => S.thumbs[d] === '');
 
 /* ---------- Bilder ---------- */
 function drehungVon(datei) { const b = S.fk && S.fk.bilder && S.fk.bilder[datei]; return b ? +b.drehung || 0 : 0; }
-async function fotoBytes(datei, max = 1600) {
+/** Foto über seinen FotoKit-Schlüssel lesen (FotoKit ab 2.7.0, O2/O3): „Datei“ direkt in „Fotos“ oder „Unterordner/Datei“ – genau
+    eine Ebene, „/“ als Trenner (wie pfadDa: erst der Ordner, dann die Datei). Ein Ordnerteil, der leer ist, „..“ heißt oder mit „_“
+    oder „.“ beginnt, wird nicht gelesen. Wirft, wenn das Foto fehlt – die Aufrufer machen daraus [Foto fehlt: …]. */
+async function fotoDatei(datei) {
   if (!S.fotosDir) throw new Error('Ordner „Fotos“ fehlt.');
-  const file = await (await S.fotosDir.getFileHandle(datei)).getFile();
+  const teile = String(datei).split('/');
+  if (teile.length === 1) return (await S.fotosDir.getFileHandle(datei)).getFile();
+  const [ordner, name] = teile;
+  if (teile.length !== 2 || !ordner || ordner === '..' || /^[_.]/.test(ordner)) throw new Error(`„${datei}“ liegt nicht in einem lesbaren Unterordner von „Fotos“.`);
+  return (await (await S.fotosDir.getDirectoryHandle(ordner)).getFileHandle(name)).getFile();
+}
+async function fotoBytes(datei, max = 1600) {
+  const file = await fotoDatei(datei);
   const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
   try {
     const turn = ((Math.round(drehungVon(datei) / 90) % 4) + 4) % 4, s = Math.min(1, max / Math.max(bmp.width, bmp.height));
