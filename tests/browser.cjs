@@ -406,7 +406,7 @@ const daten = {
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
     await page.click('#btnMehr'); await page.waitForSelector('#mosaikMehrPop');
     assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Word nur herunterladen',
-      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.21.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
+      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.22.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
     assert.equal(await page.getAttribute('#mosaikMehrPop a[target=aidkit]', 'href'), '../aidkit/#app-berichtkit');
     await page.keyboard.press('Escape'); await page.waitForSelector('#mosaikMehrPop', { state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'btnMehr', 'Esc: Fokus zurück auf „Mehr …“');
@@ -762,6 +762,27 @@ const daten = {
     assert.ok(await page.isVisible('#btnErstellen'), 'Speichern bleibt frei');
     await dateiIn(P2, ergP2, JSON.stringify(br.erg)); await weg(xml1);
     console.log('ok – B2: Prüfberichte geändert sperrt (Entwurf geht), nur LabelKit gelbe Zeile, fremdes Projekt sperrt, Stand unbekannt gelbe Zeile ohne Sperre');
+
+    // Chlorid im Bericht immer in µg/cm² (1.22.0): BR5 (Prüfbericht in mg/m²) → Hinweis in der Seitenleiste ohne Sperre, Vorschau in µg/cm² mit Vermerk
+    const br5 = DB.faelle.BR5_Gewerbe_Bohrmehl_Tabellen;
+    await dateiIn(P2, '_Spektron/_Projekt.json', JSON.stringify(br5.pj)); await dateiIn(P2, lkP2, JSON.stringify(br5.lk)); await dateiIn(P2, ergP2, JSON.stringify(br5.erg));
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    const hw5 = await page.textContent('#hinweise');
+    assert.ok(hw5.includes('Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.'), 'Hinweis in der Seitenleiste:\n' + hw5);
+    assert.ok(!(await page.evaluate(() => modell().sperren)).some(x => /Chlorid|mg\/m²/.test(x)), 'keine Sperre');
+    assert.ok(await page.isVisible('#btnErstellen'), 'Speichern bleibt frei');
+    const vor5 = await page.textContent('#vorschau');
+    assert.match(vor5, /Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 2 und 15 µg\/cm²\./);
+    assert.ok(vor5.includes('Der Prüfbericht (Anlage 1) weist die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).'), 'Vermerk ohne Tabelle');
+    await alleAuf(); await page.check('#fbTabellen');
+    await page.waitForFunction(() => /Chlorid \[µg\/cm²\]/.test(document.getElementById('vorschau').textContent));
+    assert.ok((await page.textContent('#vorschau')).includes('umgerechnet (10 mg/m² = 1 µg/cm²)'), 'Vermerk mit Tabelle');
+    assert.doesNotMatch(await page.textContent('#vorschau'), /Chlorid \[mg\/m²\]/);
+    await page.uncheck('#fbTabellen');
+    await dateiIn(P2, '_Spektron/_Projekt.json', JSON.stringify(br.pj)); await dateiIn(P2, lkP2, JSON.stringify(br.lk)); await dateiIn(P2, ergP2, JSON.stringify(br.erg));
+    await oeffne(encodeURIComponent(P2) + '&art=brand');
+    assert.ok(!(await page.textContent('#hinweise')).includes('im Bericht in µg/cm² umgerechnet'), 'nur µg/cm² (BR1): kein Hinweis');
+    console.log('ok – Chlorid µg/cm²: Hinweis in der Seitenleiste ohne Sperre, Vorschau mit Vermerk mit und ohne Tabelle');
 
     // M7: abgeschnittene _BerichtKit.json mit getipptem Text → beim Öffnen und Tippen unverändert; „Neu anlegen“ bewahrt sie auf
     const kaputt = '{"format":"spektron-bericht","version":1,"nurEigene":true,"art":"brand","form":{"brand":{"schadenbild":"Der Brand ereignete sich in der Küche, Decke stark verru';
