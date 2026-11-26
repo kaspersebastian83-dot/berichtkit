@@ -110,3 +110,5 @@ jobs:
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
       - name: Projekt öffnen, Vorschau, Einstellungen, Word-Datei in „Mitteilungen“
         run: node tests/browser.cjs
+      - name: Fotos in Unterordnern von „Fotos“ (FotoKit ab 2.7.0) – Vorschau und Word über den Weg
+        run: node tests/fotos-unterordner.cjs
