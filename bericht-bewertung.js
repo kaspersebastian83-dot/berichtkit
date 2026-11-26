@@ -5,7 +5,9 @@
      · VdS-Faktor Σ16 EPA-PAK   ← ResultKit src/bewertung.ts vdsScale (Hintergrundreferenz 10 / 100 µg/m², Einheit umgerechnet)
      · FLAECHE, bevorzugt       ← ResultKit src/uebersicht.ts (Wert je Fläche geht vor „je Probe“)
      · rolleAuto                ← Projektzentrale archiv/auswertung.js (Referenzprobe „REF“/„Referenz“, Freimessung „F-…“)
-   Der Bericht nennt die Werte immer wie im Prüfbericht (Zahl und Einheit unverändert); umgerechnet wird nur für die Einordnung. */
+   Der Bericht nennt die Werte wie im Prüfbericht (Zahl und Einheit unverändert) – mit einer Ausnahme: Chlorid-Wischproben in mg/m²
+   stehen im Bericht in µg/cm² (chloridAnzeige, Komma eine Stelle verschoben; Entscheidung Basti 26.11.2026). Eingeordnet wird
+   immer mit dem Rohwert des Prüfberichts. */
 (function (root) {
 'use strict';
 
@@ -78,6 +80,35 @@ function einordnen(r, grenzen) {
 }
 /** Chlorid-Wischprobe: 0 unterhalb (< 5 µg/cm²) · 1 im Bereich (5 bis einschließlich 10) · 2 oberhalb (> 10) · -1 nicht bewertbar (Einheit unbekannt, Wert unklar) */
 function chloridStufe(w) { const f = w && chloridEinheit(w.u); return f ? einordnen(w.r, chloridGrenzen(f)) : -1; }
+/** Zahl im Text des Prüfberichts durch 10 teilen, indem das Komma eine Stelle nach links rückt – keine Rundung, keine Gleitkomma-Rechnung.
+    „47“ → „4,7“ · „120“ → „12“ · „100,1“ → „10,01“ · „5“ → „0,5“ · „< 5“ → „< 0,5“ · „1 250“ → „125“. Das Dezimalzeichen des Prüfberichts
+    bleibt (ohne eins: Komma); eine Null, die nur aus einer ganzen Zahl nachrückt („120“), wird nicht geschrieben. Vorzeichen „<“ und
+    Klammern bleiben stehen. Was labNumber nicht eindeutig liest („1.250“, „2,5e3“, „> 50“, Text) → null. */
+function kommaVerschieben(t) {
+  const m = /^(\(?\s*(?:<\s*)?)([\d.,\u00a0\u202f\u2009 ]*\d)(\s*\)?)$/.exec(String(t == null ? '' : t).trim());
+  if (!m || !Number.isFinite(labNumber(m[2]))) return null;
+  const body = m[2];
+  let ganz = body, rest = '', komma = ',';
+  if (/[\u00a0\u202f\u2009 ]/.test(body)) { const d = /([.,])(\d+)$/.exec(body); if (d) { ganz = body.slice(0, d.index); komma = d[1]; rest = d[2]; } ganz = ganz.replace(/[^\d]/g, ''); }
+  else if (body.includes('.') && body.includes(',')) { komma = body.lastIndexOf('.') > body.lastIndexOf(',') ? '.' : ','; const i = body.lastIndexOf(komma); ganz = body.slice(0, i).replace(/[.,]/g, ''); rest = body.slice(i + 1); }
+  else if (/[.,]/.test(body)) { const teile = body.split(/[.,]/); if (teile.length === 2) { komma = /[.,]/.exec(body)[0]; [ganz, rest] = teile; } else ganz = teile.join(''); }
+  ganz = ganz.replace(/^0+(?=\d)/, '');
+  const vorn = ganz.length > 1 ? ganz.slice(0, -1) : '0', ruecktNach = ganz.slice(-1);
+  const nachkomma = rest ? ruecktNach + rest : ruecktNach === '0' ? '' : ruecktNach;
+  return m[1] + vorn + (nachkomma ? komma + nachkomma : '') + m[3];
+}
+const UG_CM2 = 'µg/cm²';
+/** Anzeige einer Chlorid-Wischprobe im Bericht: Wert in mg/m², der sich einordnen lässt (chloridStufe ≥ 0) → { r, u: 'µg/cm²' } mit
+    verschobenem Komma; „n. n.“ / „unter BG“ (ohne Zahl) behalten ihren Text, nur die Einheit wechselt. Sonst null = bleibt wie im
+    Prüfbericht: schon µg/cm² oder eine andere Einheit, nicht einzuordnen („1.250“, „µg/Probe“, „n. b.“, „< 60“ mit BG über der Grenze),
+    oder eine Zahl, die sich nicht als Text verschieben lässt (Exponent – dann mit Hinweis, siehe bericht-brand.js). */
+function chloridAnzeige(w) {
+  if (!w || einheitKey(w.u) !== 'mg/m2' || chloridStufe(w) < 0) return null;
+  const q = labQualifier(w.r);
+  if (q === 'notDetected' || (q === 'below' && !/^\(?\s*</.test(String(w.r).trim()))) return { r: String(w.r), u: UG_CM2 };
+  const r = kommaVerschieben(w.r);
+  return r == null ? null : { r, u: UG_CM2 };
+}
 /** PAK-Wischprobe (Σ16 EPA-PAK) gegen die Hintergrundreferenz R (10 oder 100 µg/m²): 0 unter Referenz · 1 erreicht/überschritten · -1 */
 function pakStufe(w, R) { const f = w && pakEinheit(w.u); return f && R > 0 ? einordnen(w.r, [R * f]) : -1; }
 /** Kein Nachweis über der BG (für den Satz „… keine … oberhalb der Bestimmungsgrenze nachweisbar“) */
@@ -119,7 +150,7 @@ const MATRIX_ANHANG_B = new Set(['Putze / Spachtelmassen', 'Bituminöse Proben /
 const matrixErwartetAnhangB = m => MATRIX_ANHANG_B.has(String(m == null ? '' : m).normalize('NFC').trim());
 
 const API = { VERSION: 1, labNumber, labQualifier, CHLORID_JE_UG_CM2, chloridEinheit, PAK_JE_UG_M2, pakEinheit, FLAECHE, bevorzugt,
-  einordnen, chloridStufe, pakStufe, ohneNachweis, istFrei, rolleAuto, ASBEST, anhangB, nwgProzent, matrixErwartetAnhangB };
+  einordnen, chloridStufe, kommaVerschieben, chloridAnzeige, pakStufe, ohneNachweis, istFrei, rolleAuto, ASBEST, anhangB, nwgProzent, matrixErwartetAnhangB };
 if (typeof module === 'object' && module.exports) module.exports = API;
 root.BerichtBewertung = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -101,6 +101,15 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   Rolle = eine Zeile. Die Wahl steht je Probe in `form.brand.rolle` (`{ auto, wahl: 'ok'|'keine' }`) und gilt nur, solange der Name dieselbe Rolle
   ergibt. „Normale Probe“ wertet die Probe regulär; das Datenarchiv der Projektzentrale übernimmt die Wahl (außer bei einer eigenen Korrektur
   dort), „Übersicht drucken“ in ResultKit geht weiter nach dem Namen – mit „Rückgängig“; Probenbezeichnungen bleiben unverändert.
+- **Chlorid im Bericht immer in µg/cm²** (ab 1.22.0, Rückmeldung R-20261117-143433-VD, Plan `berichtkit-chlorid-einheit-plan.md`):
+  Chlorid-Wischproben in mg/m² werden in 5.2 (Spanne, höchster Wert, eine Probe, Referenz/Freimessung, Tabelle mit Kopf „Chlorid [µg/cm²]“)
+  in µg/cm² gezeigt. `chloridAnzeige`/`kommaVerschieben` in `bericht-bewertung.js` (außerhalb des KORROSION-CHLORID-Blocks) verschieben das Komma
+  auf dem Text des Prüfberichts um eine Stelle („47“ → „4,7“, „120“ → „12“, „100,1“ → „10,01“, „< 5“ → „< 0,5“) – keine Rundung, keine
+  Gleitkomma-Rechnung; das Dezimalzeichen des Prüfberichts bleibt. Eingeordnet wird mit dem Rohwert (`chloridStufe`), Grenzen und Abschluss A/B
+  unverändert. Umgerechnet nur, was sich einordnen lässt; „1.250“, „µg/Probe“, „n. b.“ bleiben wie im Prüfbericht („–“ + Hinweis), ebenso
+  Chlorid-Material und Bohrmehl. Vermerk im Fließtext von 5.2 (mit und ohne Tabelle), nur für die betroffenen Prüfberichte; Hinweis
+  „Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.“ ohne Sperre. LektorKit 1.0.3 rechnet Chlorid selbst um und meldet
+  die umgerechneten Werte als belegt. Noch offen: FotoKit, PlanKit, ResultKit (Bildschirm), AidKit ziehen nach (Plan, Abschnitt 5).
 - **Chlorid genau 10 µg/cm²** (ab 1.19.0, Audit m7, Entscheidung 4): `KORROSION-CHLORID v2` in `bericht-bewertung.js` – gleich in ResultKit,
   PlanKit, FotoKit. Die Stufe „oberhalb“ trägt `ueber: true` und zählt erst über 10 µg/cm² (umgerechnet, z. B. 100 mg/m²); genau 10 liegt „im
   Bereich“, genau 5 bleibt „im Bereich“. Keine neue Zahl, keine Rundung.

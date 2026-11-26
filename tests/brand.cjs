@@ -454,11 +454,11 @@ fall('5.2 Chlorid: fester Text, Spanne, Zähl-Absatz Form B, höchster Wert, Ref
   assert.equal(tab.spalten.reduce((a, b) => a + b), 9070); assert.deepEqual(tab.ohneUmbruch, [1]);
   // ohne Haken: Verweis auf den Prüfbericht mit Anlage
   assert.match(utext(modell(mitForm(F.BR1_voll_Versicherung, { tabellen: false })), 'Korrosionsschäden'), /Die Referenzprobe \(Probe 3\) ergab < 0,5 µg\/cm²\. Die Einzelergebnisse sind dem Prüfbericht \(Anlage 1\) zu entnehmen\.\n/);
-  // mg/m² (älterer Bericht): Wert und Einheit wie im Bericht, Einordnung umgerechnet; drei Gruppen, „in diesem Bereich“, < BG-Satz
+  // mg/m² (älterer Bericht): im Bericht in µg/cm² (Komma verschoben, ab 1.22.0), Einordnung mit dem Rohwert; drei Gruppen, „in diesem Bereich“, < BG-Satz, Vermerk
   const g = modell(F.BR5_Gewerbe_Bohrmehl_Tabellen), gt = utext(g, 'Korrosionsschäden').split('\n');
-  assert.equal(gt[1], 'Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 20 und 150 mg/m². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 150 mg/m² in Probe 1 (Verkaufsraum Regal 1) festgestellt. Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst.');
-  assert.deepEqual(tabellen(g)[0].zeilen.map(z => [z[3], z[4]]), [['150', 'oberhalb'], ['70', 'im Bereich'], ['60', 'im Bereich'], ['20', 'unterhalb'], ['< 5', 'unterhalb']]);
-  assert.equal(tabellen(g)[0].kopf[3], 'Chlorid [mg/m²]');
+  assert.equal(gt[1], 'Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 2 und 15 µg/cm². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 15 µg/cm² in Probe 1 (Verkaufsraum Regal 1) festgestellt. Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst. Der Prüfbericht (Anlage 1) weist die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).');
+  assert.deepEqual(tabellen(g)[0].zeilen.map(z => [z[3], z[4]]), [['15', 'oberhalb'], ['7', 'im Bereich'], ['6', 'im Bereich'], ['2', 'unterhalb'], ['< 0,5', 'unterhalb']]);
+  assert.equal(tabellen(g)[0].kopf[3], 'Chlorid [µg/cm²]');
   // Untersuchungsbericht: Abschluss B ohne „unter 6. angegebenen Sanierungsmaßnahmen“ (vorläufig wie 7.)
   assert.equal(gt[gt.length - 1], 'Nach fachgerechter Durchführung von Sanierungsarbeiten ist davon auszugehen, dass die nachgewiesenen Chloridflächenbelastungen unter die korrosionschemisch relevante Größenordnung reduziert werden.');
   // Material- und Bohrmehlproben: Werte im Satz (mit Tiefe), Bewertung als Lücke, vor dem Abschluss
@@ -813,6 +813,100 @@ fall('B2 (Audit Lauf 2): Brandbericht – geänderte Prüfberichte und fremdes P
   const ohne = modell(F.BR1_voll_Versicherung).sperren;
   assert.deepEqual(modell(F.BR1_voll_Versicherung, { ergStand: { ...st, laborAnders: false, labelkitAnders: true } }).sperren, ohne, 'nur LabelKit: keine zusätzliche Sperre');
   assert.ok(modell(F.BR1_voll_Versicherung, { ergStand: { ...st, laborAnders: false, fremd: '25.0100' } }).sperren.some(x => /gehören zu Projekt 25\.0100/.test(x)));
+});
+
+/* Chlorid im Bericht immer in µg/cm² (Plan berichtkit-chlorid-einheit-plan.md, Rückmeldung R-20261117-143433-VD) */
+const VERMERK = n => `Der Prüfbericht (Anlage ${n}) weist die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).`;
+const HINWEIS_UMGERECHNET = 'Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.';
+const mgm2 = r => D.W.cl(r, 'mg/m²');
+/** wie clFall, mit Haken „Ergebnistabellen“ */
+const clTab = (proben, lkChlorid) => modell({ ...B2, lk: D.lk({ chlorid: lkChlorid || proben.map((x, i) => [i + 1, '', 'Raum ' + (i + 1), 'Wischprobe']) }),
+  erg: D.erg([{ nr: 'CL-1', proben: proben.map((w, i) => [i + 1, Array.isArray(w) ? w : D.W.cl(w), 'Chlorid']) }]), form: { ...B2.form, brand: { ...B2.form.brand, tabellen: true } } });
+
+fall('Chlorid µg/cm²: Komma verschieben auf dem Text des Prüfberichts – keine Rundung, keine Gleitkomma-Rechnung', () => {
+  const BW = require('../bericht-bewertung.js');
+  for (const [ein, aus] of [['47', '4,7'], ['120', '12'], ['100', '10'], ['100,1', '10,01'], ['5', '0,5'], ['< 5', '< 0,5'], ['<5', '<0,5'], ['50', '5'],
+    ['0,5', '0,05'], ['100,0', '10,00'], ['1 250', '125'], ['1.250,5', '125,05'], ['(< 5)', '(< 0,5)'], ['100,00004', '10,000004'], ['0', '0']])
+    assert.equal(BW.kommaVerschieben(ein), aus, ein);
+  for (const t of ['1.250', '2,5e3', '> 50', 'n. n.', 'n. b.', '', 'abc', '-5']) assert.equal(BW.kommaVerschieben(t), null, t);
+  // Anzeige nur für einzuordnende Werte in mg/m²; alles andere bleibt wie im Prüfbericht (null)
+  const an = (r, u) => BW.chloridAnzeige({ r, u });
+  assert.deepEqual(an('47', 'mg/m²'), { r: '4,7', u: 'µg/cm²' }); assert.deepEqual(an('100', 'mg/m2'), { r: '10', u: 'µg/cm²' });
+  assert.deepEqual(an('n. n.', 'mg/m²'), { r: 'n. n.', u: 'µg/cm²' }); assert.deepEqual(an('unter BG', 'mg/m²'), { r: 'unter BG', u: 'µg/cm²' });
+  for (const [r, u] of [['47', 'µg/cm²'], ['1.250', 'mg/m²'], ['n. b.', 'mg/m²'], ['< 60', 'mg/m²'], ['12', 'µg/Probe'], ['2,5e3', 'mg/m²'], ['0,02', 'M.-%']])
+    assert.equal(an(r, u), null, `${r} ${u}`);
+  // Einordnung unverändert mit dem Rohwert: 100 mg/m² im Bereich, 100,1 darüber (KORROSION-CHLORID v2) – Anzeige und Einordnung widersprechen sich nicht
+  assert.deepEqual(['47', '100', '100,1', '< 5'].map(r => BW.chloridStufe({ r, u: 'mg/m²' })), [0, 1, 2, 0]);
+  assert.deepEqual(['4,7', '10', '10,01', '< 0,5'].map(r => BW.chloridStufe({ r, u: 'µg/cm²' })), [0, 1, 2, 0], 'umgerechnet gleich eingeordnet');
+});
+
+fall('Chlorid µg/cm²: 47 / 100 / 100,1 / „< 5“ mg/m² – Spanne, höchster Wert, Tabelle, Vermerk mit und ohne Tabelle, Hinweis', () => {
+  const tab = (proben, tabellen_) => modell({ ...B2, lk: D.lk({ chlorid: proben.map((x, i) => [i + 1, '', 'Raum ' + (i + 1), 'Wischprobe']) }),
+    erg: D.erg([{ nr: 'CL-1', proben: proben.map((r, i) => [i + 1, mgm2(r), 'Chlorid']) }]), form: { ...B2.form, brand: { ...B2.form.brand, tabellen: tabellen_ } } });
+  const m = tab(['47', '100', '100,1', '< 5'], true), t = utext(m, 'Korrosionsschäden').split('\n');
+  assert.equal(t[1], 'Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 4,7 und 10,01 µg/cm². Von den vier Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 3), eine in diesem Bereich (Probe 2) und zwei darunter. Die höchste Belastung wurde mit 10,01 µg/cm² in Probe 3 (Raum 3) festgestellt. Bei Probe 4 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst. ' + VERMERK(1));
+  assert.equal(tabellen(m)[0].kopf[3], 'Chlorid [µg/cm²]');
+  assert.deepEqual(tabellen(m)[0].zeilen.map(z => [z[3], z[4]]), [['4,7', 'unterhalb'], ['10', 'im Bereich'], ['10,01', 'oberhalb'], ['< 0,5', 'unterhalb']]);
+  assert.ok(m.hinweise.includes(HINWEIS_UMGERECHNET)); assert.deepEqual(m.sperren, [], 'Hinweis ohne Sperre');
+  assert.ok(!t[1].replace(VERMERK(1), '').includes('mg/m²'), 'außer im Vermerk kein mg/m² im Text');
+  // ohne „Ergebnistabellen“: Vermerk ebenso, hinter dem Verweis auf den Prüfbericht
+  const o = utext(tab(['47', '100', '100,1', '< 5'], false), 'Korrosionsschäden').split('\n')[1];
+  assert.match(o, new RegExp('Die Einzelergebnisse sind dem Prüfbericht \\(Anlage 1\\) zu entnehmen\\. ' + VERMERK(1).replace(/[()]/g, '\\$&') + '$'));
+  // nur eine Probe: Satz mit Wert und Einordnung; 100 mg/m² = genau 10 µg/cm² „im Bereich“
+  assert.match(utext(tab(['100'], false), 'Korrosionsschäden'), /Die Chlorid-Wischprobe \(Probe 1, Raum 1\) ergab 10 µg\/cm² und liegt damit im Bereich der korrosionschemisch relevanten Größenordnung\./);
+  assert.match(utext(tab(['100,1'], false), 'Korrosionsschäden'), /ergab 10,01 µg\/cm² und liegt damit oberhalb /);
+  // Referenzprobe/Freimessung in mg/m²: eigener Satz in µg/cm²
+  const ref = clFall([mgm2('120'), mgm2('47'), mgm2('< 5')], [[1, '', 'Raum 1', 'Wischprobe'], [2, '', 'Raum 2', 'Wischprobe'], [3, '', 'REF Büro', 'Wischprobe']]);
+  assert.match(utext(ref, 'Korrosionsschäden'), /Die Referenzprobe \(Probe 3\) ergab < 0,5 µg\/cm²\./);
+  const frei = clFall([mgm2('120'), mgm2('35'), mgm2('20')], [[1, '', 'Raum 1', 'Wischprobe'], [2, '', 'F-Raum 1', 'Wischprobe'], [3, '', 'F-Raum 2', 'Wischprobe']]);
+  assert.match(utext(frei, 'Korrosionsschäden'), /Die Freimessungen ergaben 3,5 µg\/cm² \(Probe 2\) und 2 µg\/cm² \(Probe 3\)\./);
+  // Abschluss A/B aus dem Rohwert: alles unter 50 mg/m² → A
+  assert.match(utext(tab(['47', '12'], false), 'Korrosionsschäden'), /\nEine korrosionschemisch relevante Chloridbelastung liegt nicht vor\.$/);
+});
+
+fall('Chlorid µg/cm²: gemischte Einheiten – alle in µg/cm², Tabelle vollständig, Vermerk nennt nur den betroffenen Prüfbericht', () => {
+  const zweiE = { ...B2, lk: D.lk({ chlorid: [1, 2, 3].map(i => [i, '', 'Raum ' + i, 'Wischprobe']) }),
+    erg: D.erg([{ nr: 'CL-1', proben: [[1, D.W.cl('12'), 'Chlorid'], [3, D.W.cl('3'), 'Chlorid']] }, { nr: 'CL-2', proben: [[2, mgm2('60'), 'Chlorid']] }]) };
+  const zwei = modell(zweiE);
+  const t = utext(zwei, 'Korrosionsschäden').split('\n')[1];
+  assert.match(t, /^Die ermittelten Chloridflächenbelastungen liegen zwischen 3 und 12 µg\/cm²\./);
+  assert.ok(t.endsWith('Die Einzelergebnisse sind den Prüfberichten (Anlagen 1 und 2) zu entnehmen. ' + VERMERK(2)), 'nur Anlage 2 (CL-2 in mg/m²)');
+  const zweiTab = modell({ ...zweiE, form: { ...B2.form, brand: { ...B2.form.brand, tabellen: true } } });
+  assert.equal(tabellen(zweiTab)[0].kopf[3], 'Chlorid [µg/cm²]');
+  assert.deepEqual(tabellen(zweiTab)[0].zeilen.map(z => [z[0], z[3], z[4]]), [['1', '12', 'oberhalb'], ['2', '6', 'im Bereich'], ['3', '3', 'unterhalb']]);
+  // ein Prüfbericht, beide Einheiten
+  const ein = clTab(['12', mgm2('60'), '3']);
+  assert.equal(tabellen(ein)[0].kopf[3], 'Chlorid [µg/cm²]'); assert.ok(utext(ein, 'Korrosionsschäden').includes(VERMERK(1)));
+  // zwei betroffene Prüfberichte: Mehrzahl
+  const beide = clFall(null, [1, 2].map(i => [i, '', 'Raum ' + i, 'Wischprobe']),
+    { erg: D.erg([{ nr: 'CL-1', proben: [[1, mgm2('120'), 'Chlorid']] }, { nr: 'CL-2', proben: [[2, mgm2('47'), 'Chlorid']] }]) });
+  assert.ok(utext(beide, 'Korrosionsschäden').includes('Die Prüfberichte (Anlagen 1 und 2) weisen die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).'));
+});
+
+fall('Chlorid µg/cm²: nicht einzuordnende Werte bleiben wie im Prüfbericht („–“ + Hinweis); Material und Bohrmehl unverändert', () => {
+  const m = clTab([mgm2('1.250'), mgm2('47'), D.W.cl('12', 'µg/Probe'), mgm2('n. b.')]);
+  assert.equal(tabellen(m)[0].kopf[3], 'Chlorid', 'eine Zelle bleibt in mg/m² → Einheit je Zelle');
+  assert.deepEqual(tabellen(m)[0].zeilen.map(z => [z[3], z[4]]), [['1.250 mg/m²', '–'], ['4,7 µg/cm²', 'unterhalb'], ['12 µg/Probe', '–'], ['n. b.', '–']]);
+  for (const w of ['„1.250 mg/m²“', '„12 µg/Probe“', '„n. b.“']) assert.ok(m.hinweise.some(h => h.includes(`Chlorid ${w} nicht einzuordnen`)), w);
+  // nur nicht einzuordnende in mg/m²: nichts umgerechnet → kein Vermerk, kein Hinweis „umgerechnet“
+  const nichts = clFall([mgm2('1.250'), mgm2('n. b.')]);
+  assert.ok(!utext(nichts, 'Korrosionsschäden').includes('umgerechnet')); assert.ok(!nichts.hinweise.includes(HINWEIS_UMGERECHNET));
+  // Zahl, die labNumber liest, aber nicht als Text verschiebbar ist (Exponent): bleibt mg/m², eigener Hinweis
+  const exp = clFall([mgm2('2,5e1'), '3']);
+  assert.ok(exp.hinweise.some(h => /Probe 1: Chlorid „2,5e1 mg\/m²“ lässt sich nicht als Text in µg\/cm² umrechnen/.test(h)));
+  // Chlorid-Materialprobe und Bohrmehl (BR5) bleiben in ihrer Einheit; Material in mg/m² wird nicht angefasst
+  const g = utext(modell(F.BR5_Gewerbe_Bohrmehl_Tabellen), 'Korrosionsschäden').split('\n');
+  assert.match(g[2], /Chloridgehalt von 0,02 M\.-% ermittelt/); assert.match(g[3], /1\.200 mg\/kg .* 450 mg\/kg/);
+  const mat = clFall([mgm2('120'), mgm2('300')], [[1, '', 'Raum 1', 'Wischprobe'], [2, '', 'Putz', 'Putze / Spachtelmassen']]);
+  assert.match(utext(mat, 'Korrosionsschäden'), /an der Materialprobe \(Probe 2, Putz\) ein Chloridgehalt von 300 mg\/m² ermittelt/);
+});
+
+fall('Chlorid µg/cm²: Projekt nur in µg/cm² – kein Vermerk, kein Hinweis, Text unverändert', () => {
+  const m = modell(F.BR1_voll_Versicherung), t = utext(m, 'Korrosionsschäden');
+  assert.ok(!/umgerechnet|mg\/m²/.test(t)); assert.ok(!m.hinweise.includes(HINWEIS_UMGERECHNET));
+  assert.deepEqual(tabellen(m)[0].zeilen.map(z => z[3]), ['12,3', '4,1', '< 0,5']);
+  const golden = require('./daten/brand-golden.json').BR1_voll_Versicherung;
+  assert.deepEqual(JSON.parse(JSON.stringify(m.abschnitte)), golden.abschnitte, 'BR1 wie festgeschrieben');
 });
 
 console.log(`Brandbericht: ${n} Fälle bestanden.`);

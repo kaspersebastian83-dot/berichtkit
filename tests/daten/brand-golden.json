@@ -3210,7 +3210,7 @@
      {
       "t": "p",
       "runs": [
-       "Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 20 und 150 mg/m². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 150 mg/m² in Probe 1 (Verkaufsraum Regal 1) festgestellt. Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst."
+       "Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 2 und 15 µg/cm². Von den fünf Chlorid-Wischproben liegt eine oberhalb der korrosionschemisch relevanten Größenordnung (Probe 1), zwei in diesem Bereich (Proben 2 und 3) und zwei darunter. Die höchste Belastung wurde mit 15 µg/cm² in Probe 1 (Verkaufsraum Regal 1) festgestellt. Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Ergebnisse sind in Tabelle 1 zusammengefasst. Der Prüfbericht (Anlage 1) weist die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²)."
       ]
      },
      {
@@ -3220,7 +3220,7 @@
        "Probe",
        "Labor-Nr.",
        "Entnahmestelle",
-       "Chlorid [mg/m²]",
+       "Chlorid [µg/cm²]",
        "Einordnung"
       ],
       "ausrichtung": [
@@ -3245,35 +3245,35 @@
         "1",
         "999-2026-0001101",
         "Verkaufsraum Regal 1",
-        "150",
+        "15",
         "oberhalb"
        ],
        [
         "2",
         "999-2026-0001102",
         "Verkaufsraum Regal 2",
-        "70",
+        "7",
         "im Bereich"
        ],
        [
         "3",
         "999-2026-0001103",
         "Verkaufsraum Regal 3",
-        "60",
+        "6",
         "im Bereich"
        ],
        [
         "4",
         "999-2026-0001104",
         "Lager Wand",
-        "20",
+        "2",
         "unterhalb"
        ],
        [
         "5",
         "999-2026-0001105",
         "Büro Wand",
-        "< 5",
+        "< 0,5",
         "unterhalb"
        ]
       ]
@@ -3629,7 +3629,9 @@
   "proben": [],
   "offen": [],
   "storniert": [],
-  "hinweise": [],
+  "hinweise": [
+   "Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet."
+  ],
   "hinweisAktionen": {},
   "sperren": [],
   "probenehmerQuelle": {
