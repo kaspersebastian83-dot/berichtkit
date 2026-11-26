@@ -576,9 +576,60 @@
       ]
      },
      {
+      "t": "tab",
+      "caption": "Tabelle 4: Sensorische Prüfung auf Brandgeruch – Einzelbewertungen der Prüfpersonen",
+      "kopf": [
+       "Nr.",
+       "Probe",
+       "Person 1",
+       "Person 2",
+       "Person 3",
+       "Person 4",
+       "Person 5"
+      ],
+      "ausrichtung": [
+       "center",
+       "left",
+       "center",
+       "center",
+       "center",
+       "center",
+       "center"
+      ],
+      "spalten": [
+       600,
+       3020,
+       1090,
+       1090,
+       1090,
+       1090,
+       1090
+      ],
+      "zeilen": [
+       [
+        "1",
+        "Sofa Wohnzimmer, Stoffbezug",
+        "+",
+        "+",
+        "++",
+        "+",
+        "+"
+       ],
+       [
+        "2",
+        "Teppich Flur, Wolle",
+        "(+)",
+        "–",
+        "(+)",
+        "–",
+        "(+)"
+       ]
+      ]
+     },
+     {
       "t": "p",
       "runs": [
-       "Die Einzelbewertungen der Prüfpersonen sind in Anlage ",
+       "Die Einzelbewertungen der Prüfpersonen sind in Tabelle 4 und in Anlage ",
        "5",
        " dargestellt."
       ]
@@ -2598,9 +2649,51 @@
       ]
      },
      {
+      "t": "tab",
+      "caption": "Tabelle 1: Sensorische Prüfung auf Brandgeruch – Einzelbewertungen der Prüfpersonen",
+      "kopf": [
+       "Nr.",
+       "Probe",
+       "Person 1",
+       "Person 2",
+       "Person 3",
+       "Person 4",
+       "Person 5"
+      ],
+      "ausrichtung": [
+       "center",
+       "left",
+       "center",
+       "center",
+       "center",
+       "center",
+       "center"
+      ],
+      "spalten": [
+       600,
+       3020,
+       1090,
+       1090,
+       1090,
+       1090,
+       1090
+      ],
+      "zeilen": [
+       [
+        "1",
+        "Karton, Regal 3",
+        "+",
+        "+",
+        "+",
+        "+",
+        "++"
+       ]
+      ]
+     },
+     {
       "t": "p",
       "runs": [
-       "Die Einzelbewertungen der Prüfpersonen sind in Anlage ",
+       "Die Einzelbewertungen der Prüfpersonen sind in Tabelle 1 und in Anlage ",
        {
         "gap": "[Anlage-Nr. Brandgeruch]"
        },

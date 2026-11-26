@@ -72,6 +72,10 @@ const CL_GROESSE = 'der korrosionschemisch relevanten Größenordnung';
 const BG_STUFEN = [['++', 'ein starker'], ['+', 'ein mittelstarker'], ['(+)', 'ein schwacher'], ['-', 'kein']];
 const BG_KEYS = ['p1', 'p2', 'p3', 'p4', 'p5'];
 const bgWert = v => { const t = s(v).replace(/[–−—]/g, '-').replace(/\s+/g, ''); return BG_STUFEN.some(([k]) => k === t) ? t : ''; };
+/** Tabelle der Einzelbewertungen in 5.6 (ab 1.23.0): Spalten wie die Anlage der Projektzentrale (zusammen 9070), Nr. und Personen zentriert.
+    Zelle: „ohne“ (LabelKit „-“) als „–“ wie im Methodensatz („ohne Brandgeruch (–)“); die anderen Stufen wie in LabelKit. */
+const SPALTEN_BG = [600, 3020, 1090, 1090, 1090, 1090, 1090];
+const bgZelle = v => { const t = bgWert(v); return t === '-' ? '–' : t; };
 
 /** Vorgaben der Brand-Seite (nie in _BerichtKit.json; eigene Angaben stehen in form.brand) */
 function vorgabe(pj) {
@@ -716,7 +720,10 @@ function bericht(eingabe) {
   }
 
   /* 5.6 Sensorische Prüfung auf Brandgeruch – Ergebnis-Satz je Probe aus den Bewertungen p1–p5 (Nr. wie in der Anlage der
-     Projektzentrale: Reihenfolge der LabelKit-Liste). Verdeckt (Blind-Modus) oder Bewertungen unvollständig → Lücke. */
+     Projektzentrale: Reihenfolge der LabelKit-Liste). Verdeckt (Blind-Modus) oder Bewertungen unvollständig → Lücke.
+     Ab 1.23.0 (Rückmeldung R-20261126-135349-SK) nach dem Ergebnis-Absatz die Tabelle der Einzelbewertungen – dieselben Proben und
+     Nummern wie die Sätze, nur wenn alle Bewertungen lesbar sind (keine halbe Tabelle; eine leere Zelle hieße „–“ = ohne Brandgeruch). */
+  let bgTab = 0;
   if (nBg) {
     h2('Sensorische Prüfung auf Brandgeruch');
     const alleBg = (e.lk && Array.isArray(e.lk.brandgeruchProben) ? e.lk.brandgeruchProben : []).map((p, i) => ({ p, nr: i + 1 })).filter(x => x.p && !istStorniert(x.p));
@@ -735,8 +742,16 @@ function bericht(eingabe) {
         return `Bei Probe ${nr}${beschr ? ` (${beschr})` : ''} wurde ${liste(teile)} Brandgeruch festgestellt.`;
       });
       befund.push({ t: 'p', runs: [saetze.join(' ')] });
+      // Wortlaut der Überschrift vorläufig (Vorschlag, zur Bestätigung im PR)
+      bgTab = ++tabNr;
+      befund.push({ t: 'tab', caption: `Tabelle ${bgTab}: Sensorische Prüfung auf Brandgeruch – Einzelbewertungen der Prüfpersonen`,
+        kopf: ['Nr.', 'Probe', 'Person 1', 'Person 2', 'Person 3', 'Person 4', 'Person 5'],
+        ausrichtung: ['center', 'left', 'center', 'center', 'center', 'center', 'center'], spalten: SPALTEN_BG,
+        zeilen: alleBg.map(({ p, nr }) => [String(nr), [s(p.z1), s(p.z2)].filter(Boolean).join(', '), ...BG_KEYS.map(k => bgZelle(p[k]))]) });
     }
-    befund.push({ t: 'p', runs: ['Die Einzelbewertungen der Prüfpersonen sind in Anlage ', A.nr.brandgeruch ? String(A.nr.brandgeruch) : { gap: '[Anlage-Nr. Brandgeruch]' }, ' dargestellt.'] });
+    // Schluss-Satz mit Tabelle vorläufig (Vorschlag, zur Bestätigung im PR); ohne Tabelle wie bis 1.22.0
+    befund.push({ t: 'p', runs: [`Die Einzelbewertungen der Prüfpersonen sind in ${bgTab ? `Tabelle ${bgTab} und in ` : ''}Anlage `,
+      A.nr.brandgeruch ? String(A.nr.brandgeruch) : { gap: '[Anlage-Nr. Brandgeruch]' }, ' dargestellt.'] });
   }
 
   /* 5.7 Weitere Untersuchungen (LabelKit „Sonstige“ ohne Chlorid-Bohrmehl): keine Einordnung im Doc – Verweis und Lücke */
