@@ -553,6 +553,10 @@ function bericht(eingabe) {
       const umgerechnet = clW.filter(x => { const a = BW.chloridAnzeige(x.w); if (!a) return false; x.wPruefbericht = x.w; x.w = a; return true; });
       clW.filter(x => x.stufe >= 0 && !x.wPruefbericht && BW.chloridEinheit(x.w.u) === 10).forEach(x => hinweise.push(`Probe ${x.nr != null ? x.nr : x.label}: Chlorid „${wertText(x.w)}“ lässt sich nicht als Text in µg/cm² umrechnen – steht im Bericht in mg/m², bitte in Word prüfen.`));
       if (umgerechnet.length) hinweise.push('Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.');
+      /* Codex PR #33: steht aus einem umgerechneten Prüfbericht ein Wert weiter in mg/m² in der Tabelle („1.250“, „< 60“, Exponent), passt der
+         Vermerk („… sind hier in µg/cm² umgerechnet“) nicht ganz – Wortlaut bleibt (freigegeben), Hinweis zum Anpassen in Word (Entscheidung Basti) */
+      const umBerichte = new Set(umgerechnet.map(x => x.bericht)), bleibenMg = clW.filter(x => !x.wPruefbericht && umBerichte.has(x.bericht) && BW.chloridEinheit(x.w.u) === 10 && wertText(x.w) !== x.w.r);   // „n. b.“ steht ohne Einheit da
+      if (mitTabellen && bleibenMg.length) hinweise.push(`${probe(bleibenMg)} ${bleibenMg.length === 1 ? 'bleibt' : 'bleiben'} in mg/m² – Vermerk in ${nr52} in Word anpassen.`);
       if (planVds.some(k => CHLORID.test(k))) hinweise.push(`${nr52}: In PlanKit ist für Chlorid eine eigene Skala eingestellt – der Bericht ordnet nach VdS 2357 (5–10 µg/cm²) ein, die Ergebniskarte nach der PlanKit-Skala. Bitte prüfen.`);
       const reg = clW.filter(x => !x.rolle), bew = reg.filter(x => x.stufe >= 0);
       reg.filter(x => x.stufe < 0).forEach(x => nichtBewertbar(x, 'Chlorid', nr52));

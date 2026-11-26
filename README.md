@@ -108,7 +108,8 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   Gleitkomma-Rechnung; das Dezimalzeichen des Prüfberichts bleibt. Eingeordnet wird mit dem Rohwert (`chloridStufe`), Grenzen und Abschluss A/B
   unverändert. Umgerechnet nur, was sich einordnen lässt; „1.250“, „µg/Probe“, „n. b.“ bleiben wie im Prüfbericht („–“ + Hinweis), ebenso
   Chlorid-Material und Bohrmehl. Vermerk im Fließtext von 5.2 (mit und ohne Tabelle), nur für die betroffenen Prüfberichte; Hinweis
-  „Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.“ ohne Sperre. LektorKit 1.0.3 rechnet Chlorid selbst um und meldet
+  „Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.“ ohne Sperre. Bleibt ein Wert desselben Prüfberichts in mg/m² in der
+  Tabelle (nicht einzuordnen), zusätzlich „Probe n bleibt in mg/m² – Vermerk in 5.2 in Word anpassen.“ (Wortlaut des Vermerks bleibt). LektorKit 1.0.3 rechnet Chlorid selbst um und meldet
   die umgerechneten Werte als belegt. Noch offen: FotoKit, PlanKit, ResultKit (Bildschirm), AidKit ziehen nach (Plan, Abschnitt 5).
 - **Chlorid genau 10 µg/cm²** (ab 1.19.0, Audit m7, Entscheidung 4): `KORROSION-CHLORID v2` in `bericht-bewertung.js` – gleich in ResultKit,
   PlanKit, FotoKit. Die Stufe „oberhalb“ trägt `ueber: true` und zählt erst über 10 µg/cm² (umgerechnet, z. B. 100 mg/m²); genau 10 liegt „im

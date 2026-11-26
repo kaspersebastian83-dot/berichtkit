@@ -888,6 +888,17 @@ fall('Chlorid µg/cm²: nicht einzuordnende Werte bleiben wie im Prüfbericht (�
   assert.equal(tabellen(m)[0].kopf[3], 'Chlorid', 'eine Zelle bleibt in mg/m² → Einheit je Zelle');
   assert.deepEqual(tabellen(m)[0].zeilen.map(z => [z[3], z[4]]), [['1.250 mg/m²', '–'], ['4,7 µg/cm²', 'unterhalb'], ['12 µg/Probe', '–'], ['n. b.', '–']]);
   for (const w of ['„1.250 mg/m²“', '„12 µg/Probe“', '„n. b.“']) assert.ok(m.hinweise.some(h => h.includes(`Chlorid ${w} nicht einzuordnen`)), w);
+  // Codex PR #33: ein Wert desselben Prüfberichts bleibt in mg/m² sichtbar in der Tabelle → Hinweis, Vermerk-Wortlaut unverändert
+  assert.ok(m.hinweise.includes('Probe 1 bleibt in mg/m² – Vermerk in 5.2 in Word anpassen.'), m.hinweise.join('\n'));
+  assert.ok(utext(m, 'Korrosionsschäden').includes(VERMERK(1)), 'Vermerk bleibt wie freigegeben');
+  const zweiMg = clTab([mgm2('1.250'), mgm2('47'), mgm2('< 60')]);
+  assert.ok(zweiMg.hinweise.includes('Proben 1 und 3 bleiben in mg/m² – Vermerk in 5.2 in Word anpassen.'), zweiMg.hinweise.join('\n'));
+  // ohne Tabelle stehen nicht einzuordnende Werte nicht im Text – kein Hinweis; anderer Prüfbericht (nicht im Vermerk) – kein Hinweis
+  assert.ok(!clFall([mgm2('1.250'), mgm2('47')]).hinweise.some(h => /Vermerk in 5\.2/.test(h)), 'ohne Tabelle');
+  assert.ok(!clTab([mgm2('47'), '3']).hinweise.some(h => /Vermerk in 5\.2/.test(h)), 'alles umgerechnet: kein Hinweis');
+  const fremd = modell({ ...B2, lk: D.lk({ chlorid: [1, 2].map(i => [i, '', 'Raum ' + i, 'Wischprobe']) }), form: { ...B2.form, brand: { ...B2.form.brand, tabellen: true } },
+    erg: D.erg([{ nr: 'CL-1', proben: [[1, mgm2('47'), 'Chlorid']] }, { nr: 'CL-2', proben: [[2, mgm2('1.250'), 'Chlorid']] }]) });
+  assert.ok(!fremd.hinweise.some(h => /Vermerk in 5\.2/.test(h)), 'mg/m²-Wert aus einem anderen Prüfbericht: Vermerk nennt nur Anlage 1');
   // nur nicht einzuordnende in mg/m²: nichts umgerechnet → kein Vermerk, kein Hinweis „umgerechnet“
   const nichts = clFall([mgm2('1.250'), mgm2('n. b.')]);
   assert.ok(!utext(nichts, 'Korrosionsschäden').includes('umgerechnet')); assert.ok(!nichts.hinweise.includes(HINWEIS_UMGERECHNET));
