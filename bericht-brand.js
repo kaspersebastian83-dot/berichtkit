@@ -8,7 +8,7 @@
    Bereich, Zusatz), 8. Zusammenfassung (nur Sanierungsvorschlag), Unterschriften, Anlagen. Freitext-Schreibweise (Absätze,
    „- “, „## Titel“, „[Abb: Datei]“, **fett**) siehe bericht-gemeinsam.js freitext(); leeres Feld → Lücke mit Anweisung.
    Regeln wie im Asbestbericht: Laborwerte unverändert wie im Prüfbericht (umgerechnet wird nur für die Einordnung, siehe
-   bericht-bewertung.js) – Ausnahme ab 1.22.0: Chlorid-Wischproben in mg/m² stehen in 5.2 in µg/cm² (Komma verschoben, mit Vermerk);
+   bericht-bewertung.js) – Ausnahme ab 1.22.0: Chlorid-Wischproben in mg/m² stehen in 5.2 in µg/cm² (Komma verschoben, ab 1.24.0 ohne Vermerk);
    fehlende Angaben als [Lücke], nichts erfinden.
 
    eingabe wie im Asbestbericht (bericht-asbest.js), dazu
@@ -556,11 +556,8 @@ function bericht(eingabe) {
          Nicht einzuordnende Werte bleiben unverändert (Hinweis „nicht einzuordnen“ wie bisher); Material/Bohrmehl sind nicht betroffen. */
       const umgerechnet = clW.filter(x => { const a = BW.chloridAnzeige(x.w); if (!a) return false; x.wPruefbericht = x.w; x.w = a; return true; });
       clW.filter(x => x.stufe >= 0 && !x.wPruefbericht && BW.chloridEinheit(x.w.u) === 10).forEach(x => hinweise.push(`Probe ${x.nr != null ? x.nr : x.label}: Chlorid „${wertText(x.w)}“ lässt sich nicht als Text in µg/cm² umrechnen – steht im Bericht in mg/m², bitte in Word prüfen.`));
+      /* Kein Vermerk im Bericht (Entscheidung Basti 26.11.2026, 1.24.0) – der Hinweis betrifft nur die App. */
       if (umgerechnet.length) hinweise.push('Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.');
-      /* Codex PR #33: steht aus einem umgerechneten Prüfbericht ein Wert weiter in mg/m² in der Tabelle („1.250“, „< 60“, Exponent), passt der
-         Vermerk („… sind hier in µg/cm² umgerechnet“) nicht ganz – Wortlaut bleibt (freigegeben), Hinweis zum Anpassen in Word (Entscheidung Basti) */
-      const umBerichte = new Set(umgerechnet.map(x => x.bericht)), bleibenMg = clW.filter(x => !x.wPruefbericht && umBerichte.has(x.bericht) && BW.chloridEinheit(x.w.u) === 10 && wertText(x.w) !== x.w.r);   // „n. b.“ steht ohne Einheit da
-      if (mitTabellen && bleibenMg.length) hinweise.push(`${probe(bleibenMg)} ${bleibenMg.length === 1 ? 'bleibt' : 'bleiben'} in mg/m² – Vermerk in ${nr52} in Word anpassen.`);
       if (planVds.some(k => CHLORID.test(k))) hinweise.push(`${nr52}: In PlanKit ist für Chlorid eine eigene Skala eingestellt – der Bericht ordnet nach VdS 2357 (5–10 µg/cm²) ein, die Ergebniskarte nach der PlanKit-Skala. Bitte prüfen.`);
       const reg = clW.filter(x => !x.rolle), bew = reg.filter(x => x.stufe >= 0);
       reg.filter(x => x.stufe < 0).forEach(x => nichtBewertbar(x, 'Chlorid', nr52));
@@ -595,12 +592,6 @@ function bericht(eingabe) {
         kopf: ['Probe', 'Labor-Nr.', 'Entnahmestelle', u ? `Chlorid [${u}]` : 'Chlorid', 'Einordnung'], ausrichtung: ['center', 'center', 'left', 'center', 'left'],
         spalten: SPALTEN_ERG, ohneUmbruch: [1],
         zeilen: clW.map(x => [`${x.nr != null ? x.nr : x.label}${rolleZusatz(x)}`, x.labNr, x.stelle, u ? x.w.r : wertText(x.w), x.stufe >= 0 ? CL_STUFE[x.stufe] : '–']) });
-      /* Vermerk (Wortlaut freigegeben): nur wenn umgerechnet wurde, mit und ohne Tabelle – die Anlage zeigt weiter mg/m².
-         Nur die betroffenen Prüfberichte; mehrere → „Die Prüfberichte (Anlagen 2 und 3) weisen …“. */
-      if (umgerechnet.length) {
-        const nrs = [...new Set(umgerechnet.map(x => x.bericht).filter(Boolean))], anl = anlNr(nrs);
-        r.push(` ${nrs.length > 1 ? 'Die Prüfberichte' : 'Der Prüfbericht'}${anl ? ' ' + anl : ''} ${nrs.length > 1 ? 'weisen' : 'weist'} die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).`);
-      }
       const runs = fuegen(r); if (runs.length) befund.push({ t: 'p', runs });
       if (tab) befund.push(tab);
       /* Abschluss nur aus den regulären, eingeordneten Proben (ohne Referenz/Freimessung):
