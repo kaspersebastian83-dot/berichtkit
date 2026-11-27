@@ -763,7 +763,7 @@ const daten = {
     await dateiIn(P2, ergP2, JSON.stringify(br.erg)); await weg(xml1);
     console.log('ok – B2: Prüfberichte geändert sperrt (Entwurf geht), nur LabelKit gelbe Zeile, fremdes Projekt sperrt, Stand unbekannt gelbe Zeile ohne Sperre');
 
-    // Chlorid im Bericht immer in µg/cm² (1.22.0): BR5 (Prüfbericht in mg/m²) → Hinweis in der Seitenleiste ohne Sperre, Vorschau in µg/cm² mit Vermerk
+    // Chlorid im Bericht immer in µg/cm² (1.22.0): BR5 (Prüfbericht in mg/m²) → Hinweis in der Seitenleiste ohne Sperre, Vorschau in µg/cm² – ab 1.24.0 ohne Vermerk
     const br5 = DB.faelle.BR5_Gewerbe_Bohrmehl_Tabellen;
     await dateiIn(P2, '_Spektron/_Projekt.json', JSON.stringify(br5.pj)); await dateiIn(P2, lkP2, JSON.stringify(br5.lk)); await dateiIn(P2, ergP2, JSON.stringify(br5.erg));
     await oeffne(encodeURIComponent(P2) + '&art=brand');
@@ -773,16 +773,18 @@ const daten = {
     assert.ok(await page.isVisible('#btnErstellen'), 'Speichern bleibt frei');
     const vor5 = await page.textContent('#vorschau');
     assert.match(vor5, /Die oberhalb der Bestimmungsgrenze ermittelten Chloridflächenbelastungen liegen zwischen 2 und 15 µg\/cm²\./);
-    assert.ok(vor5.includes('Der Prüfbericht (Anlage 1) weist die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).'), 'Vermerk ohne Tabelle');
+    assert.ok(vor5.includes('Bei Probe 5 lag der Chloridgehalt unterhalb der Bestimmungsgrenze. Die Einzelergebnisse sind dem Prüfbericht (Anlage 1) zu entnehmen.'), 'Verweis ohne Tabelle');
+    assert.doesNotMatch(vor5, /umgerechnet|10 mg\/m² = 1 µg\/cm²|weist die Chloridgehalte/, 'kein Vermerk ohne Tabelle');
     await alleAuf(); await page.check('#fbTabellen');
     await page.waitForFunction(() => /Chlorid \[µg\/cm²\]/.test(document.getElementById('vorschau').textContent));
-    assert.ok((await page.textContent('#vorschau')).includes('umgerechnet (10 mg/m² = 1 µg/cm²)'), 'Vermerk mit Tabelle');
+    assert.doesNotMatch(await page.textContent('#vorschau'), /umgerechnet|10 mg\/m² = 1 µg\/cm²|weist die Chloridgehalte/, 'kein Vermerk mit Tabelle');
+    assert.ok((await page.textContent('#hinweise')).includes('Chlorid: Der Prüfbericht gibt mg/m² an – im Bericht in µg/cm² umgerechnet.'), 'Hinweis bleibt mit Tabelle');
     assert.doesNotMatch(await page.textContent('#vorschau'), /Chlorid \[mg\/m²\]/);
     await page.uncheck('#fbTabellen');
     await dateiIn(P2, '_Spektron/_Projekt.json', JSON.stringify(br.pj)); await dateiIn(P2, lkP2, JSON.stringify(br.lk)); await dateiIn(P2, ergP2, JSON.stringify(br.erg));
     await oeffne(encodeURIComponent(P2) + '&art=brand');
     assert.ok(!(await page.textContent('#hinweise')).includes('im Bericht in µg/cm² umgerechnet'), 'nur µg/cm² (BR1): kein Hinweis');
-    console.log('ok – Chlorid µg/cm²: Hinweis in der Seitenleiste ohne Sperre, Vorschau mit Vermerk mit und ohne Tabelle');
+    console.log('ok – Chlorid µg/cm²: Hinweis in der Seitenleiste ohne Sperre, Vorschau ohne Vermerk mit und ohne Tabelle');
 
     // M7: abgeschnittene _BerichtKit.json mit getipptem Text → beim Öffnen und Tippen unverändert; „Neu anlegen“ bewahrt sie auf
     const kaputt = '{"format":"spektron-bericht","version":1,"nurEigene":true,"art":"brand","form":{"brand":{"schadenbild":"Der Brand ereignete sich in der Küche, Decke stark verru';
