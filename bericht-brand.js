@@ -383,7 +383,7 @@ function bericht(eingabe) {
   else ob.push({ t: 'p', runs: ['Bei dem Ortstermin waren ', L(fb.anwesende, 'Anwesende eintragen'), ' sowie ', wirSatz, BUERO + ' anwesend.'] });
 
   /* Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter = eine Anlage), dann Bilddokumentation,
-     Probenplan. Ab 1.24.0 keine Anlage Brandgeruch mehr – die Einzelbewertungen stehen als Tabelle in 5.6. */
+     Probenplan. Ab 1.25.0 keine Anlage Brandgeruch mehr – die Einzelbewertungen stehen als Tabelle in 5.6. */
   const prb = [];
   for (const nr of [...rk.cl, ...rk.pak, ...asbNr, ...kmfNr, ...weitereNr]) if (!prb.includes(nr)) prb.push(nr);
   const pdfVon = nr => pruefberichtPdf(e.erg, nr);
@@ -447,7 +447,7 @@ function bericht(eingabe) {
     const wo = mitFoto.length === 1 ? `Abbildung ${a0}` : `den Abbildungen ${a0} ${mitFoto.length === 2 ? 'und' : 'bis'} ${a1}`;
     return `${mitFoto.length === 1 ? '' : 'Die '}${probe(mitFoto.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} ${mitFoto.length === 1 ? 'ist' : 'sind'} in ${wo} dargestellt.`;
   })();
-  /* Brandgeruch: ab 1.24.0 Verweis auf den Unterabschnitt in 5. (statt auf die frühere Anlage der Projektzentrale). Die Nummer
+  /* Brandgeruch: ab 1.25.0 Verweis auf den Unterabschnitt in 5. (statt auf die frühere Anlage der Projektzentrale). Die Nummer
      (5.4, 5.6 …) steht erst fest, wenn 5. gebaut ist – darum setzt 5.6 sie unten in bgVerweis ein. */
   let bgVerweis = null;
   if (nBg) {
@@ -753,7 +753,7 @@ function bericht(eingabe) {
         ausrichtung: ['center', 'left', 'center', 'center', 'center', 'center', 'center'], spalten: SPALTEN_BG,
         zeilen: alleBg.map(({ p, nr }) => [String(nr), [s(p.z1), s(p.z2)].filter(Boolean).join(', '), ...BG_KEYS.map(k => bgZelle(p[k]))]) });
     }
-    // Ab 1.24.0 kein Schluss-Satz mehr („… in Tabelle n und in Anlage m dargestellt“): die Anlage gibt es nicht mehr, die Tabelle steht
+    // Ab 1.25.0 kein Schluss-Satz mehr („… in Tabelle n und in Anlage m dargestellt“): die Anlage gibt es nicht mehr, die Tabelle steht
     // direkt darüber mit eigener Überschrift.
   }
 

@@ -6,7 +6,7 @@
    aber nicht vorgehakt; angehakt bekommen sie die Nummern danach. Eine Anlage aus mehreren Dateien (Bilddoku in Teilen,
    Probenplan je Geschoss) ist eine Anlage. Veraltete Anlagen: Hinweis und nicht vorgehakt.
    Brandbericht (Profil „brand“, ab 1.12.0): dieselben Arten wie der Asbestbericht. Die Anlage „Sensorische Prüfung auf
-   Brandgeruch“ aus der Projektzentrale (1.12.0–1.23.x feste Anlage) gibt es ab 1.24.0 nicht mehr – die Einzelbewertungen stehen
+   Brandgeruch“ aus der Projektzentrale (1.12.0–1.24.x feste Anlage) gibt es ab 1.25.0 nicht mehr – die Einzelbewertungen stehen
    als Tabelle in 5.6 des Berichts (Basti, 27.11.2026). */
 (function (root) {
 'use strict';
@@ -30,7 +30,7 @@ const ARTEN = Object.freeze({
 const PROFILE = Object.freeze({
   asbest: { fest: ['bilddoku', 'probenplan'], optional: ['ergebniskarte', 'raumbuch', 'wandansichten', 'probenahme'] },
   // Brandbericht: Prüfberichte (Chlorid, PAK, Asbest/KMF – Reihenfolge gibt der Bericht vor), Bilddokumentation, Probenplan
-  // (ab 1.24.0 ohne die Anlage Brandgeruch der Projektzentrale – die Tabelle steht in 5.6)
+  // (ab 1.25.0 ohne die Anlage Brandgeruch der Projektzentrale – die Tabelle steht in 5.6)
   brand: { fest: ['bilddoku', 'probenplan'], optional: ['ergebniskarte', 'raumbuch', 'wandansichten', 'probenahme'] },
 });
 

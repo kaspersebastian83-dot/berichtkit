@@ -39,7 +39,7 @@ const erg = berichte => ({ format: 'spektron-ergebnisse', version: 1, projekt: '
     proben: b.proben.map(([nr, werte, typ]) => ({ label: 'P' + nr, ref: 'Probe ' + nr, labNr: '999-2026-0001' + String(100 + nr), typ, reportId: 'b' + (i + 1), werte })) })),
   ersetzt: [], offen: [], hinweise: [] });
 
-/** Anlagen im Projektordner: Bilddokumentation (FotoKit, „Anlage n“), Probenplan (PlanKit), Brandgeruch (Projektzentrale – ab 1.24.0
+/** Anlagen im Projektordner: Bilddokumentation (FotoKit, „Anlage n“), Probenplan (PlanKit), Brandgeruch (Projektzentrale – ab 1.25.0
     keine Anlage mehr; die Datei bleibt in den Testdaten, damit geprüft ist, dass BerichtKit sie nicht mehr anhängt) */
 function anlagen({ bilddokuAnlage = 'Anlage 3', brandgeruch = '99-9002_Anlage_Brandgeruch_2026-10-21.docx', protokollSha = SHA_LK, plan = true, bilddoku = true } = {}) {
   const doku = 'Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf';
@@ -113,7 +113,7 @@ const faelle = {
     cfg: { ...B.cfg, labor: '' },
   },
   // Gewerbe (Lager) mit Warenvorräten und technischer Einrichtung, eigener Brandort im Satz, Teilnehmerliste, vorläufiger Prüfbericht;
-  // Brandgeruch-Anlage mit falscher Nummer im Titel und LabelKit danach geändert (bis 1.23.x veraltet → nicht vorgehakt; ab 1.24.0 keine Anlage); „ENTWURF“ im Namen aus
+  // Brandgeruch-Anlage mit falscher Nummer im Titel und LabelKit danach geändert (bis 1.24.x veraltet → nicht vorgehakt; ab 1.25.0 keine Anlage); „ENTWURF“ im Namen aus
   // 1.12.0, als der Brandbericht noch gesperrt war – seit 1.14.0 (bereit) ohne Sperre
   'BR4_Gewerbe_Teilnehmerliste_ENTWURF': {
     pj: pj({ nutzung: 'Gewerbe/Industrie', objekt: 'Industriestraße 3, 54321 Beispielstadt', versicherer: 'Andere Versicherung AG' }),

@@ -96,7 +96,7 @@ fall('4. Probenahme: Absätze je Gruppe, Zahlwort bis zwölf, Einzahl, gemeinsam
   // Asbest vor KMF (Abweichung von der Doc-Reihenfolge: die Dämmstoffprobe ist erst „entnommen“, dann „zusätzlich untersucht“)
   assert.equal(t[2], 'Zusätzlich wurden drei Materialproben (Fliesenkleber, Putz, Dämmstoff Mineralwolle) entnommen und der Eurofins Beispiel-Labor GmbH zur Untersuchung auf Asbest übergeben. Die Ergebnisse sind im Prüfbericht Nr. AR-999-2026-000102-01 dokumentiert (Anlage 2).');
   assert.equal(t[3], 'An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.');
-  assert.equal(t[4], 'Zusätzlich wurden zwei Materialproben entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt 5.6 dargestellt.', 'ab 1.24.0 Verweis auf 5.x statt auf die Anlage');
+  assert.equal(t[4], 'Zusätzlich wurden zwei Materialproben entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt 5.6 dargestellt.', 'ab 1.25.0 Verweis auf 5.x statt auf die Anlage');
   assert.equal(t[5], 'Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt.');
   assert.equal(t[6], 'Probe 9 ist in Abbildung 1 dargestellt.', 'Fotos ab 1.14.0: eigener Satz mit Probennummer vor den Abbildungen');
   const l = text(modell(F.BR3_Luecken), 4).split('\n');
@@ -129,7 +129,7 @@ fall('4. Probenahme: Absätze je Gruppe, Zahlwort bis zwölf, Einzahl, gemeinsam
   assert.equal(abschnitt(nurBm, 1).inhalt.length, 5, 'Chlorid-Bohrmehl bringt die Korrosionsabsätze in 1.');
 });
 
-fall('Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF, dann Bilddokumentation, Probenplan – ab 1.24.0 keine Anlage Brandgeruch', () => {
+fall('Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF, dann Bilddokumentation, Probenplan – ab 1.25.0 keine Anlage Brandgeruch', () => {
   // BR1 hat Brandgeruch-Proben und eine (frühere) Anlage Brandgeruch der Projektzentrale in „Mitteilungen“ – sie wird nicht mehr Anlage
   const m = modell(F.BR1_voll_Versicherung);
   assert.deepEqual(m.anlagenListe.map(a => [a.nr, a.art]), [[1, 'pruefbericht'], [2, 'pruefbericht'], [3, 'bilddoku'], [4, 'probenplan']]);
@@ -143,7 +143,7 @@ fall('Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF, dann Bilddokumentation, P
     assert.ok(!x.luecken.includes('[Anlage-Nr. Brandgeruch]'));
     assert.ok(!Object.keys(x.hinweisAktionen).some(h => /Brandgeruch/.test(h)));
   }
-  // eine früher gespeicherte Wahl „Anlage Brandgeruch angehakt“ (bis 1.23.x) ändert nichts
+  // eine früher gespeicherte Wahl „Anlage Brandgeruch angehakt“ (bis 1.24.x) ändert nichts
   const an = modell(mitForm(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF, {}, { anlagen: { brandgeruch: { an: true, key: 'egal' } } }));
   assert.deepEqual(an.anlagenListe.map(a => a.art), ['pruefbericht', 'pruefbericht', 'bilddoku', 'probenplan']);
   assert.match(text(an, 4), /Das Ergebnis ist in Abschnitt 5\.4 dargestellt\./);
@@ -550,7 +550,7 @@ fall('5.6 Brandgeruch: Methode, Ergebnis-Satz je Probe aus p1–p5 (Nr. = Reihen
   const t = utext(modell(F.BR1_voll_Versicherung), 'Sensorische Prüfung auf Brandgeruch').split('\n');
   assert.match(t[0], /^Die zwei Materialproben wurden in einem geschlossenen Luftraum auf 50 °C konditioniert und anschließend durch fünf Prüfpersonen/);
   assert.equal(t[1], 'Bei Probe 1 (Sofa Wohnzimmer, Stoffbezug) wurde von vier Prüfpersonen ein mittelstarker und von einer Prüfperson ein starker Brandgeruch festgestellt. Bei Probe 2 (Teppich Flur, Wolle) wurde von drei Prüfpersonen ein schwacher und von zwei Prüfpersonen kein Brandgeruch festgestellt.');
-  assert.equal(t.length, 2, 'ab 1.24.0 kein Schluss-Satz – danach nur noch die Tabelle (s. nächster Fall)');
+  assert.equal(t.length, 2, 'ab 1.25.0 kein Schluss-Satz – danach nur noch die Tabelle (s. nächster Fall)');
   const bg = (proben, o = {}) => modell({ ...F.BR1_voll_Versicherung, lk: D.lk({ brandgeruch: proben, bgDatum: '2026-10-20', bgBlind: false, ...o }) });
   assert.match(utext(bg([[1, 'Jacke', '', '++', '++', '++', '++', '++'], [2, '', '', '–', '-', '−', '-', '-']]), 'Brandgeruch'), /Bei Probe 1 \(Jacke\) wurde von allen fünf Prüfpersonen ein starker Brandgeruch festgestellt\. Bei Probe 2 wurde von allen fünf Prüfpersonen kein Brandgeruch festgestellt\./);
   // Gleichstand: die stärkere Bewertung zuerst
@@ -567,7 +567,7 @@ fall('5.6 Brandgeruch: Methode, Ergebnis-Satz je Probe aus p1–p5 (Nr. = Reihen
 fall('5.6 Brandgeruch-Tabelle (ab 1.23.0, R-20261126-135349-SK): nach dem Ergebnis-Absatz, dieselben Proben und Nummern wie die Sätze, nur vollständig', () => {
   const bg = (proben, o = {}, brand = {}) => modell(mitForm({ ...F.BR1_voll_Versicherung, lk: D.lk({ brandgeruch: proben, bgDatum: '2026-10-20', bgBlind: false, ...o }) }, brand));
   const bgTab = m => (unterabschnitt(m, 'Sensorische Prüfung auf Brandgeruch') || []).filter(x => x.t === 'tab');
-  // BR1: Methode · Ergebnis · Tabelle (ab 1.24.0 ohne Schluss-Satz); Kopf, Spalten (= 9070 wie die frühere Anlage der Projektzentrale), Ausrichtung
+  // BR1: Methode · Ergebnis · Tabelle (ab 1.25.0 ohne Schluss-Satz); Kopf, Spalten (= 9070 wie die frühere Anlage der Projektzentrale), Ausrichtung
   const m = modell(F.BR1_voll_Versicherung), u = unterabschnitt(m, 'Sensorische Prüfung auf Brandgeruch');
   assert.deepEqual(u.map(x => x.t), ['p', 'p', 'tab']);
   const tab = u[2];
