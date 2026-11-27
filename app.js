@@ -4,9 +4,10 @@
    Schreibt nur: die Word-Datei in „Mitteilungen“ und – über „Einstellungen“ – _Spektron-BerichtKit.json im Archivordner.
    Laborwerte und Probenbezeichnungen werden nie bearbeitet; fehlende Angaben erscheinen im Bericht gelb markiert. */
 'use strict';
-const APP_VERSION = '1.23.1';
-const APP_DATE = '26.11.2026';
+const APP_VERSION = '1.24.0';
+const APP_DATE = '27.11.2026';
 const CHANGELOG = [
+  ['1.24.0', '27.11.2026', 'Brandbericht ohne Anlage „Sensorische Prüfung auf Brandgeruch“: Die Einzelbewertungen stehen seit 1.23.0 als Tabelle in 5.6 – die Word-Anlage der Projektzentrale (Anlage PN 98 / Brandgeruch in „Mitteilungen“) kommt nicht mehr ins Anlagenverzeichnis, auch wenn sie im Ordner liegt, und es gibt keinen Hinweis „nicht gefunden“ / „veraltet“ und keine Lücke [Anlage-Nr. Brandgeruch] mehr. In 4. heißt es jetzt „Das Ergebnis ist in Abschnitt 5.6 dargestellt.“ (die Nummer folgt dem Befund, z. B. 5.4 ohne PAK/KMF/Asbest). Der Schluss-Satz in 5.6 („… in Tabelle n und in Anlage m dargestellt.“) entfällt – die Tabelle steht direkt darüber; verdeckt oder unvollständig bleibt die Lücke [Ergebnis der Brandgeruchprüfung ergänzen] der letzte Absatz. Sie war die letzte feste Anlage – angehakte optionale Anlagen dahinter (z. B. Ergebniskarte) rücken eine Nummer vor. Am Asbestbericht ändert sich nichts.'],
   ['1.23.1', '26.11.2026', 'Fotos in Unterordnern von „Fotos“ (vor FotoKit 2.7.0): Führt FotoKit ein Foto unter „Unterordner/Datei“ (z. B. „Bilder A/IMG_0001.jpg“), lesen Vorschau und Word-Datei es jetzt dort – bisher stand an der Stelle [Foto fehlt: …]. Genau eine Ebene unter „Fotos“; ein Ordner, dessen Name leer ist, „..“ heißt oder mit „_“ oder „.“ beginnt, wird nicht gelesen (dann wie bisher [Foto fehlt: …]). Fotos direkt in „Fotos“ wie bisher. Bilddoku-Suche und -Stand (Anlagen) unverändert.'],
   ['1.23.0', '26.11.2026', 'Brandbericht, 5.6 Sensorische Prüfung auf Brandgeruch: nach dem Ergebnis-Satz steht die Tabelle der Einzelbewertungen (Nr. · Probe · Person 1–5), zusätzlich zur Anlage der Projektzentrale (Rückmeldung R-20261126-135349-SK). Gleiche Proben und Nummern wie die Sätze und die Anlage (stornierte fehlen, die übrigen behalten ihren Platz in der LabelKit-Liste); „ohne“ steht wie im Methodensatz als „–“. Die Tabelle läuft in der Nummerierung nach Chlorid, PAK und Asbest weiter; der Schluss-Satz nennt dann Tabelle und Anlage. Sind die Bewertungen noch verdeckt (Blind-Modus) oder fehlt eine, gibt es keine Tabelle – wie bisher die Lücke und der Hinweis.'],
   ['1.22.0', '26.11.2026', 'Brandbericht, 5.2 Korrosionsschäden: Chlorid-Wischproben stehen im Bericht immer in µg/cm² – auch wenn der Prüfbericht mg/m² angibt (Rückmeldung R-20261117-143433-VD). Spanne, höchster Wert, Satz bei einer Probe, Referenzprobe/Freimessung und Tabelle (Kopf „Chlorid [µg/cm²]“) zeigen den Wert mit um eine Stelle verschobenem Komma (47 mg/m² → 4,7 µg/cm², „< 5“ → „< 0,5“) – keine Rundung. Eingeordnet wird wie bisher mit dem Wert des Prüfberichts. Wurde umgerechnet, steht in 5.2 der Satz „Der Prüfbericht (Anlage n) weist die Chloridgehalte in mg/m² aus; sie sind hier in µg/cm² umgerechnet (10 mg/m² = 1 µg/cm²).“, dazu ein Hinweis (keine Sperre). Werte, die sich nicht einordnen lassen (z. B. „1.250“, „µg/Probe“, „n. b.“), sowie Chlorid-Material- und Bohrmehlproben bleiben wie im Prüfbericht. Bleibt so ein Wert aus einem umgerechneten Prüfbericht in mg/m² in der Tabelle stehen, weist ein Hinweis darauf hin, den Vermerk in Word anzupassen.'],
@@ -405,7 +406,7 @@ async function quellenLesen(dir) {
       try {
         const buf = await datei.arrayBuffer();
         r.lk = JSON.parse(new TextDecoder().decode(buf));
-        // Stand der Brandgeruch-Anlage (Projektzentrale vermerkt die Prüfsumme der LabelKit-Datei im Anlagen-Protokoll)
+        // Stand der LabelKit-Datei (Name, Zeit, Prüfsumme) – für die Bestätigung der Rückfrage M2 (lkSchluessel)
         r.lkDatei = { name: datei.name, t: datei.lastModified, sha: await sha256(buf) };
         if (genau) q(true, `LabelKit: ${datei.name} (wie in ResultKit übernommen)`);
         else q(false, !quelle ? `LabelKit: ${datei.name} – ResultKit nennt keine LabelKit-Datei; dort die Ergebnisse erneut übernehmen.`
@@ -575,7 +576,7 @@ async function anlagenLesen() {
   if (lauf !== S.anlagenLauf || dir !== S.dir) return;
   if (rf && rf.data) { S.fk = rf.data; fotoListeBauen(); }
   S.planSkalen = planSkalen;
-  S.anlagen = BerichtAnlagen.erkennen({ ordnerName: dir.name, projektNr: S.ordner && S.ordner.nr, fotos, plaene, mitteilungen, protokoll, fk: S.fk, plan, planNamen, bilder, projekt: S.pj, labelkit: S.lkDatei });
+  S.anlagen = BerichtAnlagen.erkennen({ ordnerName: dir.name, projektNr: S.ordner && S.ordner.nr, fotos, plaene, mitteilungen, protokoll, fk: S.fk, plan, planNamen, bilder, projekt: S.pj });
   S.anlagenVorhanden = vorhanden;
 }
 async function anlageHinzufuegen() {
@@ -1620,7 +1621,7 @@ function verbinden() {
   window.addEventListener('focus', () => {
     if (!S.dir || S.laedt || S.speichert) return;
     const anl = () => V.stabil([S.anlagen, [...(S.anlagenVorhanden || [])]]), vorher = anl();
-    // Anlagen erst nach dem Neu-Lesen: der Stand der Brandgeruch-Anlage hängt an der Prüfsumme der eben gelesenen LabelKit-Datei
+    // Anlagen nach dem Neu-Lesen der Quellen (bis 1.23.x hing der Stand der Brandgeruch-Anlage an der LabelKit-Prüfsumme; Reihenfolge beibehalten)
     void zweiOrteZeigen(S.dir);   // K1: Zeile auch beim Zurückkommen ins Fenster neu prüfen
     S.fokusLauf = quellenAuffrischen('fokus').then(g => anlagenLesen().then(() => g)).then(g => { if (g.length || anl() !== vorher) render(); }).catch(() => {});
   });

@@ -107,8 +107,13 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   Probe = `z1, z2` mit Komma (eine Tabellenzelle kann in Vorschau und Word keinen Zeilenumbruch); Werte aus `p1`–`p5`, „ohne“ (`-`) als „–“ wie
   im Methodensatz. Nur wenn alle Bewertungen lesbar sind – Blind-Modus oder eine fehlt/unlesbar → keine Tabelle, Lücke und Hinweis wie bisher
   (eine leere Zelle würde Vorschau und Word als „–“ = ohne Brandgeruch zeigen; Test in `tests/brand.cjs`). `tabNr` läuft nach Chlorid/PAK/Asbest
-  weiter; Schluss-Satz „Die Einzelbewertungen der Prüfpersonen sind in Tabelle n und in Anlage m dargestellt.“, ohne Tabelle wie bisher.
-  Die Anlage bleibt feste Anlage; `anlagen.js` und Abschnitt 4. unverändert. Wortlaut von Überschrift und Schluss-Satz vorläufig.
+  weiter. Wortlaut der Überschrift vorläufig.
+- **Keine Anlage Brandgeruch mehr** (ab 1.24.0, Basti 27.11.2026): Weil die Tabelle in 5.6 steht, gehört die Word-Anlage der Projektzentrale
+  („Anlage PN 98 / Brandgeruch“ in `Mitteilungen/`) nicht mehr zum Brandbericht – `PROFILE.brand` ohne `brandgeruch`, die Art und
+  `brandgeruchFinden` sind aus `anlagen.js` entfernt (eine solche Datei im Ordner wird nicht angehängt, kein Hinweis, keine Lücke
+  `[Anlage-Nr. Brandgeruch]`). 4. verweist auf den Unterabschnitt: „Das Ergebnis ist in Abschnitt 5.6 dargestellt.“ (Nummer aus dem Befund,
+  in 4. als Platzhalter vorgemerkt und beim Bau von 5.6 eingesetzt). Der Schluss-Satz unter der Tabelle entfällt; verdeckt/unvollständig
+  endet 5.6 mit der Lücke `[Ergebnis der Brandgeruchprüfung ergänzen]`.
 - **Chlorid im Bericht immer in µg/cm²** (ab 1.22.0, Rückmeldung R-20261117-143433-VD, Plan `berichtkit-chlorid-einheit-plan.md`):
   Chlorid-Wischproben in mg/m² werden in 5.2 (Spanne, höchster Wert, eine Probe, Referenz/Freimessung, Tabelle mit Kopf „Chlorid [µg/cm²]“)
   in µg/cm² gezeigt. `chloridAnzeige`/`kommaVerschieben` in `bericht-bewertung.js` (außerhalb des KORROSION-CHLORID-Blocks) verschieben das Komma
@@ -156,8 +161,9 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
 `anlagen.js` (ohne Browserteile, `node tests/anlagen.cjs`) erkennt, was im Projektordner liegt, und nummeriert in der **festen
 Hausreihenfolge**: Anlage 1 = Prüfbericht(e) (mehrere zählen hoch), dann **Bilddokumentation**, dann **Probenplan**. Das Modul kennt
 nur Arten von Anlagen; welche ein Bericht erwartet, sagt das Profil (`PROFILE.asbest`, `PROFILE.brand`). Brandbericht: Prüfberichte
-in der Reihenfolge Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter = eine Anlage), dann Bilddokumentation, Probenplan und
-– nur mit Brandgeruch-Proben in LabelKit – die **Sensorische Prüfung auf Brandgeruch** aus der Projektzentrale.
+in der Reihenfolge Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter = eine Anlage), dann Bilddokumentation und Probenplan.
+Die frühere Anlage **Sensorische Prüfung auf Brandgeruch** der Projektzentrale (1.12.0–1.23.x) gibt es ab 1.24.0 nicht mehr – die
+Einzelbewertungen stehen als Tabelle in 5.6.
 
 | Art | Wo | Erkannt an | Veraltet, wenn … |
 |---|---|---|---|
@@ -165,7 +171,6 @@ in der Reihenfolge Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter 
 | Probenplan | `Pläne/` | `Probenplan <Ordner>.pdf` (alle Geschosse) oder `… - EG.pdf`, `… - OG.pdf` (= eine Anlage), „ (2)“ = neuere Fassung | `.probenplan` nach dem PDF gespeichert |
 | Ergebniskarte | `Pläne/` | `Probenplan … - Ergebniskarte.pdf` | wie Probenplan |
 | Raumbuch, Wandansichten, Anlage Probenahme | `Mitteilungen/` | PlanKit-Namen `<Nr>_Raumbuch_<Datum>.docx` usw. | Prüfsumme der `.probenplan` laut `_Anlagen-Protokoll.txt` ≠ jetzt; sonst Dateizeit |
-| Brandgeruch (nur Brandbericht) | `Mitteilungen/` | Projektzentrale `<Nr>_<Titel>_Brandgeruch_<Datum>.docx` bzw. `…_PN98-Brandgeruch_…` (neueste); Anlagen-Nr. aus dem Titel („Anlage-4“) | Prüfsumme der LabelKit-Datei laut `_Anlagen-Protokoll.txt` ≠ jetzt; sonst LabelKit-Datei neuer als die Anlage |
 
 - Gefunden und aktuell → angehakt. **Veraltet oder unvollständig → Hinweis und nicht angehakt** (selbst anhaken geht, mit Hinweis).
   Feste Anlagen, die fehlen, stehen grau da mit Link in die App. Jede feste Anlage, die nicht oder mit Mangel im Bericht ist (fehlt,
@@ -186,7 +191,7 @@ Aufbau (ab 1.10.0, Vorbereitung für weitere Berichtsarten):
 | `bericht-text.js` | Fassade für `app.js` und Tests (`BerichtText`): wählt die Berichtsart nach `form.art` (leer = `asbest`), `BERICHTSARTEN` mit `bereit` |
 | `bericht-gemeinsam.js` | Bausteine jeder Berichtsart: Helfer, Lücken, Personen/Rollen, Proben aus LabelKit/ResultKit mit Asbest-/KMF-Befund und Abgleich, Projektsicht, Deckblatt mit/ohne Versicherung, Kopfzeilen, Auftraggeber mit Artikel, Unterschriften, Anlagen; ab 1.14.0 `freitext()` (Schreibweise der Freitextfelder, siehe unten) |
 | `bericht-asbest.js` | Berichtsart `asbest` – die Texte unten |
-| `bericht-brand.js` | Berichtsart `brand` (Doc „Textbausteine Brand-Sanierungsvorschlag“ + Entscheidungen aus fünf echten Mitteilungen) – ab 1.12.0 das Gerüst: Deckblatt („Schaden vom:“ / „Brandschaden“), Kopf, 1. Veranlassung, 2. Aufgabenstellung, 3. Ortsbesichtigung, 4. Probenahme (ab 1.13.0 mit Chlorid-Material/-Bohrmehl und weiteren Proben aus LabelKit „Sonstige“), 7. Arbeitsschutzmaßnahmen, Unterschriften, Anlagen; ab 1.13.0 5. Befund: 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest, 5.6 Brandgeruch (ab 1.23.0 mit Tabelle der Einzelbewertungen), 5.7 weitere Untersuchungen (nur, was es gibt; Spanne, Zähl-Absatz, höchster Wert, < BG, Referenzprobe/Freimessung, Ergebnistabellen hinter dem Haken, Asbest-Tabelle immer); ab 1.14.0 Freitext: 5.1 Brandlast und Schadenbild, 6. Sanierungsmaßnahmen (Einleitungssatz, 6.1–6.3 nach den Umfang-Haken) bzw. Schlussfolgerungen, 7. Bereich/zweiter Bereich mit eigenem GB/Zusatz, 8. Zusammenfassung („Bereich: Maßnahme“), Asbest-/KMF-Fotos in 4. wie im Asbestbericht. Eigene Angaben der Brand-Seite stehen in `form.brand` (in `_BerichtKit.json` unter `brand`, feldweise gemerkt) |
+| `bericht-brand.js` | Berichtsart `brand` (Doc „Textbausteine Brand-Sanierungsvorschlag“ + Entscheidungen aus fünf echten Mitteilungen) – ab 1.12.0 das Gerüst: Deckblatt („Schaden vom:“ / „Brandschaden“), Kopf, 1. Veranlassung, 2. Aufgabenstellung, 3. Ortsbesichtigung, 4. Probenahme (ab 1.13.0 mit Chlorid-Material/-Bohrmehl und weiteren Proben aus LabelKit „Sonstige“), 7. Arbeitsschutzmaßnahmen, Unterschriften, Anlagen; ab 1.13.0 5. Befund: 5.2 Chlorid, 5.3 PAK, 5.4 KMF, 5.5 Asbest, 5.6 Brandgeruch (ab 1.23.0 mit Tabelle der Einzelbewertungen, ab 1.24.0 ohne Anlage), 5.7 weitere Untersuchungen (nur, was es gibt; Spanne, Zähl-Absatz, höchster Wert, < BG, Referenzprobe/Freimessung, Ergebnistabellen hinter dem Haken, Asbest-Tabelle immer); ab 1.14.0 Freitext: 5.1 Brandlast und Schadenbild, 6. Sanierungsmaßnahmen (Einleitungssatz, 6.1–6.3 nach den Umfang-Haken) bzw. Schlussfolgerungen, 7. Bereich/zweiter Bereich mit eigenem GB/Zusatz, 8. Zusammenfassung („Bereich: Maßnahme“), Asbest-/KMF-Fotos in 4. wie im Asbestbericht. Eigene Angaben der Brand-Seite stehen in `form.brand` (in `_BerichtKit.json` unter `brand`, feldweise gemerkt) |
 | `bericht-bewertung.js` | ab 1.13.0: Einordnung der Laborwerte für 5.2/5.3 – Zahlen lesen, BG/n. n., KORROSION-CHLORID v1 (5–10 µg/cm², Einheit umgerechnet) und VdS-Faktor Σ16 EPA-PAK **aus ResultKit `bewertung.ts`/`uebersicht.ts`**, Rolle Referenzprobe/Freimessung aus dem Datenarchiv der Projektzentrale, Anhang B (VDI 3866 Blatt 5) aus `nwg` – dort ändern, hier nachziehen (`tests/brand.cjs` vergleicht die Tabellen, wenn `../resultkit` daneben liegt, und `rolleAuto` mit `../projektzentrale` – in CI Pflicht) |
 | `bericht-luecken.js` | je Berichtsart: welche Lücke welches Formularfeld füllt (Zähler, Sprung, gelbe Umrandung) bzw. wo sie sonst zu füllen ist |
 

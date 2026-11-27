@@ -190,8 +190,8 @@
       "runs": [
        "Zusätzlich wurden zwei Materialproben entnommen und am ",
        "20.10.2026",
-       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ",
-       "5",
+       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt ",
+       "5.6",
        " dargestellt."
       ]
      },
@@ -625,14 +625,6 @@
         "(+)"
        ]
       ]
-     },
-     {
-      "t": "p",
-      "runs": [
-       "Die Einzelbewertungen der Prüfpersonen sind in Tabelle 4 und in Anlage ",
-       "5",
-       " dargestellt."
-      ]
      }
     ]
    },
@@ -849,10 +841,6 @@
    [
     "Anlage 4: ",
     "Probenplan"
-   ],
-   [
-    "Anlage 5: ",
-    "Sensorische Prüfung auf Brandgeruch"
    ]
   ],
   "anlagenTeile": [
@@ -899,22 +887,13 @@
       "Probenplan"
      ]
     ]
-   },
-   {
-    "label": "Anlage 5:",
-    "zeilen": [
-     [
-      "Sensorische Prüfung auf Brandgeruch"
-     ]
-    ]
    }
   ],
   "anlagenDateien": [
    "Laborergebnisse/AR-999-2026-000101-01.pdf",
    "Laborergebnisse/AR-999-2026-000102-01.pdf",
    "Fotos/Bilddokumentation_99.9002_Beispielstadt_2026-10-21.pdf",
-   "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf",
-   "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx"
+   "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
   ],
   "anlagenListe": [
    {
@@ -947,14 +926,6 @@
     "titel": "Probenplan",
     "dateien": [
      "Pläne/Probenplan 99.9002 Brandweg Beispielstadt Tst.pdf"
-    ]
-   },
-   {
-    "nr": 5,
-    "art": "brandgeruch",
-    "titel": "Sensorische Prüfung auf Brandgeruch",
-    "dateien": [
-     "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx"
     ]
    }
   ],
@@ -1023,27 +994,6 @@
      "app": "PlanKit",
      "link": "../Probenplan/",
      "ziel": "plankit"
-    }
-   },
-   {
-    "art": "brandgeruch",
-    "titel": "Sensorische Prüfung auf Brandgeruch",
-    "nr": 5,
-    "an": true,
-    "fest": true,
-    "dateien": [
-     "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx"
-    ],
-    "t": 1792576800000,
-    "key": "Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx@1792576800000",
-    "details": "",
-    "zustand": "ok",
-    "grund": "",
-    "app": {
-     "titel": "Sensorische Prüfung auf Brandgeruch",
-     "app": "Projektzentrale",
-     "link": "../Projektzentrale/",
-     "ziel": "projektzentrale"
     }
    }
   ],
@@ -1840,10 +1790,8 @@
        {
         "gap": "[Prüfdatum Brandgeruch]"
        },
-       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ",
-       {
-        "gap": "[Anlage-Nr. Brandgeruch]"
-       },
+       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt ",
+       "5.4",
        " dargestellt."
       ]
      },
@@ -1957,16 +1905,6 @@
        {
         "gap": "[Ergebnis der Brandgeruchprüfung ergänzen]"
        }
-      ]
-     },
-     {
-      "t": "p",
-      "runs": [
-       "Die Einzelbewertungen der Prüfpersonen sind in Anlage ",
-       {
-        "gap": "[Anlage-Nr. Brandgeruch]"
-       },
-       " dargestellt."
       ]
      }
     ]
@@ -2248,22 +2186,6 @@
      "link": "../Probenplan/",
      "ziel": "plankit"
     }
-   },
-   {
-    "art": "brandgeruch",
-    "titel": "Sensorische Prüfung auf Brandgeruch",
-    "nr": null,
-    "an": false,
-    "fest": true,
-    "dateien": [],
-    "zustand": "fehlt",
-    "grund": "nicht gefunden – in Projektzentrale erstellen",
-    "app": {
-     "titel": "Sensorische Prüfung auf Brandgeruch",
-     "app": "Projektzentrale",
-     "link": "../Projektzentrale/",
-     "ziel": "projektzentrale"
-    }
    }
   ],
   "proben": [],
@@ -2273,8 +2195,7 @@
    "Nutzung fehlt in der Projektzentrale – in 1. steht „in dem Objekt“. Nutzung eintragen oder unter „Vor Ort & Proben“ den Brandort im Satz angeben.",
    "Bilddokumentation trägt „Anlage 3“, im Bericht ist sie Anlage 4 – in FotoKit die Anlagen-Nr. ändern und die PDF neu erstellen.",
    "Probenplan nicht gefunden – nicht im Bericht. In PlanKit erstellen.",
-   "Sensorische Prüfung auf Brandgeruch nicht gefunden – nicht im Bericht. In Projektzentrale erstellen.",
-   "Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für die Anlage in LabelKit „Ergebnisse aufdecken“ und speichern.",
+   "Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für den Bericht in LabelKit „Ergebnisse aufdecken“ und speichern.",
    "Hintergrundreferenz PAK fehlt (Nutzung in der Projektzentrale nicht eingetragen) – unter „Befund & Texte“ 10 oder 100 µg/m² wählen.",
    "Prüfbericht AR-999-2026-000303-01: PDF nicht in „Laborergebnisse“ – für die Anlage bitte ablegen."
   ],
@@ -2283,12 +2204,6 @@
     "app": "PlanKit",
     "link": "../Probenplan/",
     "ziel": "plankit",
-    "was": "erstellen"
-   },
-   "Sensorische Prüfung auf Brandgeruch nicht gefunden – nicht im Bericht. In Projektzentrale erstellen.": {
-    "app": "Projektzentrale",
-    "link": "../Projektzentrale/",
-    "ziel": "projektzentrale",
     "was": "erstellen"
    }
   },
@@ -2349,7 +2264,6 @@
    "[Anwesende eintragen]",
    "[Labor]",
    "[Prüfdatum Brandgeruch]",
-   "[Anlage-Nr. Brandgeruch]",
    "[Brandlast und Schadenbild beschreiben]",
    "[Hintergrundreferenz 10 oder 100 µg/m²]",
    "[Ergebnis der Brandgeruchprüfung ergänzen]",
@@ -2527,10 +2441,8 @@
       "runs": [
        "Zusätzlich wurde eine Materialprobe entnommen und am ",
        "20.10.2026",
-       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ",
-       {
-        "gap": "[Anlage-Nr. Brandgeruch]"
-       },
+       " sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt ",
+       "5.4",
        " dargestellt."
       ]
      },
@@ -2688,16 +2600,6 @@
         "+",
         "++"
        ]
-      ]
-     },
-     {
-      "t": "p",
-      "runs": [
-       "Die Einzelbewertungen der Prüfpersonen sind in Tabelle 1 und in Anlage ",
-       {
-        "gap": "[Anlage-Nr. Brandgeruch]"
-       },
-       " dargestellt."
       ]
      },
      {
@@ -3014,27 +2916,6 @@
      "link": "../Probenplan/",
      "ziel": "plankit"
     }
-   },
-   {
-    "art": "brandgeruch",
-    "titel": "Sensorische Prüfung auf Brandgeruch",
-    "nr": null,
-    "an": false,
-    "fest": true,
-    "dateien": [
-     "Mitteilungen/99-9002_Anlage-7_Brandgeruch_2026-10-21.docx"
-    ],
-    "t": 1792576800000,
-    "key": "Mitteilungen/99-9002_Anlage-7_Brandgeruch_2026-10-21.docx@1792576800000#veraltet",
-    "details": "",
-    "zustand": "veraltet",
-    "grund": "LabelKit-Daten nach dem Erstellen geändert",
-    "app": {
-     "titel": "Sensorische Prüfung auf Brandgeruch",
-     "app": "Projektzentrale",
-     "link": "../Projektzentrale/",
-     "ziel": "projektzentrale"
-    }
    }
   ],
   "proben": [],
@@ -3042,18 +2923,10 @@
   "storniert": [],
   "hinweise": [
    "Probenahmedatum in LabelKit (15.10.2026) weicht vom Ortstermin der Projektzentrale (14.10.2026) ab – bitte prüfen.",
-   "Sensorische Prüfung auf Brandgeruch veraltet – nicht im Bericht. In Projektzentrale neu erstellen oder trotzdem anhaken.",
    "Foto „IMG_0201.jpg“ (6. Warenvorräte): keine Beschreibung in FotoKit – dort ergänzen oder im Feld „[Abb: IMG_0201.jpg | Bildunterschrift]“ schreiben.",
    "Prüfbericht AR-999-2026-000401-01 ist vorläufig – der Bericht bekommt die Kopfzeile „Vorläufig“."
   ],
-  "hinweisAktionen": {
-   "Sensorische Prüfung auf Brandgeruch veraltet – nicht im Bericht. In Projektzentrale neu erstellen oder trotzdem anhaken.": {
-    "app": "Projektzentrale",
-    "link": "../Projektzentrale/",
-    "ziel": "projektzentrale",
-    "was": "öffnen"
-   }
-  },
+  "hinweisAktionen": {},
   "sperren": [],
   "probenehmerQuelle": {
    "angenommen": true,
@@ -3094,7 +2967,6 @@
    "referenzVorgabe": "100"
   },
   "luecken": [
-   "[Anlage-Nr. Brandgeruch]",
    "[Bewertung der weiteren Untersuchungen ergänzen]",
    "[Sanierungsmaßnahmen Gebäude beschreiben]",
    "[Bildunterschrift ergänzen]"
