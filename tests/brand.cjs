@@ -96,13 +96,13 @@ fall('4. Probenahme: Absätze je Gruppe, Zahlwort bis zwölf, Einzahl, gemeinsam
   // Asbest vor KMF (Abweichung von der Doc-Reihenfolge: die Dämmstoffprobe ist erst „entnommen“, dann „zusätzlich untersucht“)
   assert.equal(t[2], 'Zusätzlich wurden drei Materialproben (Fliesenkleber, Putz, Dämmstoff Mineralwolle) entnommen und der Eurofins Beispiel-Labor GmbH zur Untersuchung auf Asbest übergeben. Die Ergebnisse sind im Prüfbericht Nr. AR-999-2026-000102-01 dokumentiert (Anlage 2).');
   assert.equal(t[3], 'An einer Materialprobe künstlicher Mineralfaserdämmung wurde zusätzlich untersucht, ob es sich um WHO-Fasern handelt, und der Kanzerogenitätsindex (KI) bestimmt.');
-  assert.equal(t[4], 'Zusätzlich wurden zwei Materialproben entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage 5 dargestellt.');
+  assert.equal(t[4], 'Zusätzlich wurden zwei Materialproben entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt 5.6 dargestellt.', 'ab 1.25.0 Verweis auf 5.x statt auf die Anlage');
   assert.equal(t[5], 'Die Entnahmestellen sind in der Bilddokumentation (Anlage 3) und im Probenplan (Anlage 4) dargestellt.');
   assert.equal(t[6], 'Probe 9 ist in Abbildung 1 dargestellt.', 'Fotos ab 1.14.0: eigener Satz mit Probennummer vor den Abbildungen');
   const l = text(modell(F.BR3_Luecken), 4).split('\n');
   assert.equal(l[0], 'Zur Messung der Chloridbelastung wurde eine Wischprobe entnommen. Die Probe wurde der [Labor] zur Untersuchung auf Chlorid übergeben. Die Analysenergebnisse sind dem Prüfbericht Nr. AR-999-2026-000301-01 zu entnehmen (Anlage 1).');
   assert.match(l[1], /Die Analysenergebnisse sind den Prüfberichten Nr\. AR-999-2026-000302-01 und Nr\. AR-999-2026-000303-01 zu entnehmen \(Anlagen 2 und 3\)\.$/);
-  assert.equal(l[2], 'Zusätzlich wurde eine Materialprobe entnommen und am [Prüfdatum Brandgeruch] sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage [Anlage-Nr. Brandgeruch] dargestellt.');
+  assert.equal(l[2], 'Zusätzlich wurde eine Materialprobe entnommen und am [Prüfdatum Brandgeruch] sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt 5.4 dargestellt.');
   assert.equal(l[3], 'Die Entnahmestellen sind in der Bilddokumentation (Anlage 4) dargestellt.');
   // ab 13 als Ziffer; stornierte zählen nicht
   const viele = Array.from({ length: 13 }, (_, i) => [i + 1, '2026-10-14', 'Raum ' + i, 'Wischprobe']);
@@ -129,29 +129,28 @@ fall('4. Probenahme: Absätze je Gruppe, Zahlwort bis zwölf, Einzahl, gemeinsam
   assert.equal(abschnitt(nurBm, 1).inhalt.length, 5, 'Chlorid-Bohrmehl bringt die Korrosionsabsätze in 1.');
 });
 
-fall('Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF, dann Bilddokumentation, Probenplan, Brandgeruch – Brandgeruch nur mit Proben', () => {
+fall('Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF, dann Bilddokumentation, Probenplan – ab 1.25.0 keine Anlage Brandgeruch', () => {
+  // BR1 hat Brandgeruch-Proben und eine (frühere) Anlage Brandgeruch der Projektzentrale in „Mitteilungen“ – sie wird nicht mehr Anlage
   const m = modell(F.BR1_voll_Versicherung);
-  assert.deepEqual(m.anlagenListe.map(a => [a.nr, a.art]), [[1, 'pruefbericht'], [2, 'pruefbericht'], [3, 'bilddoku'], [4, 'probenplan'], [5, 'brandgeruch']]);
-  assert.deepEqual(m.anlagenTeile.map(a => T.text(a.zeilen[0])), ['Prüfbericht Nr. AR-999-2026-000101-01', 'Prüfbericht Nr. AR-999-2026-000102-01', 'Bilddokumentation', 'Probenplan', 'Sensorische Prüfung auf Brandgeruch']);
-  assert.deepEqual(m.anlagenDateien.at(-1), 'Mitteilungen/99-9002_Anlage_Brandgeruch_2026-10-21.docx');
-  // ohne Brandgeruch-Proben: keine Zeile, kein Hinweis – auch wenn eine Datei da ist
-  const u = modell({ ...F.BR2_nur_PAK_ohne_Versicherung_GB0, anlagen: D.anlagen({ bilddokuAnlage: 'Anlage 2' }) });
-  assert.ok(!u.anlagenZeilen.some(z => z.art === 'brandgeruch')); assert.ok(!u.hinweise.some(h => /Brandgeruch/.test(h)));
-  // mit Proben, Datei fehlt: Hinweis mit Sprung in die Projektzentrale; veraltet (LabelKit danach geändert) → nicht vorgehakt
-  const l = modell(F.BR3_Luecken);
-  const h = l.hinweise.find(x => /Sensorische Prüfung auf Brandgeruch nicht gefunden/.test(x)); assert.ok(h);
-  assert.deepEqual(l.hinweisAktionen[h], { app: 'Projektzentrale', link: '../Projektzentrale/', ziel: 'projektzentrale', was: 'erstellen' });
-  const v = modell(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF);
-  assert.ok(!v.anlagenListe.some(a => a.art === 'brandgeruch')); assert.equal(v.anlagenZeilen.find(z => z.art === 'brandgeruch').zustand, 'veraltet');
-  assert.ok(v.hinweise.some(x => /Sensorische Prüfung auf Brandgeruch veraltet – nicht im Bericht/.test(x)));
-  // trotzdem angehakt: Nummer im Titel („Anlage 7“) passt nicht → Hinweis
-  const z = v.anlagenZeilen.find(x => x.art === 'brandgeruch');
-  const an = modell(mitForm(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF, {}, { anlagen: { brandgeruch: { an: true, key: z.key } } }));
-  // BR4 hat zwei Prüfberichte (Chlorid/PAK, weitere Untersuchungen) → Brandgeruch ist Anlage 5
-  assert.equal(an.anlagenListe.find(a => a.art === 'brandgeruch').nr, 5);
-  assert.ok(an.hinweise.some(x => x === 'Brandgeruch-Anlage trägt „Anlage 7“, im Bericht ist sie Anlage 5 – in der Projektzentrale mit „Anlage 5“ neu erstellen.'));
-  assert.match(text(an, 4), /Das Ergebnis ist in Anlage 5 dargestellt\./);
-  assert.match(text(an, 5), /Die Einzelbewertungen der Prüfpersonen sind in Tabelle 1 und in Anlage 5 dargestellt\./);
+  assert.deepEqual(m.anlagenListe.map(a => [a.nr, a.art]), [[1, 'pruefbericht'], [2, 'pruefbericht'], [3, 'bilddoku'], [4, 'probenplan']]);
+  assert.deepEqual(m.anlagenTeile.map(a => T.text(a.zeilen[0])), ['Prüfbericht Nr. AR-999-2026-000101-01', 'Prüfbericht Nr. AR-999-2026-000102-01', 'Bilddokumentation', 'Probenplan']);
+  assert.ok(!m.anlagenDateien.some(d => /Brandgeruch/.test(d)));
+  assert.ok(!m.anlagenZeilen.some(z => z.art === 'brandgeruch'), 'keine Zeile in der Anlagenliste der Oberfläche');
+  // keine Hinweise zur Anlage – weder „nicht gefunden“ (BR3, keine Datei) noch „veraltet“ / falsche Nummer (BR4) – und keine Lücke
+  for (const f of [F.BR1_voll_Versicherung, F.BR3_Luecken, F.BR4_Gewerbe_Teilnehmerliste_ENTWURF]) {
+    const x = modell(f);
+    assert.ok(!x.hinweise.some(h => /Sensorische Prüfung auf Brandgeruch|Brandgeruch-Anlage|PN 98|für die Anlage in LabelKit/.test(h)), x.hinweise.join(' | '));
+    assert.ok(!x.luecken.includes('[Anlage-Nr. Brandgeruch]'));
+    assert.ok(!Object.keys(x.hinweisAktionen).some(h => /Brandgeruch/.test(h)));
+  }
+  // eine früher gespeicherte Wahl „Anlage Brandgeruch angehakt“ (bis 1.24.x) ändert nichts
+  const an = modell(mitForm(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF, {}, { anlagen: { brandgeruch: { an: true, key: 'egal' } } }));
+  assert.deepEqual(an.anlagenListe.map(a => a.art), ['pruefbericht', 'pruefbericht', 'bilddoku', 'probenplan']);
+  assert.match(text(an, 4), /Das Ergebnis ist in Abschnitt 5\.4 dargestellt\./);
+  assert.doesNotMatch(text(an, 5), /Anlage 5|Einzelbewertungen der Prüfpersonen sind/);
+  // die Art gibt es nicht mehr – weder im Asbest- noch im Brandprofil
+  assert.equal(A.ARTEN.brandgeruch, undefined); assert.equal(A.brandgeruchFinden, undefined);
+  for (const p of Object.values(A.PROFILE)) assert.ok(!p.fest.includes('brandgeruch') && !p.optional.includes('brandgeruch'));
 });
 
 fall('Freitext-Schreibweise (bericht-gemeinsam.js freitext): Absätze, „- “ Aufzählung, „## Titel“, [Abb: Datei], **fett**, [Lücke]', () => {
@@ -356,23 +355,6 @@ fall('Lücke → Feld: jede Lücke des Brandberichts steht in FELDER.brand, Feld
     assert.equal(L.zuordnen([g], 'brand')[0].wo, 'in Word ergänzen', g);
 });
 
-fall('Anlage Brandgeruch erkennen: Name der Projektzentrale, neueste zuerst, Nummer aus dem Titel, Stand über das Anlagen-Protokoll', () => {
-  const t = Date.parse('2026-10-21T10:00:00Z'), lkNeu = { name: 'x_Daten.json', t: t + 3600e3, sha: 'e'.repeat(64) };
-  const prot = (datei, sha) => `2026-10-21T10:00:00.000Z | ${datei} | ${'c'.repeat(64)} | LabelKit/x_Daten.json | ${sha} | Projektzentrale 1.39.0`;
-  const nurPn98 = A.brandgeruchFinden([{ name: '99-9002_Anlage_PN98_2026-10-21.docx', t }], '', null);
-  assert.equal(nurPn98, null, 'nur PN 98 ist keine Brandgeruch-Anlage');
-  let k = A.brandgeruchFinden([{ name: '99-9002_Anlage_PN98-Brandgeruch_2026-10-20.docx', t: t - 1 }, { name: '99-9002_Anlage-5_Brandgeruch_2026-10-21_2.docx', t }], prot('99-9002_Anlage-5_Brandgeruch_2026-10-21_2.docx', 'e'.repeat(64)), lkNeu);
-  assert.deepEqual(k.dateien, ['Mitteilungen/99-9002_Anlage-5_Brandgeruch_2026-10-21_2.docx']); assert.equal(k.nrImDokument, 5); assert.equal(k.veraltet, false, 'gleiche Prüfsumme = aktuell, auch wenn die Datei älter ist');
-  k = A.brandgeruchFinden([{ name: '99-9002_Anlage_Brandgeruch_2026-10-21.docx', t }], prot('99-9002_Anlage_Brandgeruch_2026-10-21.docx', 'f'.repeat(64)), lkNeu);
-  assert.equal(k.veraltet, true); assert.equal(k.nrImDokument, null); assert.match(k.grund, /LabelKit-Daten nach dem Erstellen geändert/);
-  k = A.brandgeruchFinden([{ name: '99-9002_Anlage_Brandgeruch_2026-10-21.docx', t }], '', lkNeu);
-  assert.equal(k.veraltet, true, 'ohne Protokoll: Zeitvergleich'); assert.match(k.grund, /älter als die LabelKit-Daten/);
-  k = A.brandgeruchFinden([{ name: '99-9002_Anlage_Brandgeruch_2026-10-21.docx', t }], '', null);
-  assert.equal(k.veraltet, null); assert.match(k.grund, /Stand nicht prüfbar/);
-  // Asbestbericht kennt die Art nicht (Profil asbest) – eine Brandgeruch-Datei ändert dort nichts
-  assert.ok(!A.PROFILE.asbest.fest.includes('brandgeruch') && !A.PROFILE.asbest.optional.includes('brandgeruch'));
-});
-
 fall('Prüfberichte erkennen: „Chlorid“ nur als eigener Parameter, stornierte Proben zählen nicht, KMF-Bericht ohne Asbestwerte wird Anlage', () => {
   const f = F.BR2_nur_PAK_ohne_Versicherung_GB0;
   const lhkw = modell({ ...f, erg: D.erg([{ nr: 'LHKW-1', proben: [[3, [{ p: 'Vinylchlorid', r: '< 0,1', u: 'mg/kg' }], 'Sonstige']] }, ...f.erg.berichte.map(b => ({ nr: b.bericht, proben: b.proben.map(p => [+p.label.slice(1), p.werte, p.typ]) }))]) });
@@ -391,26 +373,12 @@ fall('Prüfberichte erkennen: „Chlorid“ nur als eigener Parameter, storniert
   assert.match(text(kmf, 7), /TRGS 521/);
 });
 
-fall('Brandgeruch-Anlage: Nummer auch mitten im Titel, gekürzter Name (64 Zeichen), andere LabelKit-Datei → Stand nicht prüfbar', () => {
-  const t = Date.parse('2026-10-21T10:00:00Z'), lk = { name: 'alt_Daten.json', t, sha: 'e'.repeat(64) };
-  let k = A.brandgeruchFinden([{ name: '26-0512_Anlage-4-Brandgeruch_Brandgeruch_2026-10-21.docx', t }], '', null);
-  assert.equal(k.nrImDokument, 4, '„Anlage 4 Brandgeruch“ → Anlage-4-Brandgeruch');
-  // Projektzentrale: Titel „Anlage 3 Sensorische Prüfung im Erdgeschoss links Wohnung“ → Name nach 64 Zeichen abgeschnitten
-  const lang = ('26-0512_Anlage-3-Sensorische-Pruefung-im-Erdgeschoss-links_PN98-Brandgeruch').slice(0, 64) + '_2026-10-21.docx';
-  k = A.brandgeruchFinden([{ name: lang, t }], '', null);
-  assert.ok(k, 'gekürzter Name erkannt'); assert.equal(k.nrImDokument, 3); assert.match(k.details, /gekürzt/);
-  assert.equal(A.brandgeruchFinden([{ name: ('26-0512_Anlage-3-Sensorische-Pruefung-im-Erdgeschoss-links-Wohnungxx_PN98').slice(0, 64) + '_2026-10-21.docx', t }], '', null), null, 'abgeschnitten vor „B“: kein Brandgeruch erkennbar');
-  const prot = `2026-10-21T10:00:00.000Z | 26-0512_Anlage_Brandgeruch_2026-10-21.docx | ${'c'.repeat(64)} | LabelKit/neu_Daten.json | ${'f'.repeat(64)} | Projektzentrale 1.39.0`;
-  k = A.brandgeruchFinden([{ name: '26-0512_Anlage_Brandgeruch_2026-10-21.docx', t }], prot, lk);
-  assert.equal(k.veraltet, null); assert.match(k.grund, /aus einer anderen LabelKit-Datei erstellt \(neu_Daten\.json\)/);
-});
-
 fall('Ohne Laborproben (nur Brandgeruch / gar keine Proben): keine Platzhalter-Anlage „Prüfbericht“, Nummern ab 1 (Codex, PR #14)', () => {
   const f = F.BR1_voll_Versicherung;
   const nurBg = modell({ ...f, lk: D.lk({ brandgeruch: [[1, 'Sofa', 'Stoff', '+', '+', '+', '+', '+']], bgDatum: '2026-10-20', bgBlind: false }), erg: D.erg([]) });
-  assert.deepEqual(nurBg.anlagenListe.map(a => [a.nr, a.art]), [[1, 'bilddoku'], [2, 'probenplan'], [3, 'brandgeruch']]);
+  assert.deepEqual(nurBg.anlagenListe.map(a => [a.nr, a.art]), [[1, 'bilddoku'], [2, 'probenplan']]);
   assert.ok(!nurBg.luecken.includes('[Prüfbericht-Nr.]')); assert.ok(!nurBg.luecken.includes('[Labor]'));
-  assert.equal(text(nurBg, 4), 'Es wurde eine Materialprobe entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage 3 dargestellt.\nDie Entnahmestelle ist in der Bilddokumentation (Anlage 1) und im Probenplan (Anlage 2) dargestellt.');
+  assert.equal(text(nurBg, 4), 'Es wurde eine Materialprobe entnommen und am 20.10.2026 sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt 5.2 dargestellt.\nDie Entnahmestelle ist in der Bilddokumentation (Anlage 1) und im Probenplan (Anlage 2) dargestellt.');
   const keine = modell({ ...f, lk: D.lk({}), erg: D.erg([]) });
   assert.deepEqual(keine.anlagenListe.map(a => a.art), ['bilddoku', 'probenplan']);
   // Laborproben ohne Prüfbericht: Platzhalter bleibt (Prüfbericht folgt), wie im Asbestbericht
@@ -578,29 +546,30 @@ fall('5.4 KMF und 5.5 Asbest: Texte wie im Asbestbericht, Methode VDI 3866 Blatt
   assert.match(utext(unklar, 'Asbest'), /\nFür Probe 1 \(Material: „Kitt“\) weist der Prüfbericht aus: Verdacht\. \[Schlussfolgerung für nicht eindeutige Ergebnisse ergänzen\]$/);
 });
 
-fall('5.6 Brandgeruch: Methode, Ergebnis-Satz je Probe aus p1–p5 (Nr. wie in der Anlage), verdeckt/unvollständig → Lücke, Verweis auf die Anlage', () => {
+fall('5.6 Brandgeruch: Methode, Ergebnis-Satz je Probe aus p1–p5 (Nr. = Reihenfolge in LabelKit), verdeckt/unvollständig → Lücke, kein Schluss-Satz', () => {
   const t = utext(modell(F.BR1_voll_Versicherung), 'Sensorische Prüfung auf Brandgeruch').split('\n');
   assert.match(t[0], /^Die zwei Materialproben wurden in einem geschlossenen Luftraum auf 50 °C konditioniert und anschließend durch fünf Prüfpersonen/);
   assert.equal(t[1], 'Bei Probe 1 (Sofa Wohnzimmer, Stoffbezug) wurde von vier Prüfpersonen ein mittelstarker und von einer Prüfperson ein starker Brandgeruch festgestellt. Bei Probe 2 (Teppich Flur, Wolle) wurde von drei Prüfpersonen ein schwacher und von zwei Prüfpersonen kein Brandgeruch festgestellt.');
-  assert.equal(t[2], 'Die Einzelbewertungen der Prüfpersonen sind in Tabelle 4 und in Anlage 5 dargestellt.', 'ab 1.23.0 mit Tabelle (s. nächster Fall)');
+  assert.equal(t.length, 2, 'ab 1.25.0 kein Schluss-Satz – danach nur noch die Tabelle (s. nächster Fall)');
   const bg = (proben, o = {}) => modell({ ...F.BR1_voll_Versicherung, lk: D.lk({ brandgeruch: proben, bgDatum: '2026-10-20', bgBlind: false, ...o }) });
   assert.match(utext(bg([[1, 'Jacke', '', '++', '++', '++', '++', '++'], [2, '', '', '–', '-', '−', '-', '-']]), 'Brandgeruch'), /Bei Probe 1 \(Jacke\) wurde von allen fünf Prüfpersonen ein starker Brandgeruch festgestellt\. Bei Probe 2 wurde von allen fünf Prüfpersonen kein Brandgeruch festgestellt\./);
   // Gleichstand: die stärkere Bewertung zuerst
   assert.match(utext(bg([[1, 'A', '', '+', '(+)', '+', '(+)', '++']]), 'Brandgeruch'), /von zwei Prüfpersonen ein mittelstarker, von zwei Prüfpersonen ein schwacher und von einer Prüfperson ein starker Brandgeruch/);
   const blind = bg([[1, 'A', '', '+', '+', '+', '+', '+']], { bgBlind: true });
-  assert.match(utext(blind, 'Brandgeruch'), /\n\[Ergebnis der Brandgeruchprüfung ergänzen\]\n/);
+  assert.match(utext(blind, 'Brandgeruch'), /\n\[Ergebnis der Brandgeruchprüfung ergänzen\]$/);
   const halb = bg([[1, 'A', '', '+', '+', '', '+', '+'], [2, 'B', '', '+', '+', '+', '+', 'x']]);
-  assert.match(utext(halb, 'Brandgeruch'), /\n\[Ergebnis der Brandgeruchprüfung ergänzen\]\n/);
+  assert.match(utext(halb, 'Brandgeruch'), /\n\[Ergebnis der Brandgeruchprüfung ergänzen\]$/);
   assert.ok(halb.hinweise.includes('Brandgeruch: Bewertungen fehlen oder sind unlesbar (Probe 1, Probe 2) – in LabelKit alle fünf Bewertungen eintragen.'));
-  assert.match(utext(modell(F.BR3_Luecken), 'Brandgeruch'), /in Anlage \[Anlage-Nr\. Brandgeruch\] dargestellt\.$/);
+  assert.match(utext(modell(F.BR3_Luecken), 'Brandgeruch'), /\n\[Ergebnis der Brandgeruchprüfung ergänzen\]$/, 'verdeckt: Lücke ist der letzte Absatz');
+  for (const x of [blind, halb]) assert.doesNotMatch(utext(x, 'Brandgeruch'), /Anlage|Einzelbewertungen der Prüfpersonen sind/);
 });
 
 fall('5.6 Brandgeruch-Tabelle (ab 1.23.0, R-20261126-135349-SK): nach dem Ergebnis-Absatz, dieselben Proben und Nummern wie die Sätze, nur vollständig', () => {
   const bg = (proben, o = {}, brand = {}) => modell(mitForm({ ...F.BR1_voll_Versicherung, lk: D.lk({ brandgeruch: proben, bgDatum: '2026-10-20', bgBlind: false, ...o }) }, brand));
   const bgTab = m => (unterabschnitt(m, 'Sensorische Prüfung auf Brandgeruch') || []).filter(x => x.t === 'tab');
-  // BR1: Methode · Ergebnis · Tabelle · Schluss-Satz; Kopf, Spalten (= 9070 wie die Anlage der Projektzentrale), Ausrichtung
+  // BR1: Methode · Ergebnis · Tabelle (ab 1.25.0 ohne Schluss-Satz); Kopf, Spalten (= 9070 wie die frühere Anlage der Projektzentrale), Ausrichtung
   const m = modell(F.BR1_voll_Versicherung), u = unterabschnitt(m, 'Sensorische Prüfung auf Brandgeruch');
-  assert.deepEqual(u.map(x => x.t), ['p', 'p', 'tab', 'p']);
+  assert.deepEqual(u.map(x => x.t), ['p', 'p', 'tab']);
   const tab = u[2];
   assert.equal(tab.caption, 'Tabelle 4: Sensorische Prüfung auf Brandgeruch – Einzelbewertungen der Prüfpersonen');
   assert.deepEqual(tab.kopf, ['Nr.', 'Probe', 'Person 1', 'Person 2', 'Person 3', 'Person 4', 'Person 5']);
@@ -608,11 +577,10 @@ fall('5.6 Brandgeruch-Tabelle (ab 1.23.0, R-20261126-135349-SK): nach dem Ergebn
   assert.deepEqual(tab.ausrichtung, ['center', 'left', 'center', 'center', 'center', 'center', 'center']);
   assert.deepEqual(tab.zeilen, [['1', 'Sofa Wohnzimmer, Stoffbezug', '+', '+', '++', '+', '+'], ['2', 'Teppich Flur, Wolle', '(+)', '–', '(+)', '–', '(+)']],
     '„ohne“ (LabelKit „-“) als „–“ wie im Methodensatz; Probe = z1, z2 mit Komma (eine Zelle kann keinen Zeilenumbruch)');
-  assert.equal(T.text(u[3].runs), 'Die Einzelbewertungen der Prüfpersonen sind in Tabelle 4 und in Anlage 5 dargestellt.');
   // Schreibweisen aus LabelKit („–“, „−“, „( + )“) → eine Schreibweise; Probe nur mit z1 oder ganz ohne Beschreibung
   assert.deepEqual(bgTab(bg([[1, 'Jacke', '', '++', '–', '−', '( + )', ' + '], [2, '', '', '-', '-', '-', '-', '-']]))[0].zeilen,
     [['1', 'Jacke', '++', '–', '–', '(+)', '+'], ['2', '', '–', '–', '–', '–', '–']]);
-  // stornierte Probe: fehlt in Satz und Tabelle, die übrigen behalten ihren Platz in der LabelKit-Liste (wie die Anlage)
+  // stornierte Probe: fehlt in Satz und Tabelle, die übrigen behalten ihren Platz in der LabelKit-Liste
   const st = D.lk({ brandgeruch: [[1, 'A', 'a', '+', '+', '+', '+', '+'], [2, 'B', 'b', '++', '++', '++', '++', '++'], [3, 'C', 'c', '-', '-', '-', '-', '-']], bgDatum: '2026-10-20', bgBlind: false });
   st.brandgeruchProben[1].storniert = true;
   const ms = modell({ ...F.BR1_voll_Versicherung, lk: st });
@@ -623,33 +591,34 @@ fall('5.6 Brandgeruch-Tabelle (ab 1.23.0, R-20261126-135349-SK): nach dem Ergebn
   // Nummern in Satz und Tabelle gleich
   const nrSatz = [...utext(ms, 'Brandgeruch').matchAll(/Bei Probe (\d+)/g)].map(x => x[1]);
   assert.deepEqual(bgTab(ms)[0].zeilen.map(z => z[0]), nrSatz);
-  // keine halbe Tabelle: Blind-Modus (auch ohne bgBlind in der Datei = verdeckt), eine Bewertung fehlt oder ist unlesbar → keine Tabelle, Schluss-Satz wie bis 1.22.0
+  // keine halbe Tabelle: Blind-Modus (auch ohne bgBlind in der Datei = verdeckt), eine Bewertung fehlt oder ist unlesbar → keine Tabelle, nur die Lücke
   for (const [name, mm] of [['blind', bg([[1, 'A', '', '+', '+', '+', '+', '+']], { bgBlind: true })],
     ['bgBlind fehlt', bg([[1, 'A', '', '+', '+', '+', '+', '+']], { bgBlind: undefined })],
     ['eine fehlt', bg([[1, 'A', '', '+', '+', '+', '+', '+'], [2, 'B', '', '+', '+', '', '+', '+']])],
     ['unlesbar', bg([[1, 'A', '', '+', 'x', '+', '+', '+']])]]) {
     assert.deepEqual(bgTab(mm), [], name);
-    assert.match(utext(mm, 'Brandgeruch'), /\n\[Ergebnis der Brandgeruchprüfung ergänzen\]\nDie Einzelbewertungen der Prüfpersonen sind in Anlage 5 dargestellt\.$/, name);
+    assert.match(utext(mm, 'Brandgeruch'), /\n\[Ergebnis der Brandgeruchprüfung ergänzen\]$/, name);
     assert.ok(!tabellen(mm).some(x => /Brandgeruch/.test(x.caption)), name);
   }
-  // Anlage fehlt → Lücke wie bisher, Tabelle trotzdem (sie hängt nur an den Bewertungen)
+  // ohne Datei der Projektzentrale in „Mitteilungen“: derselbe Abschnitt, Tabelle am Ende (sie hängt nur an den Bewertungen)
   const ohneAnl = modell({ ...F.BR1_voll_Versicherung, anlagen: D.anlagen({ brandgeruch: '' }) });
-  assert.match(utext(ohneAnl, 'Brandgeruch'), /in Tabelle 4 und in Anlage \[Anlage-Nr\. Brandgeruch\] dargestellt\.$/);
-  assert.ok(ohneAnl.luecken.includes('[Anlage-Nr. Brandgeruch]'));
+  assert.deepEqual(unterabschnitt(ohneAnl, 'Sensorische Prüfung auf Brandgeruch'), unterabschnitt(modell(F.BR1_voll_Versicherung), 'Sensorische Prüfung auf Brandgeruch'));
+  assert.equal(unterabschnitt(ohneAnl, 'Sensorische Prüfung auf Brandgeruch').at(-1).t, 'tab', 'die Tabelle ist der letzte Block von 5.6');
 });
 
 fall('5.6 Brandgeruch-Tabelle: Tabellennummer läuft nach Chlorid/PAK (Haken „Ergebnistabellen“) und Asbest weiter', () => {
   const nr = m => tabellen(m).map(x => x.caption.replace(/:.*/, '') + (/Brandgeruch/.test(x.caption) ? ' BG' : ''));
+  const bgCaption = m => tabellen(m).find(x => /Brandgeruch/.test(x.caption)).caption;
   // BR1 mit Haken: Chlorid 1, PAK 2, Asbest 3, Brandgeruch 4
   assert.deepEqual(nr(modell(F.BR1_voll_Versicherung)), ['Tabelle 1', 'Tabelle 2', 'Tabelle 3', 'Tabelle 4 BG']);
-  // ohne Haken: nur Asbest 1, Brandgeruch 2 – Satz nennt dieselbe Nummer
+  // ohne Haken: nur Asbest 1, Brandgeruch 2
   const ohne = modell(mitForm(F.BR1_voll_Versicherung, { tabellen: false }));
   assert.deepEqual(nr(ohne), ['Tabelle 1', 'Tabelle 2 BG']);
-  assert.match(utext(ohne, 'Brandgeruch'), /in Tabelle 2 und in Anlage 5 dargestellt\.$/);
+  assert.equal(bgCaption(ohne), 'Tabelle 2: Sensorische Prüfung auf Brandgeruch – Einzelbewertungen der Prüfpersonen');
   // ohne Asbest und ohne Haken: Brandgeruch ist Tabelle 1 (BR4)
   const br4 = modell(F.BR4_Gewerbe_Teilnehmerliste_ENTWURF);
   assert.deepEqual(nr(br4), ['Tabelle 1 BG']);
-  assert.match(utext(br4, 'Brandgeruch'), /in Tabelle 1 und in Anlage \[Anlage-Nr\. Brandgeruch\] dargestellt\.$/);
+  assert.equal(bgCaption(br4), 'Tabelle 1: Sensorische Prüfung auf Brandgeruch – Einzelbewertungen der Prüfpersonen');
   // nur Brandgeruch-Proben, mit Haken: keine Chlorid-/PAK-Tabelle davor
   const nurBg = modell(mitForm({ ...F.BR1_voll_Versicherung, lk: D.lk({ brandgeruch: [[1, 'Sofa', 'Stoff', '+', '+', '+', '+', '+']], bgDatum: '2026-10-20', bgBlind: false }), erg: D.erg([]) }, { tabellen: true }));
   assert.deepEqual(nr(nurBg), ['Tabelle 1 BG']);

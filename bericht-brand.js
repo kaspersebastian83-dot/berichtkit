@@ -383,12 +383,12 @@ function bericht(eingabe) {
   else ob.push({ t: 'p', runs: ['Bei dem Ortstermin waren ', L(fb.anwesende, 'Anwesende eintragen'), ' sowie ', wirSatz, BUERO + ' anwesend.'] });
 
   /* Anlagen: Prüfberichte Chlorid, PAK, Asbest/KMF (ein Bericht für mehrere Parameter = eine Anlage), dann Bilddokumentation,
-     Probenplan, Brandgeruch (nur mit Brandgeruch-Proben) */
+     Probenplan. Ab 1.25.0 keine Anlage Brandgeruch mehr – die Einzelbewertungen stehen als Tabelle in 5.6. */
   const prb = [];
   for (const nr of [...rk.cl, ...rk.pak, ...asbNr, ...kmfNr, ...weitereNr]) if (!prb.includes(nr)) prb.push(nr);
   const pdfVon = nr => pruefberichtPdf(e.erg, nr);
   const A = ANL.zusammenstellen({ profil: 'brand', pruefberichte: prb.map(nr => ({ nr, pdf: pdfVon(nr) })), labor, gefunden: e.anlagen || {},
-    wahl: f.anlagen, extra: f.anlagenExtra, ohne: lk.brandgeruch.length ? [] : ['brandgeruch'],
+    wahl: f.anlagen, extra: f.anlagenExtra,
     // Nur Brandgeruch (oder gar keine Proben): kein Laborbericht zu erwarten – keine Platzhalter-Anlage „Prüfbericht Nr. […]“ (Codex, PR #14)
     ohnePruefbericht: !(lk.clWisch.length + lk.clAndere.length + lk.bohrmehl.length + lk.pakWisch.length + lk.pakMaterial.length + lk.sonstige.length
       + asb.length + kmf.length + offen.filter(o => !o.aus).length) });
@@ -447,11 +447,14 @@ function bericht(eingabe) {
     const wo = mitFoto.length === 1 ? `Abbildung ${a0}` : `den Abbildungen ${a0} ${mitFoto.length === 2 ? 'und' : 'bis'} ${a1}`;
     return `${mitFoto.length === 1 ? '' : 'Die '}${probe(mitFoto.map(p => ({ nr: p.nr, ref: p.ref, label: p.label })))} ${mitFoto.length === 1 ? 'ist' : 'sind'} in ${wo} dargestellt.`;
   })();
+  /* Brandgeruch: ab 1.25.0 Verweis auf den Unterabschnitt in 5. (statt auf die frühere Anlage der Projektzentrale). Die Nummer
+     (5.4, 5.6 …) steht erst fest, wenn 5. gebaut ist – darum setzt 5.6 sie unten in bgVerweis ein. */
+  let bgVerweis = null;
   if (nBg) {
-    pr.push({ t: 'p', runs: [`${zusatz()} ${nBg === 1 ? 'wurde eine Materialprobe' : `wurden ${zahlwort(nBg)} Materialproben`} entnommen und am `,
-      L(datumDE(lk.bgDatum), 'Prüfdatum Brandgeruch'), ' sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Anlage ',
-      A.nr.brandgeruch ? String(A.nr.brandgeruch) : { gap: '[Anlage-Nr. Brandgeruch]' }, ' dargestellt.'] });
-    if (lk.bgBlind) hinweise.push('Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für die Anlage in LabelKit „Ergebnisse aufdecken“ und speichern.');
+    bgVerweis = [`${zusatz()} ${nBg === 1 ? 'wurde eine Materialprobe' : `wurden ${zahlwort(nBg)} Materialproben`} entnommen und am `,
+      L(datumDE(lk.bgDatum), 'Prüfdatum Brandgeruch'), ' sensorisch auf Brandgeruch geprüft. Das Ergebnis ist in Abschnitt ', '5.?', ' dargestellt.'];
+    pr.push({ t: 'p', runs: bgVerweis });
+    if (lk.bgBlind) hinweise.push('Brandgeruch: Die Bewertungen sind in LabelKit noch verdeckt (Blind-Modus) – für den Bericht in LabelKit „Ergebnisse aufdecken“ und speichern.');
   }
   // Weitere Untersuchungen (LabelKit „Sonstige“ ohne Chlorid-Bohrmehl): je Untersuchungsparameter ein Satz, dazu der Prüfbericht
   if (lk.sonstige.length) {
@@ -710,13 +713,14 @@ function bericht(eingabe) {
       zeilen: asb.map(p => [p.nr ? String(p.nr) : (p.ref || p.label), p.labNr, p.stelleBericht, p.material, p.befund.text]) });
   }
 
-  /* 5.6 Sensorische Prüfung auf Brandgeruch – Ergebnis-Satz je Probe aus den Bewertungen p1–p5 (Nr. wie in der Anlage der
-     Projektzentrale: Reihenfolge der LabelKit-Liste). Verdeckt (Blind-Modus) oder Bewertungen unvollständig → Lücke.
+  /* 5.6 Sensorische Prüfung auf Brandgeruch – Ergebnis-Satz je Probe aus den Bewertungen p1–p5 (Nr. = Reihenfolge der
+     LabelKit-Liste, wie die frühere Anlage der Projektzentrale). Verdeckt (Blind-Modus) oder Bewertungen unvollständig → Lücke.
      Ab 1.23.0 (Rückmeldung R-20261126-135349-SK) nach dem Ergebnis-Absatz die Tabelle der Einzelbewertungen – dieselben Proben und
      Nummern wie die Sätze, nur wenn alle Bewertungen lesbar sind (keine halbe Tabelle; eine leere Zelle hieße „–“ = ohne Brandgeruch). */
   let bgTab = 0;
   if (nBg) {
     h2('Sensorische Prüfung auf Brandgeruch');
+    bgVerweis[bgVerweis.length - 2] = `5.${unter}`;   // Verweis in 4. („Das Ergebnis ist in Abschnitt 5.6 dargestellt.“)
     const alleBg = (e.lk && Array.isArray(e.lk.brandgeruchProben) ? e.lk.brandgeruchProben : []).map((p, i) => ({ p, nr: i + 1 })).filter(x => x.p && !istStorniert(x.p));
     // Wortlaut Methode/Schluss vorläufig (nur Bruchstücke aus 26.0527 bekannt) – Basti bestätigt beim Testlauf
     befund.push({ t: 'p', runs: [`${nBg === 1 ? 'Die Materialprobe wurde' : `Die ${zahlwort(nBg)} Materialproben wurden`} in einem geschlossenen Luftraum auf 50 °C konditioniert und anschließend durch fünf Prüfpersonen unabhängig voneinander sensorisch auf Brandgeruch geprüft. Bewertet wurde in den Stufen stark (++), mittel (+), schwach ((+)) und ohne Brandgeruch (–).`] });
@@ -740,9 +744,8 @@ function bericht(eingabe) {
         ausrichtung: ['center', 'left', 'center', 'center', 'center', 'center', 'center'], spalten: SPALTEN_BG,
         zeilen: alleBg.map(({ p, nr }) => [String(nr), [s(p.z1), s(p.z2)].filter(Boolean).join(', '), ...BG_KEYS.map(k => bgZelle(p[k]))]) });
     }
-    // Schluss-Satz mit Tabelle vorläufig (Vorschlag, zur Bestätigung im PR); ohne Tabelle wie bis 1.22.0
-    befund.push({ t: 'p', runs: [`Die Einzelbewertungen der Prüfpersonen sind in ${bgTab ? `Tabelle ${bgTab} und in ` : ''}Anlage `,
-      A.nr.brandgeruch ? String(A.nr.brandgeruch) : { gap: '[Anlage-Nr. Brandgeruch]' }, ' dargestellt.'] });
+    // Ab 1.25.0 kein Schluss-Satz mehr („… in Tabelle n und in Anlage m dargestellt“): die Anlage gibt es nicht mehr, die Tabelle steht
+    // direkt darüber mit eigener Überschrift.
   }
 
   /* 5.7 Weitere Untersuchungen (LabelKit „Sonstige“ ohne Chlorid-Bohrmehl): keine Einordnung im Doc – Verweis und Lücke */

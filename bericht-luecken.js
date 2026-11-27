@@ -48,7 +48,6 @@ const FELDER = {
     { luecke: '[Material]', ziel: '#probenListe', wo: 'LabelKit › Bauteil / Material' },
     { luecke: '[Prüfbericht-Nr.]', ziel: '#anlagenListe', wo: 'ResultKit › Laborergebnisse übernehmen' },
     { luecke: '[Prüfdatum Brandgeruch]', wo: 'LabelKit › Brandgeruch › Prüfdatum' },
-    { luecke: '[Anlage-Nr. Brandgeruch]', ziel: '#anlagenListe', wo: 'Projektzentrale › Anlage PN 98 / Brandgeruch erstellen (dann anhaken)' },
     { luecke: '[Probenahme beschreiben]', wo: 'LabelKit › Proben erfassen, sonst in Word ergänzen' },
     { luecke: '[Untersuchungsparameter]', wo: 'LabelKit › Sonstige Proben › Untersuchungsparameter' },
     { luecke: '[Hintergrundreferenz 10 oder 100 µg/m²]', feld: '#fbReferenz', wo: 'Befund & Texte › Hintergrundreferenz PAK (Vorbelegung aus der Nutzung der Projektzentrale)' },
