@@ -297,11 +297,15 @@ function ortstermineVon(pj) {
     lkDaten: TT.MM.JJJJ, sortiert, ohne doppelte. Erfüllt, wenn jedes Datum zu einem der Ortstermine passt.
     Ein Termin (keine gültigen Daten über „ortstermin“ hinaus): Bedingung und Text genau wie bis 1.25.0 – alle Daten nennen, wenn eines abweicht.
     Mehrere Termine: nur die Daten nennen, die zu keinem Termin passen, dazu alle Termine. Leer = keine Zeile. */
+/** Gibt es außer Termin 1 noch einen Ortstermin mit gültigem Datum? Sonst gilt alles wie mit einem Termin (bis 1.25.0). */
+function mehrereOrtstermine(P) {
+  const termine = (P.ortstermine || []).map(datumDE), ot = datumDE(P.ortstermin);
+  return termine.length > 1 || (termine.length === 1 && termine[0] !== ot);
+}
 function probenahmeTerminHinweis(lkDaten, P) {
   const termine = (P.ortstermine || []).map(datumDE);
   const ot = datumDE(P.ortstermin);
-  const mehrere = termine.length > 1 || (termine.length === 1 && termine[0] !== ot);
-  if (!mehrere) return ot && lkDaten.some(d => d !== ot) ? `Probenahmedatum in LabelKit (${liste(lkDaten)}) weicht vom Ortstermin der Projektzentrale (${ot}) ab – bitte prüfen.` : '';
+  if (!mehrereOrtstermine(P)) return ot && lkDaten.some(d => d !== ot) ? `Probenahmedatum in LabelKit (${liste(lkDaten)}) weicht vom Ortstermin der Projektzentrale (${ot}) ab – bitte prüfen.` : '';
   const fremd = lkDaten.filter(d => !termine.includes(d));
   return fremd.length ? `Probenahmedatum in LabelKit (${liste(fremd)}) passt zu keinem Ortstermin der Projektzentrale (${termine.join(', ')}) – bitte prüfen.` : '';
 }
@@ -563,7 +567,7 @@ const API = { VERSION: 1, ABGLEICH_SPERRT,
   // Personen
   namensteile, anredeStandard, person, nominativ, rolleFestgelegt, svVorschlag, rollentext, pnQuelle,
   // Projekt, Deckblatt, Kopf, Auftraggeber
-  istVersicherer, versicherungsfallAuto, projektNummer, gleichesProjekt, projektSicht, probenahmeTerminHinweis, mitArtikel, objektImSatz,
+  istVersicherer, versicherungsfallAuto, projektNummer, gleichesProjekt, projektSicht, mehrereOrtstermine, probenahmeTerminHinweis, mitArtikel, objektImSatz,
   labelkitProjektPruefen, ergebnisStand, ergebnisStandText, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
   // Unterschriften, Anlagen, Kennzeilen, Annahmen
   auftragKarte, abgleichVon, unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus };

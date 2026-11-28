@@ -99,6 +99,14 @@ fall('1.26.0: Brandbericht 3. – Probenahmedatum gegen alle Ortstermine, Text �
   assert.match(text(passt, 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle mit Probenahme statt\./, 'Text nimmt weiter Termin 1 (Stufe 4)');
   assert.equal(passt.brand.ortstermin, '12.08.2026');
   assert.deepEqual(passt.sperren, []);
+  // Basti 28.11.2026: Proben laut LabelKit nur beim zweiten Termin → Termin 1 bleibt im Satz, aber ohne „mit Probenahme“
+  const nurZweiter = mit(ZWEI, ['2026-08-20']);
+  assert.deepEqual(zeile(nurZweiter), []);
+  assert.match(text(nurZweiter, 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle statt\.\n/);
+  assert.match(text(mit(ZWEI, ['2026-08-20', '2026-08-21']), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle statt\./, 'auch wenn ein Datum zu keinem Termin passt');
+  assert.match(text(mit(ZWEI, []), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle mit Probenahme statt\./, 'ohne LabelKit-Daten wie bisher');
+  assert.match(text(mit({ ortstermin: '2026-08-12' }, ['2026-08-20']), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle mit Probenahme statt\./, 'ein Termin wie bisher (gelbe Zeile sagt es)');
+  assert.match(text(mit({ ...ZWEI, ortstermin: '12.08.2026' }, ['2026-08-20']), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle statt\./, 'Termin 1 im deutschen Format');
   // ein Datum passt zu keinem Termin → nur dieses Datum und alle Termine
   assert.deepEqual(zeile(mit(ZWEI, ['2026-08-12', '2026-08-21'], ['2026-08-20'])),
     ['Probenahmedatum in LabelKit (21.08.2026) passt zu keinem Ortstermin der Projektzentrale (12.08.2026, 20.08.2026) – bitte prüfen.']);
