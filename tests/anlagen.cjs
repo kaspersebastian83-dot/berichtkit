@@ -425,6 +425,20 @@ fall('Audit m9: Bilddokumentation eines anderen Projekts nie Anlage; ohne Nummer
         assert.ok(!k.dateien.some(d => d.includes(bad)), 'nie vorgeschlagen');
       }
     }
+    // Codex #40 Runde 2: „Terminal“ ist ein Plan (ganze Wörter; in der .probenplan bekannte Pläne nie verdächtig) – „Termine …“ bleibt verdächtig
+    for (const wo of [undefined, { frueher: [KA], geschosse: ['Terminal', 'EG'], nr: '26.0999' }]) {
+      const k = A.planFinden('probenplan', P([' - Terminal - Termin 20.08.2026', t0], [' - EG - Termin 20.08.2026', t0]), plan, KA, wo, { termin: '2026-08-20' });
+      assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - EG - Termin 20.08.2026.pdf`, `Pläne/Probenplan ${KA} - Terminal - Termin 20.08.2026.pdf`]); assert.equal(k.ausgelassen, undefined);
+      assert.deepEqual(A.planFinden('probenplan', [...P(['', alt], [' - Termin 20.08.2026', t0]), ...P([' - Termine 20.08.2026', t0])], plan, KA, wo, { termin: '2026-08-12', ersterTermin: true }).ausgelassen, [`Probenplan ${KA} - Termine 20.08.2026.pdf`]);
+    }
+    assert.equal(A.planFinden('probenplan', P([' - Termin - Termin 20.08.2026', t0]), plan, KA, { frueher: [KA], geschosse: ['Termin', 'EG'], nr: '26.0999' }, { termin: '2026-08-20' }).dateien.length, 1, 'ein Plan „Termin“ aus der .probenplan zählt');
+    // Codex #40 Runde 2: kommt eine ausgelassene Datei dazu, verfällt ein selbst gesetzter Haken
+    {
+      const basis = [...P(['', alt], [' - Termin 20.08.2026', t0])], k0 = A.planFinden('probenplan', basis, plan, KA, lesbar), gemerkt = { probenplan: { an: true, key: hakt(k0).key } };
+      assert.equal(hakt(A.planFinden('probenplan', basis, plan, KA, lesbar), gemerkt).an, true);
+      const k1 = A.planFinden('probenplan', [...basis, ...P([' - Termin 20.8.2026', t0 + min])], plan, KA, lesbar);
+      assert.deepEqual(k1.dateien, k0.dateien); assert.equal(hakt(k1, gemerkt).an, false, 'neue unlesbare Datei: Haken verfällt');
+    }
     // nur der Plan ohne Zusatz bleibt übrig: nicht still, Hinweis nennt die ausgelassene Datei
     const k = A.planFinden('probenplan', [...P(['', alt]), ...P([' - 2. Termin - Termin 20.08.2026', t0])], plan, KA);
     assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA}.pdf`]); assert.equal(k.unklar, true); assert.match(k.unklarText, /^nicht zugeordnet: /);
