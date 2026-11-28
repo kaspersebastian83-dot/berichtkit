@@ -8,6 +8,10 @@
 (function (root) {
 'use strict';
 const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./anlagen.js') : null);
+// Ortstermine der Projektzentrale (byte-gleiche Kopie von projektzentrale/ortstermine.js, Gleich-Test tests/ortstermine-gleich.cjs):
+// BerichtKit rechnet die Liste der Termine nicht selbst und vergibt nie Kennungen (O1, O13 in fotokit-ortstermine-entscheidungen.md)
+const OT = root.Ortstermine || (typeof require === 'function' ? require('./ortstermine.js') : null);
+if (!OT) throw new Error('BerichtKit: ortstermine.js nicht geladen (Reihenfolge der Skripte in index.html).');
 
 /* ---------- kleine Helfer ---------- */
 const s = v => (v == null ? '' : String(v)).trim();
@@ -277,7 +281,33 @@ function projektSicht(pj, ordner) {
     schadennummer: s(pj.schadennummer), auftragsdatum: s(pj.auftragsdatum), zustaendig: s(pj.zustaendig && pj.zustaendig.kuerzel) || s(ordner && ordner.kuerzel),
     sachverstaendiger: s(pj.sachverstaendiger),
     // Brandbericht (Projektzentrale PJ_FIELDS): schadendatum JJJJ-MM-TT oder „unbekannt“, ortstermin, nutzung, schadenereignis, brandgut
-    schadendatum: s(pj.schadendatum), ortstermin: s(pj.ortstermin), nutzung: s(pj.nutzung), schadenereignis: s(pj.schadenereignis), brandgut: s(pj.brandgut) };
+    schadendatum: s(pj.schadendatum), ortstermin: s(pj.ortstermin), nutzung: s(pj.nutzung), schadenereignis: s(pj.schadenereignis), brandgut: s(pj.brandgut),
+    // 1.26.0: Daten aller Ortstermine (JJJJ-MM-TT) – Termin 1 („ortstermin“) und die weiteren aus „weitereOrtstermine“ (Ortstermine.liste);
+    // nur gültige Daten, sortiert, ohne doppelte. „ortstermin“ oben bleibt, wie er ist (Text „Am … fand eine Besichtigung statt“ – Stufe 4).
+    ortstermine: ortstermineVon(pj) };
+}
+function ortstermineVon(pj) {
+  // Termin 1 wie im Satz „Am … fand“ gelesen (datumDE: auch TT.MM.JJJJ oder mit Uhrzeit), damit er nicht aus dem Vergleich fällt;
+  // die weiteren Termine streng wie die Projektzentrale (Ortstermine.gueltig, JJJJ-MM-TT)
+  const t1 = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(datumDE(pj.ortstermin));
+  const daten = [t1 ? `${t1[3]}-${t1[2]}-${t1[1]}` : '', ...OT.liste(pj).map(e => s(e.datum))].filter(OT.gueltig);
+  return [...new Set(daten)].sort();
+}
+/** Gelbe Zeile „Probenahmedatum in LabelKit …“ (Brandbericht 3., Asbestbericht „Probenahme durch uns“) – nur Hinweis, sperrt nichts.
+    lkDaten: TT.MM.JJJJ, sortiert, ohne doppelte. Erfüllt, wenn jedes Datum zu einem der Ortstermine passt.
+    Ein Termin (keine gültigen Daten über „ortstermin“ hinaus): Bedingung und Text genau wie bis 1.25.0 – alle Daten nennen, wenn eines abweicht.
+    Mehrere Termine: nur die Daten nennen, die zu keinem Termin passen, dazu alle Termine. Leer = keine Zeile. */
+/** Gibt es außer Termin 1 noch einen Ortstermin mit gültigem Datum? Sonst gilt alles wie mit einem Termin (bis 1.25.0). */
+function mehrereOrtstermine(P) {
+  const termine = (P.ortstermine || []).map(datumDE), ot = datumDE(P.ortstermin);
+  return termine.length > 1 || (termine.length === 1 && termine[0] !== ot);
+}
+function probenahmeTerminHinweis(lkDaten, P) {
+  const termine = (P.ortstermine || []).map(datumDE);
+  const ot = datumDE(P.ortstermin);
+  if (!mehrereOrtstermine(P)) return ot && lkDaten.some(d => d !== ot) ? `Probenahmedatum in LabelKit (${liste(lkDaten)}) weicht vom Ortstermin der Projektzentrale (${ot}) ab – bitte prüfen.` : '';
+  const fremd = lkDaten.filter(d => !termine.includes(d));
+  return fremd.length ? `Probenahmedatum in LabelKit (${liste(fremd)}) passt zu keinem Ortstermin der Projektzentrale (${termine.join(', ')}) – bitte prüfen.` : '';
 }
 
 /* ---------- Bausteine, die jede Berichtsart braucht ----------
@@ -537,7 +567,7 @@ const API = { VERSION: 1, ABGLEICH_SPERRT,
   // Personen
   namensteile, anredeStandard, person, nominativ, rolleFestgelegt, svVorschlag, rollentext, pnQuelle,
   // Projekt, Deckblatt, Kopf, Auftraggeber
-  istVersicherer, versicherungsfallAuto, projektNummer, gleichesProjekt, projektSicht, mitArtikel, objektImSatz,
+  istVersicherer, versicherungsfallAuto, projektNummer, gleichesProjekt, projektSicht, mehrereOrtstermine, probenahmeTerminHinweis, mitArtikel, objektImSatz,
   labelkitProjektPruefen, ergebnisStand, ergebnisStandText, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
   // Unterschriften, Anlagen, Kennzeilen, Annahmen
   auftragKarte, abgleichVon, unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus };

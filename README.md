@@ -28,6 +28,7 @@ Speichern; danach steht `&art=` immer in der Adresse. Regel: `bericht-vorgaben.j
 | Angaben zum Bericht (Variante, Daten, Personen, Auswahl der Proben und Fotos) | BerichtKit, gemeinsam für alle | `_Spektron/BerichtKit/_BerichtKit.json` (Vor Spektron: `Mitteilungen/`) |
 
 Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Bereich `berichtkit`; byte-gleich mit der Projektzentrale, in CI geprüft).
+Die Ortstermine (Termin 1 und weitere) liest `ortstermine.js` (ab 1.26.0, ebenfalls byte-gleich mit der Projektzentrale, in CI geprüft).
 
 ## In der Suite
 
@@ -143,6 +144,14 @@ Die Ablageorte im Projekt bestimmt das gemeinsame Modul `spektron-ordner.js` (Be
   alte Datei): unbekannt, nichts davon. Der Fokus-Stempel enthält jetzt auch „Laborergebnisse“.
 - **Asbestbericht – Probenahmedatum gegen den Ortstermin** (ab 1.20.0, B5): wie im Brandbericht ein Hinweis, wenn kein eigenes Datum eingetragen ist
   und ein LabelKit-Datum vom Ortstermin der Projektzentrale abweicht; nicht bei zugestellter Probe.
+- **Probenahmedatum gegen alle Ortstermine** (ab 1.26.0, Brand- und Asbestbericht): Termine = `ortstermin` (Termin 1) plus
+  `weitereOrtstermine` aus `_Projekt.json`, gelesen mit `ortstermine.js` (byte-gleiche Kopie aus der Projektzentrale, `Ortstermine.liste`; in CI
+  geprüft) – BerichtKit rechnet die Liste nicht selbst und vergibt keine Kennungen. Die Projektsicht trägt dazu `ortstermine` (nur gültige
+  Daten JJJJ-MM-TT, sortiert). Erfüllt, wenn jedes LabelKit-Datum zu **einem** Termin passt; bei mehreren Terminen nennt die gelbe Zeile nur die
+  Daten, die zu keinem passen, und alle Termine („… passt zu keinem Ortstermin der Projektzentrale (12.08.2026, 20.08.2026) – bitte prüfen.“).
+  Mit einem Termin (auch wenn ein weiterer Termin kein gültiges Datum hat) Bedingung und Text wie bisher. Nur Hinweis, sperrt nichts. Der Satz
+  „Am … fand eine Besichtigung statt“ nimmt weiter nur Termin 1; bei mehreren Terminen steht „mit Probenahme“ nur, wenn LabelKit für diesen Tag
+  eine Probe hat (ohne LabelKit-Daten wie bisher).
 - **Fehlende Unterschrift** (ab 1.20.0, B6): Hinweis mit „Einstellungen öffnen“, wenn im Archivordner unter `_Spektron-Unterschriften` keine PNG für
   den Unterzeichner liegt; nur mit Archivordner (sonst ist unbekannt, welche es gibt), keine Sperre.
 - **`_BerichtKit.json` nicht lesbar** (ab 1.18.0, M7: kein JSON, leer, Lesefehler, fremdes Format): BerichtKit schreibt sie nie – rote Zeile über den
@@ -232,6 +241,7 @@ node tests/luecken-kommentare.cjs  # Word-Kommentar je Lücke (Asbest und Brand,
                                    # (--beispiel <datei.docx> schreibt eine Datei mit vielen Lücken zum Ansehen)
 node tests/sw.cjs                # Offline-Dateien vollständig; Leiste gleich wie LabelKit (falls ../labelkit daneben)
 node tests/spektron-ordner.cjs   # gemeinsames Modul (mit ../projektzentrale byte-gleich)
+node tests/ortstermine-gleich.cjs  # ortstermine.js mit ../projektzentrale byte-gleich (ORTSTERMINE_PFLICHT)
 node tests/kopien-resultkit.mjs  # Beschreibungsvergleich (beschreibungKey/beschreibungWeichtAb) gleich wie ResultKit src/ergebnisse.ts (../resultkit; RESULTKIT_PFLICHT)
 node tests/browser.cjs           # im Browser: öffnen, Vorschau, Einstellungen, Word-Datei; ab 1.18.0 Audit-Fälle M2/M3/M4/M7/m3/m4 (Playwright)
 node tests/fotos-unterordner.cjs # im Browser: Fotos in Unterordnern von „Fotos“ (FotoKit ab 2.7.0) – Vorschau und Word über „Unterordner/Datei“, nur eine Ebene (Playwright)

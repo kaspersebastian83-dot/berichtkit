@@ -30,7 +30,7 @@ const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./a
 const G = root.BerichtGemeinsam || (typeof require === 'function' ? require('./bericht-gemeinsam.js') : null);
 const BW = root.BerichtBewertung || (typeof require === 'function' ? require('./bericht-bewertung.js') : null);
 const { s, L, datumDE, liste, zahlwort, PNR, tidy, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, istStorniert, probenSammeln,
-  person, nominativ, pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
+  person, nominativ, pnQuelle, projektSicht, mehrereOrtstermine, probenahmeTerminHinweis, objektImSatz, labelkitProjektPruefen, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
   unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
 
 const TITEL = ['Sanierungsvorschlag', 'Untersuchungsbericht'];
@@ -371,13 +371,21 @@ function bericht(eingabe) {
   const lkDaten = [...new Set([...lk.pakWisch, ...lk.pakMaterial, ...lk.clWisch, ...lk.clAndere, ...lk.asbest, ...lk.bohrmehl, ...lk.sonstige]
     .map(p => datumDE(p.datum)).filter(Boolean))].sort((a, b) => a.split('.').reverse().join('').localeCompare(b.split('.').reverse().join('')));
   const ortstermin = datumDE(P.ortstermin);
-  if (ortstermin && lkDaten.length && lkDaten.some(d => d !== ortstermin)) hinweise.push(`Probenahmedatum in LabelKit (${liste(lkDaten)}) weicht vom Ortstermin der Projektzentrale (${ortstermin}) ab – bitte prüfen.`);
-  if (!ortstermin && lkDaten.length) hinweise.push(`Ortstermin fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`);
+  // 1.26.0: gegen alle Ortstermine (mit einem Termin wie bisher); der Text in 3. nennt weiter nur Termin 1 (Stufe 4)
+  const terminHinweis = probenahmeTerminHinweis(lkDaten, P);
+  if (terminHinweis) hinweise.push(terminHinweis);
+  // Termin 1 leer, aber weitere Termine (Codex-Review #38): nicht „fehlt“ schlechthin – nur das Feld „Ortstermin“ (Termin 1), das 3. nimmt
+  if (!ortstermin && lkDaten.length) hinweise.push(P.ortstermine.length
+    ? `Der erste Ortstermin (Feld „Ortstermin“) fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`
+    : `Ortstermin fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`);
   const wir = [pn, p2].filter(Boolean);
   const wirSatz = wir.length ? liste(wir.map(nominativ)) : { gap: '[Probenehmer]' };
+  // 1.26.0 (Basti, 28.11.2026): mehrere Ortstermine und laut LabelKit keine Probe am ersten Termin → der Satz nennt weiter Termin 1,
+  // aber ohne „mit Probenahme“. Mit einem Termin wie bisher (dort sagt die gelbe Zeile, wenn die Daten abweichen); ohne LabelKit-Daten wie bisher.
+  const ohneProbenahme = ortstermin && mehrereOrtstermine(P) && lkDaten.length && !lkDaten.includes(ortstermin);
   const ob = [{ t: 'p', runs: !ortstermin && lkDaten.length > 1
     ? [`Am ${liste(lkDaten.map((d, i) => (i ? 'am ' : '') + d))} fanden Besichtigungen der Schadenstelle mit Probenahme statt.`]
-    : ['Am ', ortstermin ? ortstermin : lkDaten.length ? lkDaten[0] : { gap: '[Ortstermin]' }, ' fand eine Besichtigung der Schadenstelle mit Probenahme statt.'] }];
+    : ['Am ', ortstermin ? ortstermin : lkDaten.length ? lkDaten[0] : { gap: '[Ortstermin]' }, ohneProbenahme ? ' fand eine Besichtigung der Schadenstelle statt.' : ' fand eine Besichtigung der Schadenstelle mit Probenahme statt.'] }];
   if (fb.teilnehmerliste) ob.push({ t: 'p', runs: ['Die bei dem Ortstermin anwesenden Personen sind der vor Ort erstellten Teilnehmerliste zu entnehmen.'] });
   else if (fb.nurBuero) ob.push({ t: 'p', runs: [`Bei dem Ortstermin ${wir.length > 1 ? 'waren' : 'war'} `, wirSatz, BUERO + ' anwesend.'] });
   else ob.push({ t: 'p', runs: ['Bei dem Ortstermin waren ', L(fb.anwesende, 'Anwesende eintragen'), ' sowie ', wirSatz, BUERO + ' anwesend.'] });

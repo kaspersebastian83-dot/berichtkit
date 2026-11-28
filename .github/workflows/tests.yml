@@ -34,6 +34,10 @@ jobs:
       - run: node tests/spektron-ordner.cjs
         env:
           SPEKTRON_ORDNER_PFLICHT: '1'
+      - name: ortstermine.js byte-gleich mit der Projektzentrale (Termine lesen, nicht nachbauen – O13)
+        run: node tests/ortstermine-gleich.cjs
+        env:
+          ORTSTERMINE_PFLICHT: '1'
       - name: AidKit daneben holen (Kern-ID-Muster wie konventionen.js)
         env:
           ZWEIG: ${{ github.head_ref }}
