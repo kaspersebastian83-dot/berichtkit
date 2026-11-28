@@ -11,6 +11,7 @@ const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./a
 // Ortstermine der Projektzentrale (byte-gleiche Kopie von projektzentrale/ortstermine.js, Gleich-Test tests/ortstermine-gleich.cjs):
 // BerichtKit rechnet die Liste der Termine nicht selbst und vergibt nie Kennungen (O1, O13 in fotokit-ortstermine-entscheidungen.md)
 const OT = root.Ortstermine || (typeof require === 'function' ? require('./ortstermine.js') : null);
+if (!OT) throw new Error('BerichtKit: ortstermine.js nicht geladen (Reihenfolge der Skripte in index.html).');
 
 /* ---------- kleine Helfer ---------- */
 const s = v => (v == null ? '' : String(v)).trim();
@@ -286,7 +287,10 @@ function projektSicht(pj, ordner) {
     ortstermine: ortstermineVon(pj) };
 }
 function ortstermineVon(pj) {
-  const daten = [s(pj.ortstermin), ...(OT ? OT.liste(pj) : []).map(e => s(e.datum))].filter(d => OT && OT.gueltig(d));
+  // Termin 1 wie im Satz „Am … fand“ gelesen (datumDE: auch TT.MM.JJJJ oder mit Uhrzeit), damit er nicht aus dem Vergleich fällt;
+  // die weiteren Termine streng wie die Projektzentrale (Ortstermine.gueltig, JJJJ-MM-TT)
+  const t1 = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(datumDE(pj.ortstermin));
+  const daten = [t1 ? `${t1[3]}-${t1[2]}-${t1[1]}` : '', ...OT.liste(pj).map(e => s(e.datum))].filter(OT.gueltig);
   return [...new Set(daten)].sort();
 }
 /** Gelbe Zeile „Probenahmedatum in LabelKit …“ (Brandbericht 3., Asbestbericht „Probenahme durch uns“) – nur Hinweis, sperrt nichts.

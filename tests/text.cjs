@@ -623,7 +623,12 @@ fall('1.26.0: Asbestbericht – Probenahmedatum gegen alle Ortstermine (Termin 1
   assert.equal(P.ortstermin, '2026-08-12');
   assert.deepEqual(T.projektSicht({ ortstermin: '2026-08-12' }).ortstermine, ['2026-08-12']);
   assert.deepEqual(T.projektSicht({}).ortstermine, []);
+  // Termin 1 wie im Satz „Am … fand“ gelesen (Review): deutsches Format oder mit Uhrzeit fällt nicht aus dem Vergleich
+  assert.deepEqual(T.projektSicht({ ...ZWEI, ortstermin: '12.08.2026' }).ortstermine, ['2026-08-12', '2026-08-20']);
+  assert.deepEqual(T.projektSicht({ ...ZWEI, ortstermin: '2026-08-12T10:00' }).ortstermine, ['2026-08-12', '2026-08-20']);
+  assert.deepEqual(T.projektSicht({ ...ZWEI, ortstermin: '2026-02-30' }).ortstermine, ['2026-08-20'], 'kein echtes Datum');
   // zwei Termine, alle Daten passen → keine Zeile (bis 1.25.0: „weicht ab“)
+  assert.deepEqual(m({ ...ZWEI, ortstermin: '12.08.2026' }, ['2026-08-12', '2026-08-20']), [], 'Termin 1 im deutschen Format');
   assert.deepEqual(m(ZWEI, ['2026-08-12', '2026-08-20']), []);
   assert.deepEqual(m(ZWEI, ['2026-08-20']), [], 'nur Termin 2');
   // ein Datum passt zu keinem Termin → nur dieses Datum, dazu alle Termine
