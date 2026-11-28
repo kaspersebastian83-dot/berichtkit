@@ -105,6 +105,14 @@ fall('1.26.0: Brandbericht 3. – Probenahmedatum gegen alle Ortstermine, Text �
   assert.match(text(nurZweiter, 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle statt\.\n/);
   assert.match(text(mit(ZWEI, ['2026-08-20', '2026-08-21']), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle statt\./, 'auch wenn ein Datum zu keinem Termin passt');
   assert.match(text(mit(ZWEI, []), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle mit Probenahme statt\./, 'ohne LabelKit-Daten wie bisher');
+  // 1.26.1: ohne LabelKit-Datum bei mehreren Terminen nicht still – gelbe Zeile (ohne Datei, Probe ohne Datum); mit einem Termin keine
+  const HW = 'Kein Probenahmedatum in LabelKit – bitte in 3. prüfen, ob am ersten Ortstermin (12.08.2026) Proben genommen wurden („mit Probenahme“).';
+  assert.ok(mit(ZWEI, []).hinweise.includes(HW));
+  assert.ok(modell({ ...F.BR1_voll_Versicherung, pj: D.pj(ZWEI), lk: null }).hinweise.includes(HW), 'ohne LabelKit-Datei');
+  assert.ok(modell({ ...F.BR1_voll_Versicherung, pj: D.pj(ZWEI), lk: D.lk({ pak: [[1, '', 'A', 'Wischprobe']] }) }).hinweise.includes(HW), 'Probe ohne Datum');
+  assert.deepEqual(mit(ZWEI, []).sperren, [], 'nur Hinweis');
+  assert.ok(!mit(ZWEI, ['2026-08-12']).hinweise.includes(HW), 'mit Datum keine Zeile');
+  assert.ok(!mit({ ortstermin: '2026-08-12' }, []).hinweise.some(h => /^Kein Probenahmedatum/.test(h)), 'ein Termin wie bisher');
   assert.match(text(mit({ ortstermin: '2026-08-12' }, ['2026-08-20']), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle mit Probenahme statt\./, 'ein Termin wie bisher (gelbe Zeile sagt es)');
   assert.match(text(mit({ ...ZWEI, ortstermin: '12.08.2026' }, ['2026-08-20']), 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle statt\./, 'Termin 1 im deutschen Format');
   // ein Datum passt zu keinem Termin → nur dieses Datum und alle Termine

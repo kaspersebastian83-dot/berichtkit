@@ -151,7 +151,8 @@ Die Ortstermine (Termin 1 und weitere) liest `ortstermine.js` (ab 1.26.0, ebenfa
   Daten, die zu keinem passen, und alle Termine („… passt zu keinem Ortstermin der Projektzentrale (12.08.2026, 20.08.2026) – bitte prüfen.“).
   Mit einem Termin (auch wenn ein weiterer Termin kein gültiges Datum hat) Bedingung und Text wie bisher. Nur Hinweis, sperrt nichts. Der Satz
   „Am … fand eine Besichtigung statt“ nimmt weiter nur Termin 1; bei mehreren Terminen steht „mit Probenahme“ nur, wenn LabelKit für diesen Tag
-  eine Probe hat (ohne LabelKit-Daten wie bisher).
+  eine Probe hat. Ohne LabelKit-Datum bleibt „mit Probenahme“, bei mehreren Terminen mit gelber Zeile „Kein Probenahmedatum in LabelKit – bitte in 3.
+  prüfen …“ (ab 1.26.1, nur Hinweis).
 - **Fehlende Unterschrift** (ab 1.20.0, B6): Hinweis mit „Einstellungen öffnen“, wenn im Archivordner unter `_Spektron-Unterschriften` keine PNG für
   den Unterzeichner liegt; nur mit Archivordner (sonst ist unbekannt, welche es gibt), keine Sperre.
 - **`_BerichtKit.json` nicht lesbar** (ab 1.18.0, M7: kein JSON, leer, Lesefehler, fremdes Format): BerichtKit schreibt sie nie – rote Zeile über den

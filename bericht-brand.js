@@ -383,6 +383,10 @@ function bericht(eingabe) {
   // 1.26.0 (Basti, 28.11.2026): mehrere Ortstermine und laut LabelKit keine Probe am ersten Termin → der Satz nennt weiter Termin 1,
   // aber ohne „mit Probenahme“. Mit einem Termin wie bisher (dort sagt die gelbe Zeile, wenn die Daten abweichen); ohne LabelKit-Daten wie bisher.
   const ohneProbenahme = ortstermin && mehrereOrtstermine(P) && lkDaten.length && !lkDaten.includes(ortstermin);
+  // 1.26.1 (Basti, 28.11.2026): mehrere Ortstermine, aber kein Probenahmedatum in LabelKit → „mit Probenahme“ bleibt (Vorgabe),
+  // aber nicht still – gelbe Zeile, nur Hinweis. Mit einem Termin wie bisher.
+  if (ortstermin && mehrereOrtstermine(P) && !lkDaten.length)
+    hinweise.push(`Kein Probenahmedatum in LabelKit – bitte in 3. prüfen, ob am ersten Ortstermin (${ortstermin}) Proben genommen wurden („mit Probenahme“).`);
   const ob = [{ t: 'p', runs: !ortstermin && lkDaten.length > 1
     ? [`Am ${liste(lkDaten.map((d, i) => (i ? 'am ' : '') + d))} fanden Besichtigungen der Schadenstelle mit Probenahme statt.`]
     : ['Am ', ortstermin ? ortstermin : lkDaten.length ? lkDaten[0] : { gap: '[Ortstermin]' }, ohneProbenahme ? ' fand eine Besichtigung der Schadenstelle statt.' : ' fand eine Besichtigung der Schadenstelle mit Probenahme statt.'] }];
