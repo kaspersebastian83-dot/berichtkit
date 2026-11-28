@@ -89,6 +89,30 @@ fall('3. Ortsbesichtigung: Anwesende / nur unser Büro / Teilnehmerliste, zweite
   assert.equal(T.nominativ({ name: 'Stefan Cremer', geschlecht: 'm', satz: 'unseren Messtechniker Herrn Cremer' }), 'Herr Cremer', 'eigener Satz im Akkusativ gilt hier nicht');
 });
 
+fall('1.26.0: Brandbericht 3. – Probenahmedatum gegen alle Ortstermine, Text „Am … fand“ weiter nur Termin 1, mit einem Termin wie bisher', () => {
+  const ZWEI = { ortstermin: '2026-08-12', weitereOrtstermine: [{ id: 't2', datum: '2026-08-20', bezeichnung: 'Nachbeprobung' }], ortsterminZaehler: 2 };
+  const mit = (o, pak, chlorid = []) => modell({ ...F.BR1_voll_Versicherung, pj: D.pj(o), lk: D.lk({ pak: pak.map((d, i) => [i + 1, d, 'A', 'Wischprobe']), chlorid: chlorid.map((d, i) => [pak.length + i + 1, d, 'B', 'Wischprobe']) }) });
+  const zeile = m => m.hinweise.filter(h => /^Probenahmedatum in LabelKit/.test(h));
+  // zwei Termine, alle Daten passen (auch über die Probenarten hinweg) → keine Zeile
+  const passt = mit(ZWEI, ['2026-08-12'], ['2026-08-20']);
+  assert.deepEqual(zeile(passt), []);
+  assert.match(text(passt, 3), /^Am 12\.08\.2026 fand eine Besichtigung der Schadenstelle mit Probenahme statt\./, 'Text nimmt weiter Termin 1 (Stufe 4)');
+  assert.equal(passt.brand.ortstermin, '12.08.2026');
+  assert.deepEqual(passt.sperren, []);
+  // ein Datum passt zu keinem Termin → nur dieses Datum und alle Termine
+  assert.deepEqual(zeile(mit(ZWEI, ['2026-08-12', '2026-08-21'], ['2026-08-20'])),
+    ['Probenahmedatum in LabelKit (21.08.2026) passt zu keinem Ortstermin der Projektzentrale (12.08.2026, 20.08.2026) – bitte prüfen.']);
+  assert.deepEqual(mit(ZWEI, ['2026-08-21']).sperren, [], 'nur Hinweis');
+  // ungültiger oder leerer weiterer Termin wird übergangen
+  assert.deepEqual(zeile(mit({ ...ZWEI, weitereOrtstermine: [{ id: 't2', datum: '' }, { id: 't3', datum: '2026-08-20' }], ortsterminZaehler: 3 }, ['2026-08-12', '2026-08-20'])), []);
+  assert.deepEqual(zeile(mit({ ...ZWEI, weitereOrtstermine: [{ id: 't2', datum: 'bald' }] }, ['2026-08-12', '2026-08-20'])),
+    ['Probenahmedatum in LabelKit (12.08.2026 und 20.08.2026) weicht vom Ortstermin der Projektzentrale (12.08.2026) ab – bitte prüfen.'], 'nur ungültiger weiterer → wie ein Termin');
+  // ein Termin → wie bisher (alle Daten genannt)
+  assert.deepEqual(zeile(mit({ ortstermin: '2026-08-12' }, ['2026-08-12', '2026-08-20'])),
+    ['Probenahmedatum in LabelKit (12.08.2026 und 20.08.2026) weicht vom Ortstermin der Projektzentrale (12.08.2026) ab – bitte prüfen.']);
+  assert.deepEqual(zeile(mit({ ortstermin: '2026-08-12' }, ['2026-08-12'])), []);
+});
+
 fall('4. Probenahme: Absätze je Gruppe, Zahlwort bis zwölf, Einzahl, gemeinsamer Prüfbericht Chlorid/PAK, mehrere Prüfberichte', () => {
   const m = modell(F.BR1_voll_Versicherung), t = text(m, 4).split('\n');
   assert.equal(t[0], 'Zur Messung der Chloridbelastung wurden drei Wischproben entnommen. Die Proben wurden der Eurofins Beispiel-Labor GmbH zur Untersuchung auf Chlorid übergeben.');

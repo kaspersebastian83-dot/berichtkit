@@ -612,6 +612,43 @@ fall('B5 (Audit Lauf 2): Asbestbericht – Probenahmedatum aus LabelKit gegen de
   assert.ok(m3.some(h => /Probenahmedatum in LabelKit \(18\.11\.2026 und 20\.11\.2026\) weicht/.test(h)), 'abgewählte Probe zählt');
 });
 
+fall('1.26.0: Asbestbericht – Probenahmedatum gegen alle Ortstermine (Termin 1 + weitereOrtstermine), mit einem Termin wie bisher', () => {
+  const ZWEI = { ortstermin: '2026-08-12', weitereOrtstermine: [{ id: 't2', datum: '2026-08-20', bezeichnung: 'Nachbeprobung' }], ortsterminZaehler: 2 };
+  const lkMit = daten => D.lk(daten.map((d, i) => [i + 1, d, 'Keller', 'Putz', 'Putze / Spachtelmassen']));
+  const m = (o, daten, f = {}) => T.bericht({ pj: D.pj({ projektnummer: '26.0999', ...o }), lk: lkMit(daten), erg: D.erg(daten.map((_, i) => [i + 1, 'kein'])),
+    cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form(f) }).hinweise.filter(h => /^Probenahmedatum in LabelKit/.test(h));
+  // Projektsicht: Daten aller Termine, nur gültige, sortiert; „ortstermin“ bleibt Termin 1
+  const P = T.projektSicht({ ...ZWEI, weitereOrtstermine: [{ id: 't3', datum: '2026-08-25' }, ...ZWEI.weitereOrtstermine, { id: 't4', datum: '' }, { id: 't5', datum: '2026-02-30' }, { id: 'x', datum: '2026-09-01' }] });
+  assert.deepEqual(P.ortstermine, ['2026-08-12', '2026-08-20', '2026-08-25']);
+  assert.equal(P.ortstermin, '2026-08-12');
+  assert.deepEqual(T.projektSicht({ ortstermin: '2026-08-12' }).ortstermine, ['2026-08-12']);
+  assert.deepEqual(T.projektSicht({}).ortstermine, []);
+  // zwei Termine, alle Daten passen → keine Zeile (bis 1.25.0: „weicht ab“)
+  assert.deepEqual(m(ZWEI, ['2026-08-12', '2026-08-20']), []);
+  assert.deepEqual(m(ZWEI, ['2026-08-20']), [], 'nur Termin 2');
+  // ein Datum passt zu keinem Termin → nur dieses Datum, dazu alle Termine
+  assert.deepEqual(m(ZWEI, ['2026-08-12', '2026-08-20', '2026-08-21']),
+    ['Probenahmedatum in LabelKit (21.08.2026) passt zu keinem Ortstermin der Projektzentrale (12.08.2026, 20.08.2026) – bitte prüfen.']);
+  assert.deepEqual(m(ZWEI, ['2026-08-11', '2026-08-21']),
+    ['Probenahmedatum in LabelKit (11.08.2026 und 21.08.2026) passt zu keinem Ortstermin der Projektzentrale (12.08.2026, 20.08.2026) – bitte prüfen.']);
+  // ungültiger oder leerer weiterer Termin wird übergangen
+  assert.deepEqual(m({ ...ZWEI, weitereOrtstermine: [{ id: 't2', datum: '' }, { id: 't3', datum: '2026-08-20' }], ortsterminZaehler: 3 }, ['2026-08-12', '2026-08-20']), [], 't2 leer, t3 gilt');
+  assert.deepEqual(m({ ...ZWEI, weitereOrtstermine: [{ id: 't2', datum: '20.08.2026' }] }, ['2026-08-12', '2026-08-20']),
+    ['Probenahmedatum in LabelKit (12.08.2026 und 20.08.2026) weicht vom Ortstermin der Projektzentrale (12.08.2026) ab – bitte prüfen.'], 'nur ungültiger weiterer → wie ein Termin');
+  // Termin 1 leer, nur ein weiterer Termin → gegen diesen (nicht still)
+  assert.deepEqual(m({ ortstermin: '', weitereOrtstermine: [{ id: 't2', datum: '2026-08-20' }], ortsterminZaehler: 2 }, ['2026-08-21']),
+    ['Probenahmedatum in LabelKit (21.08.2026) passt zu keinem Ortstermin der Projektzentrale (20.08.2026) – bitte prüfen.']);
+  // ein Termin → Bedingung und Text wie bis 1.25.0
+  assert.deepEqual(m({ ortstermin: '2026-08-12' }, ['2026-08-12', '2026-08-20']),
+    ['Probenahmedatum in LabelKit (12.08.2026 und 20.08.2026) weicht vom Ortstermin der Projektzentrale (12.08.2026) ab – bitte prüfen.']);
+  assert.deepEqual(m({ ortstermin: '2026-08-12' }, ['2026-08-12']), []);
+  // eigenes Formularfeld „probenahmedatum“ und zugestellte Probe → keine Zeile, auch mit mehreren Terminen (B5)
+  assert.deepEqual(m(ZWEI, ['2026-08-21'], { probenahmedatum: '2026-08-21' }), []);
+  assert.deepEqual(m(ZWEI, ['2026-08-21'], { variante: 'zugestellt', eingangsdatum: '2026-08-22' }), []);
+  // nur Hinweis, sperrt nichts
+  assert.deepEqual(T.bericht({ pj: D.pj(ZWEI), lk: lkMit(['2026-08-21']), erg: D.erg([[1, 'kein']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, form: form() }).sperren, []);
+});
+
 fall('B6 (Audit Lauf 2): fehlende Unterschrift – Hinweis mit „Einstellungen öffnen“, nur wenn bekannt ist, welche es gibt', () => {
   const m = da => T.bericht({ pj: D.pj(), lk: D.lk([[1, '2026-10-16', 'Keller', 'Putz', 'Putze / Spachtelmassen']]), erg: D.erg([[1, 'kein']]), cfg: D.cfg, mitarbeiter: D.mitarbeiter, unterschriftDa: da, form: form() });
   const ohne = m(k => k !== 'Mes'), h = ohne.hinweise.find(x => /keine Unterschrift hinterlegt/.test(x));

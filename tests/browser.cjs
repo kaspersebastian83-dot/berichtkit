@@ -105,6 +105,9 @@ const daten = {
     // Öffnen wie aus der Projektzentrale
     await page.goto(url + 'index.html#projekt=' + encodeURIComponent(PROJEKT));
     await page.waitForSelector('#app:not([hidden]) .blatt');
+    // 1.26.0: ortstermine.js ist geladen – die Projektsicht kennt alle Ortstermine (nicht nur Termin 1)
+    assert.deepEqual(await page.evaluate(() => [typeof Ortstermine, BerichtText.projektSicht({ ortstermin: '2026-08-12', weitereOrtstermine: [{ id: 't2', datum: '2026-08-20' }] }).ortstermine]),
+      ['object', ['2026-08-12', '2026-08-20']]);
     // Karten (1.16.0): alle aufklappen, wenn ein Test in Feldern arbeitet – zugeklappt sind Felder nicht klickbar
     const alleAuf = () => page.evaluate(() => document.querySelectorAll('#app details').forEach(d => { d.open = true; }));
     assert.ok((await page.title()).includes(PROJEKT), 'Projekt im Fenstertitel');
@@ -406,7 +409,7 @@ const daten = {
     // „Mehr …“: eigene Einträge, darunter Handbuch (AidKit-Kapitel), Rückmeldung, Alle Projekte
     await page.click('#btnMehr'); await page.waitForSelector('#mosaikMehrPop');
     assert.deepEqual(await page.$$eval('#mosaikMehrPop [role=menuitem]', a => a.map(x => x.textContent)), ['Word nur herunterladen',
-      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.25.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
+      'Einstellungen (Personen, Rollen, Labor) …', 'Anderen Projektordner wählen …', 'Über BerichtKit · Version 1.26.0', '📘 Handbuch ↗', '💬 Rückmeldung ↗', '⌂ Alle Projekte ↗']);
     assert.equal(await page.getAttribute('#mosaikMehrPop a[target=aidkit]', 'href'), '../aidkit/#app-berichtkit');
     await page.keyboard.press('Escape'); await page.waitForSelector('#mosaikMehrPop', { state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement.id), 'btnMehr', 'Esc: Fokus zurück auf „Mehr …“');

@@ -30,7 +30,7 @@ const ANL = root.BerichtAnlagen || (typeof require === 'function' ? require('./a
 const G = root.BerichtGemeinsam || (typeof require === 'function' ? require('./bericht-gemeinsam.js') : null);
 const BW = root.BerichtBewertung || (typeof require === 'function' ? require('./bericht-bewertung.js') : null);
 const { s, L, datumDE, liste, zahlwort, PNR, tidy, ABGLEICH_SPERRT, IST_KMF, RAUM_KUERZEL, raumAusschreiben, istStorniert, probenSammeln,
-  person, nominativ, pnQuelle, projektSicht, objektImSatz, labelkitProjektPruefen, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
+  person, nominativ, pnQuelle, projektSicht, probenahmeTerminHinweis, objektImSatz, labelkitProjektPruefen, ergebnisStandPruefen, deckblattFelder, kopfZeilen, auftraggeberImSatz,
   unterschriftenBlock, pruefberichtPdf, anlagenUebernehmen, anlagenAusgabe, kennzeilenVorlaeufig, annahmenAus, luecken } = G;
 
 const TITEL = ['Sanierungsvorschlag', 'Untersuchungsbericht'];
@@ -371,7 +371,9 @@ function bericht(eingabe) {
   const lkDaten = [...new Set([...lk.pakWisch, ...lk.pakMaterial, ...lk.clWisch, ...lk.clAndere, ...lk.asbest, ...lk.bohrmehl, ...lk.sonstige]
     .map(p => datumDE(p.datum)).filter(Boolean))].sort((a, b) => a.split('.').reverse().join('').localeCompare(b.split('.').reverse().join('')));
   const ortstermin = datumDE(P.ortstermin);
-  if (ortstermin && lkDaten.length && lkDaten.some(d => d !== ortstermin)) hinweise.push(`Probenahmedatum in LabelKit (${liste(lkDaten)}) weicht vom Ortstermin der Projektzentrale (${ortstermin}) ab – bitte prüfen.`);
+  // 1.26.0: gegen alle Ortstermine (mit einem Termin wie bisher); der Text in 3. nimmt weiter nur Termin 1 (Stufe 4)
+  const terminHinweis = probenahmeTerminHinweis(lkDaten, P);
+  if (terminHinweis) hinweise.push(terminHinweis);
   if (!ortstermin && lkDaten.length) hinweise.push(`Ortstermin fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`);
   const wir = [pn, p2].filter(Boolean);
   const wirSatz = wir.length ? liste(wir.map(nominativ)) : { gap: '[Probenehmer]' };
