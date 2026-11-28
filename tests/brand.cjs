@@ -107,6 +107,12 @@ fall('1.26.0: Brandbericht 3. – Probenahmedatum gegen alle Ortstermine, Text �
   assert.deepEqual(zeile(mit({ ...ZWEI, weitereOrtstermine: [{ id: 't2', datum: '' }, { id: 't3', datum: '2026-08-20' }], ortsterminZaehler: 3 }, ['2026-08-12', '2026-08-20'])), []);
   assert.deepEqual(zeile(mit({ ...ZWEI, weitereOrtstermine: [{ id: 't2', datum: 'bald' }] }, ['2026-08-12', '2026-08-20'])),
     ['Probenahmedatum in LabelKit (12.08.2026 und 20.08.2026) weicht vom Ortstermin der Projektzentrale (12.08.2026) ab – bitte prüfen.'], 'nur ungültiger weiterer → wie ein Termin');
+  // Termin 1 leer, nur Termin 2 (Codex-Review #38): Datum passt → keine Zeile, und „fehlt“ nennt nur das Feld „Ortstermin“ (Termin 1)
+  const nurT2 = mit({ ortstermin: '', weitereOrtstermine: [{ id: 't2', datum: '2026-08-20' }], ortsterminZaehler: 2 }, ['2026-08-20']);
+  assert.deepEqual(zeile(nurT2), []);
+  assert.deepEqual(nurT2.hinweise.filter(h => /fehlt in der Projektzentrale – in 3\./.test(h)),
+    ['Der erste Ortstermin (Feld „Ortstermin“) fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (20.08.2026).']);
+  assert.ok(mit({ ortstermin: '' }, ['2026-08-20']).hinweise.includes('Ortstermin fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (20.08.2026).'), 'ohne jeden Termin wie bisher');
   // ein Termin → wie bisher (alle Daten genannt)
   assert.deepEqual(zeile(mit({ ortstermin: '2026-08-12' }, ['2026-08-12', '2026-08-20'])),
     ['Probenahmedatum in LabelKit (12.08.2026 und 20.08.2026) weicht vom Ortstermin der Projektzentrale (12.08.2026) ab – bitte prüfen.']);

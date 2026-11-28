@@ -374,7 +374,10 @@ function bericht(eingabe) {
   // 1.26.0: gegen alle Ortstermine (mit einem Termin wie bisher); der Text in 3. nimmt weiter nur Termin 1 (Stufe 4)
   const terminHinweis = probenahmeTerminHinweis(lkDaten, P);
   if (terminHinweis) hinweise.push(terminHinweis);
-  if (!ortstermin && lkDaten.length) hinweise.push(`Ortstermin fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`);
+  // Termin 1 leer, aber weitere Termine (Codex-Review #38): nicht „fehlt“ schlechthin – nur das Feld „Ortstermin“ (Termin 1), das 3. nimmt
+  if (!ortstermin && lkDaten.length) hinweise.push(P.ortstermine.length
+    ? `Der erste Ortstermin (Feld „Ortstermin“) fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`
+    : `Ortstermin fehlt in der Projektzentrale – in 3. steht das Probenahmedatum aus LabelKit (${liste(lkDaten)}).`);
   const wir = [pn, p2].filter(Boolean);
   const wirSatz = wir.length ? liste(wir.map(nominativ)) : { gap: '[Probenehmer]' };
   const ob = [{ t: 'p', runs: !ortstermin && lkDaten.length > 1
