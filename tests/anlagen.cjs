@@ -242,4 +242,166 @@ fall('Audit m9: Bilddokumentation eines anderen Projekts nie Anlage; ohne Nummer
   assert.deepEqual(A.erkennen({ fotos: fotos([fremde, t0]), fk: null }).bilddoku.dateien, ['Fotos/' + fremde]);
 });
 
+// ---------- 1.27.0: Plannamen mit Termin (PlanKit 2.7.0; plankit-ortstermine-plan.md F7, T5, T6, T13, T18) ----------
+{
+  const KA = '26.0999 Teststadt Ka', tag = 86400000, alt = t0 - 8 * tag;
+  const plan = { name: `Probenplan ${KA}.probenplan`, t: t0 - min, sha: 'b'.repeat(64) };   // nach PlanKit: Export nach der letzten Änderung
+  const lesbar = { frueher: [KA], geschosse: [], nr: '26.0999' }, zweiPlaene = { frueher: [KA], geschosse: ['EG', '1. OG'], nr: '26.0999' };
+  const P = (...l) => l.map(([z, t]) => ({ name: `Probenplan ${KA}${z}.pdf`, t }));
+  const hakt = (k, wahl) => A.zusammenstellen({ pruefberichte: [{ nr: 'AR-1', pdf: 'Laborergebnisse/AR-1.pdf' }], labor: 'L', gefunden: { probenplan: k }, wahl }).zeilen.find(z => z.art === 'probenplan');
+
+  fall('1.27 Namensregel: eine Stelle zerlegt Ordner, Plan, Termin, Ergebniskarte, Kopie', () => {
+    const z = A.planName(`Probenplan ${KA} - EG - Termin 20.08.2026 - Ergebniskarte (2).pdf`, [KA]);
+    assert.deepEqual({ kern: z.kern, ordner: z.ordner, plan: z.plan, termin: z.termin, ergebnis: z.ergebnis, kopie: z.kopie },
+      { kern: `Probenplan ${KA} - EG`, ordner: KA, plan: 'EG', termin: '2026-08-20', ergebnis: true, kopie: 2 });
+    assert.equal(A.planName(`Probenplan ${KA} - Termin 20.08.2026.pdf`, [KA]).plan, '', 'der Zusatz ist nie ein Plan');
+    assert.equal(A.planName(`Probenplan ${KA} - alle Termine.pdf`, [KA]).termin, 'alle');
+    assert.equal(A.planName(`Probenplan ${KA}.pdf`, [KA]).termin, '');
+    // nur ein gültiges Datum zählt – sonst bleibt es (wie bis 1.26) Teil des Plannamens
+    for (const d of ['31.02.2026', '20.13.2026', '2.8.2026']) { const x = A.planName(`Probenplan ${KA} - Termin ${d}.pdf`, [KA]); assert.equal(x.termin, ''); assert.equal(x.plan, 'Termin ' + d); }
+    // falsche Reihenfolge (Termin hinter „Ergebniskarte“) ist kein Termin-Zusatz
+    assert.equal(A.planName(`Probenplan ${KA} - Ergebniskarte - Termin 20.08.2026.pdf`, [KA]).ergebnis, false);
+    assert.equal(A.planName('Probenplanung.pdf'), null); assert.equal(A.planName(`Probenplan ${KA}.png`), null);
+  });
+
+  fall('1.27 F7: Termin-1-Plan ohne Zusatz + Termin-2-Plan – mit lesbarer .probenplan nicht vorgehakt, Hinweis nennt beide', () => {
+    const k = A.planFinden('probenplan', P(['', alt], [' - Termin 20.08.2026', t0]), plan, KA, lesbar);
+    assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - Termin 20.08.2026.pdf`]); assert.equal(k.details, '', 'kein Geschoss „Termin 20.08.2026“');
+    assert.equal(k.unklar, true); assert.equal(k.termin, '2026-08-20'); assert.deepEqual(k.termine, ['', '2026-08-20']);
+    assert.equal(k.unklarText, `Probenpläne für mehrere Ortstermine: „Probenplan ${KA}.pdf“ (ohne Termin-Zusatz) und „Probenplan ${KA} - Termin 20.08.2026.pdf“ (Termin 20.08.2026) – bitte wählen; angehakt kommt „Probenplan ${KA} - Termin 20.08.2026.pdf“ in den Bericht`);
+    const r = A.zusammenstellen({ pruefberichte: [{ nr: 'AR-1', pdf: 'x.pdf' }], labor: 'L', gefunden: { probenplan: k } });
+    assert.equal(r.nr.probenplan, undefined); assert.equal(r.zeilen.find(z => z.art === 'probenplan').zustand, 'unklar');
+    assert.ok(r.hinweise.includes(`Probenplan: ${k.unklarText}. Nicht im Bericht – den Plan für diesen Bericht anhaken.`), r.hinweise.join('\n'));
+    assert.deepEqual(r.aktionen[`Probenplan: ${k.unklarText}. Nicht im Bericht – den Plan für diesen Bericht anhaken.`], { art: 'probenplan', was: 'öffnen' });
+    // selbst angehakt → im Bericht, Hinweis bleibt
+    const z = hakt(k, { probenplan: { an: true, key: hakt(k).key } }); assert.equal(z.an, true); assert.equal(z.nr, 2);
+  });
+
+  fall('1.27 F7: ohne lesbare .probenplan nie als Geschoss „Termin 20.08.2026“ vorgehakt', () => {
+    const k = A.planFinden('probenplan', P(['', alt], [' - Termin 20.08.2026', t0]), plan, KA);
+    assert.equal(k.details, ''); assert.equal(k.unklar, true); assert.equal(hakt(k).an, false); assert.equal(hakt(k).titel, 'Probenplan');
+    // nur ein Termin-Plan da: ebenfalls nicht vorgehakt (BerichtKit kennt den Termin des Berichts erst mit Stufe 4)
+    for (const wo of [undefined, lesbar]) {
+      const e = A.planFinden('probenplan', P([' - Termin 20.08.2026', t0]), plan, KA, wo);
+      assert.equal(e.unklar, true); assert.equal(hakt(e).an, false);
+      assert.equal(e.unklarText, `Probenplan für einen Ortstermin: „Probenplan ${KA} - Termin 20.08.2026.pdf“ (Termin 20.08.2026) – bitte prüfen, ob er in diesen Bericht gehört`);
+    }
+  });
+
+  fall('1.27 F7: EG und 1. OG je Termin – nie gemischt; „alle Termine“ ist eine eigene Gruppe', () => {
+    const l = P([' - EG', alt], [' - 1. OG', alt], [' - EG - Termin 20.08.2026', t0], [' - 1. OG - Termin 20.08.2026', t0]);
+    for (const wo of [undefined, zweiPlaene]) {
+      const k = A.planFinden('probenplan', l, plan, KA, wo);
+      assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - 1. OG - Termin 20.08.2026.pdf`, `Pläne/Probenplan ${KA} - EG - Termin 20.08.2026.pdf`]);
+      assert.equal(k.details, '1. OG, EG'); assert.equal(k.unklar, true);
+      const t1 = A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-08-12', ersterTermin: true });
+      assert.deepEqual(t1.dateien, [`Pläne/Probenplan ${KA} - 1. OG.pdf`, `Pläne/Probenplan ${KA} - EG.pdf`]); assert.equal(t1.unklar, wo ? false : undefined);
+    }
+    const mitAlle = [...l, ...P([' - alle Termine', t0 + min])];
+    let k = A.planFinden('probenplan', mitAlle, plan, KA, zweiPlaene);
+    assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - alle Termine.pdf`]); assert.deepEqual(k.termine, ['', '2026-08-20', 'alle']);
+    assert.match(k.unklarText, /\(ohne Termin-Zusatz\) und .* \(Termin 20\.08\.2026\) und „Probenplan 26\.0999 Teststadt Ka - alle Termine\.pdf“ \(alle Termine\)/);
+    k = A.planFinden('probenplan', mitAlle, plan, KA, zweiPlaene, { termin: 'alle' });
+    assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - alle Termine.pdf`]); assert.equal(k.unklar, false); assert.equal(k.termin, 'alle');
+  });
+
+  fall('1.27 Termin-Angabe: richtiger Tag, Termin 1 ohne Zusatz, nie ein anderer Termin, nichts gefunden → null', () => {
+    const l = P(['', alt], [' - Termin 20.08.2026', t0]);
+    for (const wo of [undefined, lesbar]) {
+      let k = A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-08-20' });
+      assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - Termin 20.08.2026.pdf`]); assert.ok(!k.unklar); assert.equal(hakt(k).an, true);
+      k = A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-08-12', ersterTermin: true });
+      assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA}.pdf`]); assert.equal(k.termin, ''); assert.deepEqual(k.termine, ['', '2026-08-20']);
+      // Termin 1 ist nur ohne Zusatz gemeint, wenn es keine PDF mit seinem Datum gibt
+      k = A.planFinden('probenplan', [...l, ...P([' - Termin 12.08.2026', t0 + min])], plan, KA, wo, { termin: '2026-08-12', ersterTermin: true });
+      assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - Termin 12.08.2026.pdf`]);
+      // ohne „ist Termin 1“ nie die PDF ohne Zusatz; ein anderer Tag, „alle“ ohne Datei, ungültige Angabe → null (der Aufrufer zeigt „fehlt“)
+      assert.equal(A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-08-12' }), null);
+      assert.equal(A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-09-03' }), null);
+      assert.equal(A.planFinden('probenplan', l, plan, KA, wo, { termin: 'alle', ersterTermin: true }), null);
+      assert.equal(A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-02-31', ersterTermin: true }), null);
+      assert.equal(A.planFinden('probenplan', P([' - Termin 20.08.2026', t0]), plan, KA, wo, { termin: '2026-08-12', ersterTermin: true }), null, 'nie den Termin-2-Plan für Termin 1');
+      // auch ohne eine einzige Termin-PDF: Termin 1 bekommt den Plan ohne Zusatz, Termin 2 nichts
+      assert.deepEqual(A.planFinden('probenplan', P(['', alt]), plan, KA, wo, { termin: '2026-08-12', ersterTermin: true }).dateien, [`Pläne/Probenplan ${KA}.pdf`]);
+      assert.equal(A.planFinden('probenplan', P(['', alt]), plan, KA, wo, { termin: '2026-08-20' }), null);
+    }
+  });
+
+  fall('1.27 Ergebniskarte: dieselbe Regel (Termin vor „ - Ergebniskarte“), getrennt vom Probenplan', () => {
+    const l = P(['', alt], [' - Ergebniskarte', alt], [' - Termin 20.08.2026', t0], [' - Termin 20.08.2026 - Ergebniskarte', t0]);
+    for (const wo of [undefined, lesbar]) {
+      const k = A.planFinden('ergebniskarte', l, plan, KA, wo);
+      assert.deepEqual(k.dateien, [`Pläne/Probenplan ${KA} - Termin 20.08.2026 - Ergebniskarte.pdf`]); assert.equal(k.unklar, true); assert.equal(k.details, '');
+      assert.match(k.unklarText, /^Ergebniskarten für mehrere Ortstermine: /);
+      assert.deepEqual(A.planFinden('ergebniskarte', l, plan, KA, wo, { termin: '2026-08-12', ersterTermin: true }).dateien, [`Pläne/Probenplan ${KA} - Ergebniskarte.pdf`]);
+      assert.deepEqual(A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-08-20' }).dateien, [`Pläne/Probenplan ${KA} - Termin 20.08.2026.pdf`]);
+    }
+  });
+
+  fall('1.27 Kopie „(2)“ einer Termin-PDF = neuere Fassung desselben Termins', () => {
+    const l = P(['', alt], [' - Termin 20.08.2026', t0 - 30 * min], [' - Termin 20.08.2026 (2)', t0]);
+    for (const wo of [undefined, lesbar]) {
+      assert.deepEqual(A.planFinden('probenplan', l, plan, KA, wo, { termin: '2026-08-20' }).dateien, [`Pläne/Probenplan ${KA} - Termin 20.08.2026 (2).pdf`]);
+      const k = A.planFinden('probenplan', l, plan, KA, wo); assert.deepEqual(k.termine, ['', '2026-08-20']); assert.equal(k.dateien.length, 1);
+    }
+  });
+
+  fall('1.27 ungültiges Datum ist kein Termin-Zusatz: alles wie bis 1.26 (ohne Termin-Angaben im Ergebnis)', () => {
+    const l = P(['', alt], [' - Termin 31.02.2026', t0]);
+    const k = A.planFinden('probenplan', l, plan, KA);
+    assert.equal(k.details, 'Termin 31.02.2026'); assert.equal(k.termin, undefined); assert.equal(k.termine, undefined);
+    const o = A.planFinden('probenplan', l, plan, KA, lesbar);
+    assert.match(o.unklarText, /Plan „Termin 31\.02\.2026“ gibt es in PlanKit nicht/); assert.equal(o.terminUnklar, undefined);
+  });
+
+  fall('1.27 Plan eines anderen Projekts mit Termin-Zusatz: nie – weder vorgeschlagen noch für einen Termin', () => {
+    const fremd = [{ name: 'Probenplan 99.8888 Andere Straße Köln Ben - Termin 20.08.2026.pdf', t: t0 + min }, { name: 'Probenplan 99.8888 Andere Straße Köln Ben - Termin 20.08.2026 - Ergebniskarte.pdf', t: t0 + min }];
+    for (const wo of [undefined, lesbar]) {
+      const ohne = A.planFinden('probenplan', P(['', alt]), plan, KA, wo), mit = A.planFinden('probenplan', [...P(['', alt]), ...fremd], plan, KA, wo);
+      assert.deepEqual(mit, ohne, 'wie ohne die fremde PDF');
+      assert.equal(A.planFinden('probenplan', fremd, plan, KA, wo), null);
+      assert.equal(A.planFinden('probenplan', fremd, plan, KA, wo, { termin: '2026-08-20' }), null);
+      assert.equal(A.planFinden('ergebniskarte', fremd, plan, KA, wo, { termin: '2026-08-20' }), null);
+    }
+  });
+
+  fall('1.27 o11 gilt innerhalb jeder Gruppe: früherer Ordnername, unbekannter Plan', () => {
+    const neu = '26.0604 Würselen', frueher = '26.0604 Würselen Dr. Ka', wo = { frueher: [neu, frueher], geschosse: [], nr: '26.0604' };
+    const l = [{ name: `Probenplan ${frueher}.pdf`, t: alt }, { name: `Probenplan ${frueher} - Termin 20.08.2026.pdf`, t: t0 }];
+    let k = A.planFinden('probenplan', l, plan, neu, wo, { termin: '2026-08-20' });
+    assert.deepEqual(k.dateien, [`Pläne/Probenplan ${frueher} - Termin 20.08.2026.pdf`]); assert.equal(k.unklar, true);
+    assert.equal(k.unklarText, `„Probenplan ${frueher} - Termin 20.08.2026.pdf“ – früherer Ordnername „${frueher}“`);
+    k = A.planFinden('probenplan', l, plan, neu, wo);
+    assert.match(k.unklarText, /– bitte wählen; angehakt kommt .* in den Bericht; außerdem: „Probenplan 26\.0604 Würselen Dr\. Ka - Termin 20\.08\.2026\.pdf“ – früherer Ordnername/);
+    // Plan „OG“ gibt es nicht (nur EG und 1. OG): in der Termin-Gruppe unklar, mit dem o11-Grund
+    k = A.planFinden('probenplan', P([' - EG - Termin 20.08.2026', t0], [' - 1. OG - Termin 20.08.2026', t0], [' - OG - Termin 20.08.2026', t0 - min]), plan, KA, zweiPlaene, { termin: '2026-08-20' });
+    assert.equal(k.unklar, false); assert.match(k.unklarText, /Plan „OG“ gibt es in PlanKit nicht/);
+  });
+
+  fall('1.27 T18: veralteter Termin-Plan – ehrlicher Grund, nur Hinweis; ohne Zusatz der bisherige Text', () => {
+    const spaeter = { ...plan, t: t0 + 10 * min }, l = P(['', alt], [' - Termin 20.08.2026', t0]);
+    for (const wo of [undefined, lesbar]) {
+      const k = A.planFinden('probenplan', l, spaeter, KA, wo, { termin: '2026-08-20' });
+      assert.equal(k.veraltet, true); assert.equal(k.grund, 'Plan in PlanKit nach dem Export geändert – prüfen, ob dieser Termin betroffen ist');
+      const r = A.zusammenstellen({ pruefberichte: [{ nr: 'AR-1', pdf: 'x.pdf' }], labor: 'L', gefunden: { probenplan: k } });
+      assert.ok(r.hinweise.includes('Probenplan veraltet – nicht im Bericht. In PlanKit neu erstellen oder trotzdem anhaken.'));
+      const z = hakt(k, { probenplan: { an: true, key: hakt(k).key } }); assert.equal(z.an, true, 'nie gesperrt');
+      assert.equal(A.planFinden('probenplan', l, spaeter, KA, wo, { termin: '2026-08-12', ersterTermin: true }).grund, 'Plan in PlanKit nach dem Export geändert');
+      assert.equal(A.planFinden('probenplan', P(['', alt]), spaeter, KA, wo).grund, 'Plan in PlanKit nach dem Export geändert');
+    }
+  });
+
+  fall('1.27 ohne Termin-PDF: erkennen wie bis 1.26 (keine Termin-Angaben im Ergebnis)', () => {
+    const g = A.erkennen({ ordnerName: KA, projektNr: '26.0999', plaene: P(['', t0], [' - Ergebniskarte', t0]), plan, planNamen: lesbar });
+    for (const art of ['probenplan', 'ergebniskarte']) { assert.equal('termin' in g[art], false); assert.equal('termine' in g[art], false); assert.equal(g[art].unklar, false); }
+    assert.equal(hakt(g.probenplan).an, true);
+  });
+
+  fall('1.27 Word-Anlage mit Termin im Titelteil wird erkannt (wie schon bis 1.26)', () => {
+    const k = A.wordFinden('probenahme', [{ name: '26.0999_Anlage-3_Termin-20-08-2026_Probenahme_2026-08-22.docx', t: t0 }], '', plan);
+    assert.deepEqual(k.dateien, ['Mitteilungen/26.0999_Anlage-3_Termin-20-08-2026_Probenahme_2026-08-22.docx']);
+    assert.deepEqual(A.wordFinden('raumbuch', [{ name: '26.0999_Termin-20-08-2026_Raumbuch_2026-08-22.docx', t: t0 }], '', plan).dateien, ['Mitteilungen/26.0999_Termin-20-08-2026_Raumbuch_2026-08-22.docx']);
+  });
+}
+
 console.log(`\n${n} Fälle bestanden.`);
